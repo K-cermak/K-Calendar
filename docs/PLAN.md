@@ -52,12 +52,12 @@ Sections 4, 6 (first run, passwords and sessions), 13, 15.
 
 Sections 4, 5 (storing time, occurrences endpoint), 7.
 
-- [ ] Models and migration: calendars, events (all columns, including recurrence ones), tags, event_tags
-- [ ] Default "Personal" calendar for new users; calendar CRUD, ordering, visibility
-- [ ] Event create, read, update, delete for non-recurring events, timed and all-day, with tags
-- [ ] `GET /occurrences` with display-zone conversion and range limits
-- [ ] Tags: created on first use with an automatic colour, list, rename, recolour, delete
-- [ ] Tests for zones, all-day handling, range boundaries, and cross-user access
+- [x] Models and migration: calendars, events (all columns, including recurrence ones), tags, event_tags
+- [x] Default "Personal" calendar for new users; calendar CRUD, ordering, visibility
+- [x] Event create, read, update, delete for non-recurring events, timed and all-day, with tags
+- [x] `GET /occurrences` with display-zone conversion and range limits
+- [x] Tags: created on first use with an automatic colour, list, rename, recolour, delete
+- [x] Tests for zones, all-day handling, range boundaries, and cross-user access
 
 **Acceptance:** Through `/api/docs` I can create calendars and events and query a week of occurrences in two different display zones and get correct wall-clock times in each.
 
