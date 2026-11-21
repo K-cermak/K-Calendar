@@ -21,6 +21,11 @@ def _render_item(type_: str, obj: Any, _autogen_context: Any) -> str | Literal[F
     return False
 
 
+def _include_name(name: str | None, type_: str, _parent_names: Any) -> bool:
+    # The search index is a virtual table made by hand in a migration, not a model.
+    return not (type_ == "table" and name is not None and name.startswith("events_fts"))
+
+
 def _migrate(connection: Connection) -> None:
     # Batch mode lets autogenerate express ALTER TABLE changes that SQLite does not support natively.
     context.configure(
@@ -28,6 +33,7 @@ def _migrate(connection: Connection) -> None:
         target_metadata=target_metadata,
         render_as_batch=True,
         render_item=_render_item,
+        include_name=_include_name,
     )
     with context.begin_transaction():
         context.run_migrations()

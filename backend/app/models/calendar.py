@@ -22,6 +22,23 @@ class Calendar(Base):
     default_reminder_minutes: Mapped[int | None]
 
 
+class CalendarSubscription(Base):
+    """Where a subscribed calendar comes from and how its last refresh went (SPEC 10)."""
+
+    __tablename__ = "calendar_subscriptions"
+
+    calendar_id: Mapped[int] = mapped_column(ForeignKey("calendars.id", ondelete="CASCADE"), primary_key=True)
+    source_url: Mapped[str] = mapped_column(String(2000))
+    refresh_interval_minutes: Mapped[int] = mapped_column(default=60)
+    etag: Mapped[str | None] = mapped_column(String(500))
+    last_modified: Mapped[str | None] = mapped_column(String(100))
+    # The last refresh that worked, whether the content changed or not.
+    last_fetched_at_utc: Mapped[datetime | None] = mapped_column(UtcDateTime)
+    next_fetch_at_utc: Mapped[datetime] = mapped_column(UtcDateTime, index=True)
+    last_status: Mapped[str] = mapped_column(String(16), default="pending")
+    last_error: Mapped[str | None] = mapped_column(String(1000))
+
+
 class Event(Base):
     """A single event, the master of a series, or an override of one occurrence (SPEC 4).
 
