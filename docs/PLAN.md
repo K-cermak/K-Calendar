@@ -105,13 +105,13 @@ Section 9.
 
 Section 10.
 
-- [ ] Serialiser and parser mapping every field in the spec, including overrides, exdates, tags and alarms
-- [ ] Import with UID matching and a result report; export
-- [ ] Secret feed URL per calendar: create, regenerate, remove
-- [ ] Subscription calendars: add by URL, read-only enforcement, background refresh with conditional requests, error display, manual refresh
-- [ ] The background loop in `scheduler.py` (first user is subscription refresh)
-- [ ] SSRF protections and their tests
-- [ ] Fixture files from Google, Apple and Outlook; round-trip tests
+- [x] Serialiser and parser mapping every field in the spec, including overrides, exdates, tags and alarms
+- [x] Import with UID matching and a result report; export
+- [x] Secret feed URL per calendar: create, regenerate, remove
+- [x] Subscription calendars: add by URL, read-only enforcement, background refresh with conditional requests, error display, manual refresh
+- [x] The background loop in `scheduler.py` (first user is subscription refresh)
+- [x] SSRF protections and their tests
+- [x] Fixture files from Google, Apple and Outlook; round-trip tests
 
 **Acceptance:** I can export a calendar and import it into an empty one and see the same events, including a series with exceptions. A subscribed public holiday calendar appears, is read-only, and refreshes. A feed URL added to another calendar app shows my events.
 
