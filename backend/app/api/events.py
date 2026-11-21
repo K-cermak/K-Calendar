@@ -4,7 +4,7 @@ from fastapi import APIRouter, Query, status
 
 from app.api.deps import CurrentAuth
 from app.db import DbSession
-from app.schemas.calendar import EventCreate, EventOut, EventUpdate, OccurrenceList
+from app.schemas.calendar import EditScope, EventCreate, EventOut, EventUpdate, OccurrenceList
 from app.services import events, occurrences
 
 router = APIRouter(tags=["events"])
@@ -29,16 +29,41 @@ def create_event(body: EventCreate, auth: CurrentAuth, db: DbSession) -> EventOu
     return events.create(db, auth.user, body)
 
 
+OccurrenceKey = Annotated[
+    str | None,
+    Query(
+        max_length=15,
+        pattern=r"^\d{8}T\d{6}$",
+        description="One occurrence of a series: its original start, as YYYYMMDDTHHMMSS",
+    ),
+]
+Scope = Annotated[
+    EditScope | None,
+    Query(description="For an occurrence of a series: this one, this and following, or all"),
+]
+
+
 @router.get("/events/{event_id}")
-def get_event(event_id: int, auth: CurrentAuth, db: DbSession) -> EventOut:
-    return events.get(db, auth.user, event_id)
+def get_event(event_id: int, auth: CurrentAuth, db: DbSession, occurrence: OccurrenceKey = None) -> EventOut:
+    """An event, or one occurrence of a series with its own values."""
+    return events.get(db, auth.user, event_id, occurrence)
 
 
 @router.patch("/events/{event_id}")
-def update_event(event_id: int, body: EventUpdate, auth: CurrentAuth, db: DbSession) -> EventOut:
-    return events.update(db, auth.user, event_id, body)
+def update_event(
+    event_id: int,
+    body: EventUpdate,
+    auth: CurrentAuth,
+    db: DbSession,
+    scope: Scope = None,
+    occurrence: OccurrenceKey = None,
+) -> EventOut:
+    """Changes an event. For an occurrence of a series, scope says which occurrences change."""
+    return events.update(db, auth.user, event_id, body, scope=scope, occurrence=occurrence)
 
 
 @router.delete("/events/{event_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_event(event_id: int, auth: CurrentAuth, db: DbSession) -> None:
-    events.delete(db, auth.user, event_id)
+def delete_event(
+    event_id: int, auth: CurrentAuth, db: DbSession, scope: Scope = None, occurrence: OccurrenceKey = None
+) -> None:
+    events.delete(db, auth.user, event_id, scope=scope, occurrence=occurrence)

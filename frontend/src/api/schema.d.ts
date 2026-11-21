@@ -495,7 +495,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get Event */
+        /**
+         * Get Event
+         * @description An event, or one occurrence of a series with its own values.
+         */
         get: operations["get_event"];
         put?: never;
         post?: never;
@@ -503,7 +506,10 @@ export interface paths {
         delete: operations["delete_event"];
         options?: never;
         head?: never;
-        /** Update Event */
+        /**
+         * Update Event
+         * @description Changes an event. For an occurrence of a series, scope says which occurrences change.
+         */
         patch: operations["update_event"];
         trace?: never;
     };
@@ -721,6 +727,8 @@ export interface components {
              * @default []
              */
             tags: string[];
+            /** Rrule */
+            rrule?: string | null;
         };
         /** EventOut */
         EventOut: {
@@ -749,8 +757,18 @@ export interface components {
             end: string;
             /** Timezone */
             timezone: string | null;
-            /** Rrule */
+            /**
+             * Rrule
+             * @description The series' rule, also for one of its occurrences
+             */
             rrule: string | null;
+            /** Recurring */
+            recurring: boolean;
+            /**
+             * Occurrence
+             * @description Which occurrence of the series this describes
+             */
+            occurrence: string | null;
             /** Tags */
             tags: components["schemas"]["TagOut"][];
             /** Read Only */
@@ -790,6 +808,11 @@ export interface components {
             input_timezone?: string | null;
             /** Tags */
             tags?: string[] | null;
+            /**
+             * Rrule
+             * @description Sent as null it ends the repetition
+             */
+            rrule?: string | null;
         };
         /** HealthResponse */
         HealthResponse: {
@@ -900,8 +923,16 @@ export interface components {
              * @description The event id, or {master id}_{original start} for one of a series
              */
             id: string;
-            /** Event Id */
+            /**
+             * Event Id
+             * @description The event, or the master of the series this occurrence is in
+             */
             event_id: number;
+            /**
+             * Occurrence
+             * @description For a series, the original start (YYYYMMDDTHHMMSS) to send as ?occurrence=
+             */
+            occurrence: string | null;
             /** Calendar Id */
             calendar_id: number;
             /** Title */
@@ -2183,7 +2214,10 @@ export interface operations {
     };
     get_event: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description One occurrence of a series: its original start, as YYYYMMDDTHHMMSS */
+                occurrence?: string | null;
+            };
             header?: never;
             path: {
                 event_id: number;
@@ -2214,7 +2248,12 @@ export interface operations {
     };
     delete_event: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description For an occurrence of a series: this one, this and following, or all */
+                scope?: ("this" | "following" | "all") | null;
+                /** @description One occurrence of a series: its original start, as YYYYMMDDTHHMMSS */
+                occurrence?: string | null;
+            };
             header?: never;
             path: {
                 event_id: number;
@@ -2243,7 +2282,12 @@ export interface operations {
     };
     update_event: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description For an occurrence of a series: this one, this and following, or all */
+                scope?: ("this" | "following" | "all") | null;
+                /** @description One occurrence of a series: its original start, as YYYYMMDDTHHMMSS */
+                occurrence?: string | null;
+            };
             header?: never;
             path: {
                 event_id: number;

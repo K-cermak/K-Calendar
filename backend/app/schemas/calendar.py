@@ -6,6 +6,13 @@ from pydantic import BaseModel, Field
 from app.palette import PaletteColor
 
 CalendarKind = Literal["local", "subscription"]
+EditScope = Literal["this", "following", "all"]
+Rule = Annotated[
+    str,
+    Field(
+        max_length=1000, description="An RFC 5545 RRULE without DTSTART", examples=["FREQ=WEEKLY;BYDAY=MO"]
+    ),
+]
 # Wall-clock: "2026-11-23T09:00:00" for timed events, "2026-11-23" for all-day ones; never an offset.
 LocalDateTime = Annotated[str, Field(max_length=32, examples=["2026-11-23T09:00:00", "2026-11-23"])]
 ZoneName = Annotated[str, Field(max_length=64, examples=["Europe/Prague"])]
@@ -74,6 +81,7 @@ class EventCreate(BaseModel):
         description="The zone start and end are written in, if not the event's own (after a drag)",
     )
     tags: list[Annotated[str, Field(max_length=100)]] = Field(default=[], max_length=50)
+    rrule: Rule | None = None
 
 
 class EventUpdate(BaseModel):
@@ -88,6 +96,7 @@ class EventUpdate(BaseModel):
     timezone: ZoneName | None = None
     input_timezone: ZoneName | None = None
     tags: list[Annotated[str, Field(max_length=100)]] | None = Field(default=None, max_length=50)
+    rrule: Rule | None = Field(default=None, description="Sent as null it ends the repetition")
 
 
 class EventOut(BaseModel):
@@ -102,7 +111,9 @@ class EventOut(BaseModel):
     start: str = Field(description="Wall-clock in the event's zone, or a date for all-day events")
     end: str
     timezone: str | None
-    rrule: str | None
+    rrule: str | None = Field(description="The series' rule, also for one of its occurrences")
+    recurring: bool
+    occurrence: str | None = Field(description="Which occurrence of the series this describes")
     tags: list[TagOut]
     read_only: bool
     created_at_utc: datetime
@@ -111,7 +122,10 @@ class EventOut(BaseModel):
 
 class Occurrence(BaseModel):
     id: str = Field(description="The event id, or {master id}_{original start} for one of a series")
-    event_id: int
+    event_id: int = Field(description="The event, or the master of the series this occurrence is in")
+    occurrence: str | None = Field(
+        description="For a series, the original start (YYYYMMDDTHHMMSS) to send as ?occurrence="
+    )
     calendar_id: int
     title: str
     location: str
