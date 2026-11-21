@@ -118,13 +118,14 @@
     gap: 6px;
   }
 
+  /* Shrink weights scale with content width, so any shrinking title would lose letters early. */
   .cal-event__body > .cal-event__title {
-    flex: 0 1 auto;
-    min-width: 0;
+    flex: none;
+    max-width: 100%;
   }
 
   .cal-event__body > .cal-event__time {
-    flex: 0 4 auto;
+    flex: 0 1 auto;
     min-width: 0;
   }
 
