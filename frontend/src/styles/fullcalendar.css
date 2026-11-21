@@ -1,0 +1,275 @@
+/*
+ * The calendar grid (FullCalendar v7 with the classes from components/calendar/theme.ts).
+ * Hairlines in --line, numbers in mono --faint, today as an accent square, a 1 px accent line for
+ * now, no weekend shading (SPEC 11, Visual design).
+ */
+@layer components {
+  .cal-fc {
+    height: 100%;
+    font-size: var(--size-body);
+    color: var(--ink);
+  }
+
+  /* Hairlines on every side of the grid's parts; the grid itself avoids doubling them up. */
+  .cal-fc-row,
+  .cal-fc-cell,
+  .cal-fc-day-header,
+  .cal-fc-lane,
+  .cal-fc-slot,
+  .cal-fc-filler {
+    border: 1px solid var(--line);
+  }
+
+  .cal-fc-divider-bottom,
+  .cal-fc-divider-all-day {
+    border-bottom: 1px solid var(--line);
+  }
+
+  .cal-fc-divider-end {
+    border-inline-end: 1px solid var(--line);
+  }
+
+  .cal-fc-lane__inner {
+    margin-inline: 1px 6px;
+  }
+
+  .cal-fc-lane__inner--stack {
+    margin: 4px;
+  }
+
+  .cal-fc-slot.is-minor {
+    border-top-style: dotted;
+  }
+
+  .cal-fc-slot-header {
+    vertical-align: top;
+  }
+
+  .cal-fc-slot-header.is-minor .cal-fc-slot-header__inner {
+    visibility: hidden;
+  }
+
+  /* The grid measures this label to size every slot: 24 px per half hour. The label itself sits
+     on the hour line above, moved there without changing its measured height. */
+  .cal-fc-slot-header__inner {
+    position: relative;
+    top: -0.7em;
+    display: block;
+    height: 24px;
+    padding-inline: 8px;
+    color: var(--faint);
+    font-family: var(--font-code);
+    font-size: var(--size-meta);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  /* Midnight at the very top would sit half outside the grid. */
+  .cal-fc-slot-header[data-time='00:00:00'] .cal-fc-slot-header__inner {
+    visibility: hidden;
+  }
+
+  .cal-fc-all-day-header {
+    align-items: center;
+    justify-content: end;
+  }
+
+  .cal-fc-all-day-header__inner {
+    padding: 6px 8px;
+    color: var(--faint);
+    font-size: var(--size-meta);
+  }
+
+  .cal-fc-day-header__inner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding-block: 8px;
+    color: var(--muted);
+    font-size: var(--size-label);
+  }
+
+  .cal-fc-day-header.in-popover .cal-fc-day-header__inner {
+    justify-content: start;
+    padding-inline: 8px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .cal-fc-cell__top {
+    display: flex;
+    justify-content: end;
+    padding: 4px;
+  }
+
+  .cal-fc-cell__bottom {
+    min-height: 4px;
+  }
+
+  /* Day numbers in mono; today gets an accent square behind the number, not a tinted column. */
+  .cal-fc-day-number {
+    display: inline-grid;
+    place-items: center;
+    min-width: 22px;
+    height: 22px;
+    padding-inline: 4px;
+    color: var(--faint);
+    font-family: var(--font-code);
+    font-size: var(--size-meta);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .cal-fc-day-number.is-today,
+  .cal-today-mark {
+    background: var(--accent);
+    color: var(--on-accent);
+  }
+
+  .cal-fc-day-number.is-other {
+    opacity: 0.5;
+  }
+
+  .cal-fc-now-line {
+    border-top: 1px solid var(--accent);
+  }
+
+  .cal-fc-now-header {
+    width: 6px;
+    height: 6px;
+    margin-top: -3px;
+    background: var(--accent);
+  }
+
+  .cal-fc-highlight {
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+  }
+
+  .cal-fc-event {
+    outline: none;
+  }
+
+  .cal-fc-event:focus-visible > * {
+    outline: 2px solid var(--ink);
+    outline-offset: 1px;
+  }
+
+  .cal-fc-event.is-dragging {
+    opacity: 0.85;
+    box-shadow: var(--float);
+  }
+
+  .cal-fc-block-event {
+    position: relative;
+    display: block;
+  }
+
+  .cal-fc-block-event__inner,
+  .cal-fc-fill {
+    height: 100%;
+  }
+
+  .cal-fc-column-event {
+    box-shadow: 0 0 0 1px var(--bg);
+  }
+
+  .cal-fc-row-event {
+    margin-block-end: 1px;
+  }
+
+  .cal-fc-row-event.is-start {
+    margin-inline-start: 2px;
+  }
+
+  .cal-fc-row-event.is-end {
+    margin-inline-end: 2px;
+  }
+
+  .cal-fc-resizer {
+    position: absolute;
+    z-index: 1;
+  }
+
+  .cal-fc-resizer--column-start,
+  .cal-fc-resizer--column-end {
+    inset-inline: 0;
+    height: 8px;
+    cursor: ns-resize;
+  }
+
+  .cal-fc-resizer--column-start {
+    top: -2px;
+  }
+
+  .cal-fc-resizer--column-end {
+    bottom: -2px;
+  }
+
+  .cal-fc-resizer--row-start,
+  .cal-fc-resizer--row-end {
+    inset-block: 0;
+    width: 8px;
+    cursor: ew-resize;
+  }
+
+  .cal-fc-resizer--row-start {
+    inset-inline-start: -2px;
+  }
+
+  .cal-fc-resizer--row-end {
+    inset-inline-end: -2px;
+  }
+
+  /* Touch: a visible square handle on the selected event, with room around it for the finger. */
+  .cal-fc-resizer.is-touch::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 10px;
+    height: 10px;
+    border: 1px solid var(--ink);
+    background: var(--bg);
+    translate: -50% -50%;
+  }
+
+  .cal-fc-resizer--column-end.is-touch {
+    height: 22px;
+    bottom: -11px;
+  }
+
+  .cal-fc-more {
+    display: block;
+    padding: 1px 4px;
+    color: var(--muted);
+    font-size: var(--size-meta);
+    cursor: pointer;
+  }
+
+  .cal-fc-popover {
+    border: 1px solid var(--line);
+    background: var(--bg);
+    box-shadow: var(--float);
+    min-width: 220px;
+  }
+
+  .cal-fc-popover__close {
+    position: absolute;
+    top: 4px;
+    inset-inline-end: 4px;
+    width: 28px;
+    height: 28px;
+    color: var(--muted);
+    cursor: pointer;
+  }
+
+  .cal-fc-nav-link {
+    cursor: pointer;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .cal-fc-more:hover,
+    .cal-fc-nav-link:hover {
+      color: var(--ink);
+    }
+  }
+}

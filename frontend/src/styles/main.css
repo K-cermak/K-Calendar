@@ -13,6 +13,7 @@
 @import './base.css';
 @import './ui.css';
 @import './palette.css';
+@import './fullcalendar.css';
 
 /* Resetting the default palette, radii and shadows means a raw colour or a rounded corner cannot slip in through a utility class. */
 @theme {
@@ -90,8 +91,49 @@
     overflow: hidden;
   }
 
+  .cal-event--selection {
+    border-left-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 14%, var(--bg));
+  }
+
   .cal-event--past {
     opacity: 0.55;
+  }
+
+  /* In the time grid a short event puts its time next to the title rather than under it. */
+  .cal-event--block {
+    container-type: size;
+  }
+
+  .cal-event__body {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  /* On one line the title keeps its room and the time gives way first. */
+  .cal-event__body--inline {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 6px;
+  }
+
+  .cal-event__body > .cal-event__title {
+    flex: 0 1 auto;
+    min-width: 0;
+  }
+
+  .cal-event__body > .cal-event__time {
+    flex: 0 4 auto;
+    min-width: 0;
+  }
+
+  @container (max-height: 34px) {
+    .cal-event__body {
+      flex-direction: row;
+      align-items: baseline;
+      gap: 6px;
+    }
   }
 
   .cal-event__title {
@@ -102,7 +144,10 @@
   }
 
   .cal-event__time {
+    overflow: hidden;
     color: var(--muted);
+    text-overflow: ellipsis;
+    white-space: nowrap;
     font-family: var(--font-code);
     font-size: var(--size-meta);
     font-variant-numeric: tabular-nums;
@@ -163,5 +208,61 @@
 @keyframes drawer-out {
   to {
     transform: translateX(-100%);
+  }
+}
+
+/* A sheet rising from the bottom of a phone screen, or a dialog on a wider one. */
+.cal-sheet {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100dvh - 48px);
+  border-top: 1px solid var(--line);
+  background: var(--bg);
+  box-shadow: var(--float);
+  outline: none;
+  animation: sheet-in var(--motion) var(--motion-ease) both;
+
+  &[data-state='closed'] {
+    animation: sheet-out var(--motion-fast) var(--motion-ease) both;
+  }
+
+  @media (min-width: 768px) {
+    inset-inline: auto;
+    top: 50%;
+    bottom: auto;
+    left: 50%;
+    width: min(560px, calc(100% - 32px));
+    max-height: calc(100dvh - 64px);
+    border: 1px solid var(--line);
+    translate: -50% -50%;
+    animation-name: ui-rise;
+
+    &[data-state='closed'] {
+      animation-name: ui-sink;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    animation-name: ui-fade;
+
+    &[data-state='closed'] {
+      animation-name: ui-fade-out;
+    }
+  }
+}
+
+@keyframes sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes sheet-out {
+  to {
+    transform: translateY(100%);
   }
 }

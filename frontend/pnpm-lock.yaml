@@ -181,6 +181,12 @@ importers:
       '@fontsource-variable/geist-mono':
         specifier: ^5.3.0
         version: 5.3.0
+      '@full-ui/headless-calendar':
+        specifier: ^7.1.5
+        version: 7.1.5(temporal-polyfill@1.0.8)
+      '@fullcalendar/vue3':
+        specifier: ^7.1.5
+        version: 7.1.5(temporal-polyfill@1.0.8)(vue@3.5.45(typescript@6.0.3))
       '@lucide/vue':
         specifier: ^1.76.0
         version: 1.76.0(vue@3.5.45(typescript@6.0.3))
@@ -196,6 +202,9 @@ importers:
       reka-ui:
         specifier: ^2.11.0
         version: 2.11.0(vue@3.5.45(typescript@6.0.3))
+      temporal-polyfill:
+        specifier: ^1.0.8
+        version: 1.0.8
       vue:
         specifier: ^3.5.45
         version: 3.5.45(typescript@6.0.3)
@@ -542,6 +551,23 @@ packages:
 
   '@fontsource-variable/geist@5.3.0':
     resolution: {integrity: sha512-j0m+vLQuG5XAYoHtGCVu0spvlGreR3EzpECUVzkFmI1mTVnAO38l/NEPDCFgZ177JxzYJCLSmTQibIiYPilGrA==}
+
+  '@full-ui/headless-calendar@7.1.5':
+    resolution: {integrity: sha512-kTSGhUM7NkdJFvv6Pu9WWQrLDUg9L/1l1DSOp/IoOEutH0n2AEu10wWXl37kgXHU1+3WpxDM7h+MXTaO++QH2A==}
+    peerDependencies:
+      temporal-polyfill: ^1.0.7
+
+  '@fullcalendar/core@7.1.5':
+    resolution: {integrity: sha512-adUp5YFeQmEJ5MAF0Qs3U0cNNvxQQ+dmAXiG5FFzrHULMkdB0ktnyTkcGcfM9ZlDlO4cxrRLXFiBwALJ13+Utg==}
+    peerDependencies:
+      '@full-ui/headless-calendar': 7.1.5
+      temporal-polyfill: ^1.0.7
+
+  '@fullcalendar/vue3@7.1.5':
+    resolution: {integrity: sha512-vC910eO8f0X+la5++mj+fu3t1/eqv1Zionm20QhXAPrDu9AK40i73HYeukDC/XX29Y0VLUari54q3bECV1eRWA==}
+    peerDependencies:
+      temporal-polyfill: ^1.0.7
+      vue: ^3.0.11
 
   '@humanfs/core@0.19.2':
     resolution: {integrity: sha512-UhXNm+CFMWcbChXywFwkmhqjs3PRCmcSa/hfBgLIb7oQ5HNb1wS0icWsGtSAUNgefHeI+eBrA8I1fxmbHsGdvA==}
@@ -1887,6 +1913,14 @@ packages:
     resolution: {integrity: sha512-RVHEU9/Pp1Fnjr/MpAJsZoADukCKhfIi15OunEYiGktIkYLkPVvC1sioWolGDS7XByMTx9m/IGbro0Js13zhnQ==}
     engines: {node: ^10 || ^12 || >=14}
 
+  preact@10.29.8:
+    resolution: {integrity: sha512-ej2aVZ+vZ8WO7tvlQWRM9N63A0KzF9q4mWJfDUHgYaIofWY9hu74QdnQrjoPMmZi2/nZ5gN0bJCQF49xQqx09Q==}
+    peerDependencies:
+      preact-render-to-string: '>=5'
+    peerDependenciesMeta:
+      preact-render-to-string:
+        optional: true
+
   prelude-ls@1.2.1:
     resolution: {integrity: sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==}
     engines: {node: '>= 0.8.0'}
@@ -2044,6 +2078,15 @@ packages:
   tapable@2.3.4:
     resolution: {integrity: sha512-NHFiWnAbMJxNNpBwiO7jJVGDuqMxT9/oV8v57RR+fgBQShkJil5inGD8/xWy0hjLyHQyX1tu27QANhlz3KBqCg==}
     engines: {node: '>=6'}
+
+  temporal-polyfill@1.0.8:
+    resolution: {integrity: sha512-RCCGa0GddT099XG49ijdD0tDf86L8vfuZun1+JyJiO4Y2NP9PACQsG0OnvNPXwVLisdvhr/zqL2nhKQmXXx08A==}
+
+  temporal-spec@1.0.1:
+    resolution: {integrity: sha512-wxVoanmDeavXie1vu2JaQ3WIc3JZnWAOYFBsJyATaVsXsycKYUflGsyBmrRSnoCpZJpwPyr38VpgSUlQ8CbFxg==}
+
+  temporal-utils@1.0.4:
+    resolution: {integrity: sha512-4mAcgbWlaxe+gn23gk8g0iHxCVGVOhKzSCfF5HM3lfvH8BdT+/pBmH/R/E4CrIse+koUgs8ThkPzCLnui6Fi8w==}
 
   tinybench@6.2.4:
     resolution: {integrity: sha512-SQ52jEncXxbMCzJuY2A/jGIbbAu6NYsBWW7grz2pNE+EnzQdoGaoBfpk4qC/opE7qiUcGmGgaGIz5EoHdS1O9w==}
@@ -2580,6 +2623,25 @@ snapshots:
   '@fontsource-variable/geist-mono@5.3.0': {}
 
   '@fontsource-variable/geist@5.3.0': {}
+
+  '@full-ui/headless-calendar@7.1.5(temporal-polyfill@1.0.8)':
+    dependencies:
+      temporal-polyfill: 1.0.8
+
+  '@fullcalendar/core@7.1.5(@full-ui/headless-calendar@7.1.5(temporal-polyfill@1.0.8))(temporal-polyfill@1.0.8)':
+    dependencies:
+      '@full-ui/headless-calendar': 7.1.5(temporal-polyfill@1.0.8)
+      temporal-polyfill: 1.0.8
+
+  '@fullcalendar/vue3@7.1.5(temporal-polyfill@1.0.8)(vue@3.5.45(typescript@6.0.3))':
+    dependencies:
+      '@full-ui/headless-calendar': 7.1.5(temporal-polyfill@1.0.8)
+      '@fullcalendar/core': 7.1.5(@full-ui/headless-calendar@7.1.5(temporal-polyfill@1.0.8))(temporal-polyfill@1.0.8)
+      preact: 10.29.8
+      temporal-polyfill: 1.0.8
+      vue: 3.5.45(typescript@6.0.3)
+    transitivePeerDependencies:
+      - preact-render-to-string
 
   '@humanfs/core@0.19.2':
     dependencies:
@@ -3910,6 +3972,8 @@ snapshots:
       picocolors: 1.1.1
       source-map-js: 1.2.4
 
+  preact@10.29.8: {}
+
   prelude-ls@1.2.1: {}
 
   prettier-linter-helpers@1.0.1:
@@ -4011,6 +4075,15 @@ snapshots:
   tailwindcss@4.3.5: {}
 
   tapable@2.3.4: {}
+
+  temporal-polyfill@1.0.8:
+    dependencies:
+      temporal-spec: 1.0.1
+      temporal-utils: 1.0.4
+
+  temporal-spec@1.0.1: {}
+
+  temporal-utils@1.0.4: {}
 
   tinybench@6.2.4: {}
 

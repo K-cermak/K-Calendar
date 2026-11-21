@@ -13,6 +13,17 @@ export type SessionInfo = Schemas['SessionInfo']
 export type AdminUser = Schemas['AdminUser']
 export type CreatedLink = Schemas['CreatedLink']
 export type PendingInvite = Schemas['PendingInvite']
+export type Calendar = Schemas['CalendarOut']
+export type CalendarCreate = Schemas['CalendarCreate']
+export type CalendarUpdate = Schemas['CalendarUpdate']
+export type Tag = Schemas['TagOut']
+export type TagUpdate = Schemas['TagUpdate']
+export type EventDetail = Schemas['EventOut']
+export type EventCreate = Schemas['EventCreate']
+export type EventUpdate = Schemas['EventUpdate']
+export type Occurrence = Schemas['Occurrence']
+export type OccurrenceList = Schemas['OccurrenceList']
+export type PaletteColor = Schemas['CalendarOut']['color']
 
 /** A failed call, reduced to what the UI shows. Network errors have no status. */
 export class Failure extends Error {
