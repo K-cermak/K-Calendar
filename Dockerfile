@@ -1,0 +1,47 @@
+# syntax=docker/dockerfile:1
+
+# The build output is plain JS and CSS, so it is built once on the native platform, not under emulation.
+FROM --platform=$BUILDPLATFORM node:26-slim AS frontend
+WORKDIR /app/frontend
+RUN npm install -g pnpm@12.21.0
+COPY frontend/package.json frontend/pnpm-lock.yaml frontend/pnpm-workspace.yaml ./
+RUN pnpm install --frozen-lockfile
+COPY branding.json /app/
+COPY frontend/ ./
+RUN pnpm exec vite build
+
+# uv stays in this stage; the runtime image only gets the finished virtual environment.
+FROM python:3.15-slim AS backend
+COPY --from=ghcr.io/astral-sh/uv:0.13 /uv /usr/local/bin/uv
+ENV UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    UV_PYTHON_DOWNLOADS=never \
+    UV_PROJECT_ENVIRONMENT=/app/.venv
+WORKDIR /app/backend
+COPY backend/pyproject.toml backend/uv.lock ./
+RUN uv sync --frozen --no-dev --no-install-project
+COPY backend/ ./
+# An editable install: the .pth points at /app/backend, where the runtime stage puts the code.
+RUN uv sync --frozen --no-dev
+
+FROM python:3.15-slim AS runtime
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PATH=/app/.venv/bin:$PATH \
+    APP_DATA_DIR=/data
+WORKDIR /app/backend
+COPY --from=backend /app/.venv /app/.venv
+# The backend finds alembic/, branding.json and the built frontend relative to itself, as in the repository.
+COPY backend/alembic ./alembic
+COPY backend/app ./app
+COPY branding.json /app/
+COPY --from=frontend /app/frontend/dist /app/frontend/dist
+
+RUN useradd --uid 1000 --user-group --no-create-home --shell /usr/sbin/nologin app \
+    && mkdir /data && chown app:app /data
+USER app
+VOLUME /data
+EXPOSE 8000
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+    CMD ["python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health', timeout=4)"]
+CMD ["python", "-m", "app"]

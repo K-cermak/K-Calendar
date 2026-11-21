@@ -1,0 +1,36 @@
+# Example deployment. Put a reverse proxy with HTTPS in front of it: the app needs HTTPS for
+# installing it as an app, for push notifications and for secure cookies (localhost is the exception).
+services:
+  calendar:
+    image: ghcr.io/k-cermak/k-calendar:latest
+    # To run your own build instead: comment out image above and uncomment build.
+    # build: .
+    restart: unless-stopped
+    ports:
+      # Reachable only from this machine, through the reverse proxy.
+      - "127.0.0.1:8000:8000"
+    volumes:
+      # The container runs as uid 1000; create the directory first: mkdir data && sudo chown 1000:1000 data
+      - ./data:/data
+    environment:
+      APP_BASE_URL: https://calendar.example.com
+      # The proxy reaches the container from the Docker network, so its address is in this range.
+      APP_TRUSTED_PROXIES: "172.16.0.0/12"
+      # APP_SESSION_DAYS: "180"
+      # APP_LOG_LEVEL: info
+
+      # E-mail for reminders, invites and password reset.
+      # APP_SMTP_HOST: smtp.example.com
+      # APP_SMTP_PORT: "587"
+      # APP_SMTP_USER: calendar@example.com
+      # APP_SMTP_PASSWORD: change-me
+      # APP_SMTP_FROM: calendar@example.com
+      # APP_SMTP_SECURITY: starttls
+
+      # Single sign-on through any OIDC provider (Authentik, Keycloak, ...).
+      # APP_OIDC_DISCOVERY_URL: https://id.example.com/application/o/calendar/.well-known/openid-configuration
+      # APP_OIDC_CLIENT_ID: calendar
+      # APP_OIDC_CLIENT_SECRET: change-me
+      # APP_OIDC_PROVIDER_NAME: Authentik
+      # APP_OIDC_AUTO_PROVISION: "false"
+      # APP_PASSWORD_LOGIN_ENABLED: "false"
