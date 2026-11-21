@@ -9,6 +9,7 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from app.config import Settings
+from app.db import Database
 from app.main import create_app
 
 
@@ -118,3 +119,9 @@ def make_user(admin: TestClient, new_client: Callable[[], TestClient]) -> Callab
 
 def user_id(client: TestClient) -> int:
     return client.get("/api/v1/me").json()["id"]
+
+
+def count_rows(app: FastAPI, table: str) -> int:
+    db: Database = app.state.db
+    with db.reader() as session:
+        return session.connection().exec_driver_sql(f"SELECT count(*) FROM {table}").scalar() or 0  # noqa: S608

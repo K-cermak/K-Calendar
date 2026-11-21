@@ -1,5 +1,4 @@
 import re
-from zoneinfo import available_timezones
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -13,13 +12,12 @@ from app.errors import (
 )
 from app.models import User
 from app.schemas.account import Me, ProfileUpdate
-from app.services import clock
+from app.services import calendars, clock, zones
 from app.services.auth import credentials, sessions
 from app.services.auth.throttle import LoginThrottle
 
 MIN_PASSWORD_LENGTH = 10
 _EMAIL = re.compile(r"^[^@\s]+@[^@\s]+$")
-_ZONES = frozenset(available_timezones())
 
 
 def normalize_email(email: str) -> str:
@@ -39,12 +37,6 @@ def check_display_name(display_name: str) -> str:
     if not name:
         raise InvalidInputError("display_name_required", "Enter a display name")
     return name
-
-
-def check_timezone(zone: str) -> str:
-    if zone not in _ZONES:
-        raise InvalidInputError("invalid_timezone", f"{zone!r} is not a known time zone")
-    return zone
 
 
 def user_count(db: Session) -> int:
@@ -71,7 +63,7 @@ def create_user(
     if get_by_email(db, email) is not None:
         raise ConflictError("email_taken", "An account with this e-mail address already exists")
     # A zone the server does not know (an old browser, a typo) is not worth refusing a sign-up over.
-    zone = timezone if timezone in _ZONES else "UTC"
+    zone = timezone if timezone in zones.ZONES else "UTC"
     user = User(
         email=email,
         display_name=display_name,
@@ -83,6 +75,7 @@ def create_user(
     )
     db.add(user)
     db.flush()
+    calendars.create_default(db, user)
     return user
 
 
@@ -136,7 +129,7 @@ def update_profile(db: Session, user: User, update: ProfileUpdate) -> User:
     if update.display_name is not None:
         user.display_name = check_display_name(update.display_name)
     if update.timezone is not None:
-        user.timezone = check_timezone(update.timezone)
+        user.timezone = zones.check_zone(update.timezone)
     if update.locale is not None:
         user.locale = update.locale
     if update.week_start is not None:
