@@ -119,12 +119,12 @@ Section 10.
 
 Section 12.
 
-- [ ] Manifest from `branding.json`, icons, service worker in `injectManifest` mode
-- [ ] Precached shell; runtime caching for the read endpoints; background prefetch of the surrounding months
-- [ ] Offline banner and disabled writes
-- [ ] Cache clearing on logout and on user change
-- [ ] Update-available prompt
-- [ ] iOS add-to-home-screen hint
+- [x] Manifest from `branding.json`, icons, service worker in `injectManifest` mode
+- [x] Precached shell; runtime caching for the read endpoints; background prefetch of the surrounding months
+- [x] Offline banner and disabled writes
+- [x] Cache clearing on logout and on user change
+- [x] Update-available prompt
+- [x] iOS add-to-home-screen hint
 
 **Acceptance:** Installed on a phone, the app opens in airplane mode and shows this month's events, with editing visibly unavailable. After logging out, nothing of mine is left in the caches.
 
