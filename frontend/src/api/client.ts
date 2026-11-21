@@ -6,6 +6,13 @@ export const api = createClient<paths>({ baseUrl: '' })
 type Schemas = components['schemas']
 export type ApiError = Schemas['ErrorResponse']
 export type Health = Schemas['HealthResponse']
+export type PublicConfig = Schemas['PublicConfig']
+export type Me = Schemas['Me']
+export type ProfileUpdate = Schemas['ProfileUpdate']
+export type SessionInfo = Schemas['SessionInfo']
+export type AdminUser = Schemas['AdminUser']
+export type CreatedLink = Schemas['CreatedLink']
+export type PendingInvite = Schemas['PendingInvite']
 
 /** A failed call, reduced to what the UI shows. Network errors have no status. */
 export class Failure extends Error {
