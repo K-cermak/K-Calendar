@@ -114,6 +114,12 @@ class EventCreate(BaseModel):
     )
     tags: list[Annotated[str, Field(max_length=100)]] = Field(default=[], max_length=50)
     rrule: Rule | None = None
+    reminders: list[int] | None = Field(
+        default=None,
+        max_length=10,
+        description="Minutes before the start (for all-day events, before local midnight; negative "
+        "is later that day). Left out: the calendar's default reminder.",
+    )
 
 
 class EventUpdate(BaseModel):
@@ -129,6 +135,7 @@ class EventUpdate(BaseModel):
     input_timezone: ZoneName | None = None
     tags: list[Annotated[str, Field(max_length=100)]] | None = Field(default=None, max_length=50)
     rrule: Rule | None = Field(default=None, description="Sent as null it ends the repetition")
+    reminders: list[int] | None = Field(default=None, max_length=10, description="For the whole series")
 
 
 class EventOut(BaseModel):
@@ -146,6 +153,7 @@ class EventOut(BaseModel):
     rrule: str | None = Field(description="The series' rule, also for one of its occurrences")
     recurring: bool
     occurrence: str | None = Field(description="Which occurrence of the series this describes")
+    reminders: list[int] = Field(description="Minutes before; a series' reminders are on the series")
     tags: list[TagOut]
     read_only: bool
     created_at_utc: datetime

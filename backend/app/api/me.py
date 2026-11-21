@@ -1,12 +1,21 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Query, status
+from fastapi import APIRouter, Query, Request, status
 
 from app.api.deps import CurrentAuth
 from app.db import DbSession
-from app.schemas.account import Clock, Me, PasswordChange, ProfileUpdate, SessionInfo
+from app.schemas.account import (
+    Clock,
+    Me,
+    PasswordChange,
+    ProfileUpdate,
+    PushEndpoint,
+    PushSubscriptionIn,
+    SessionInfo,
+)
 from app.services import accounts, clock, zones
 from app.services.auth import sessions
+from app.services.notify import devices
 
 router = APIRouter(prefix="/me", tags=["account"])
 
@@ -53,3 +62,20 @@ def revoke_other_sessions(auth: CurrentAuth, db: DbSession) -> None:
 @router.delete("/sessions/{session_id}", status_code=status.HTTP_204_NO_CONTENT)
 def revoke_session(session_id: int, auth: CurrentAuth, db: DbSession) -> None:
     sessions.revoke(db, auth.user, session_id)
+
+
+@router.post("/push-subscriptions", status_code=status.HTTP_204_NO_CONTENT)
+def subscribe_push(body: PushSubscriptionIn, request: Request, auth: CurrentAuth, db: DbSession) -> None:
+    """Registers this browser for reminder notifications (the result of PushManager.subscribe)."""
+    devices.subscribe(db, auth.user, body, request.headers.get("user-agent"))
+
+
+@router.post("/push-subscriptions/check")
+def check_push(body: PushEndpoint, auth: CurrentAuth, db: DbSession) -> bool:
+    """Whether this browser's subscription is registered for the signed-in user."""
+    return devices.is_subscribed(db, auth.user, body.endpoint)
+
+
+@router.post("/push-subscriptions/remove", status_code=status.HTTP_204_NO_CONTENT)
+def unsubscribe_push(body: PushEndpoint, auth: CurrentAuth, db: DbSession) -> None:
+    devices.unsubscribe(db, auth.user, body.endpoint)

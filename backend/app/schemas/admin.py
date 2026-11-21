@@ -29,6 +29,7 @@ class CreatedLink(BaseModel):
     id: int
     url: str
     expires_at_utc: datetime
+    emailed: bool = False
 
 
 class PendingInvite(BaseModel):
@@ -51,4 +52,5 @@ class InstanceStatus(BaseModel):
     user_count: int
     smtp_configured: bool
     oidc_configured: bool
+    push_configured: bool
     password_login_enabled: bool

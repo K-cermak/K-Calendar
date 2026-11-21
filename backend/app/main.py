@@ -15,6 +15,7 @@ from app.errors import ErrorResponse, install_error_handlers
 from app.migrations import run_migrations
 from app.security import SecurityMiddleware, install_log_redaction
 from app.services.auth.throttle import LoginThrottle
+from app.services.notify import push
 from app.spa import install_spa
 from app.version import VERSION
 
@@ -37,6 +38,8 @@ def create_app(settings: Settings | None = None, static_dir: Path | None = None)
         prepare_data_dir(settings)
         db = Database(settings.database_path)
         run_migrations(db.write_engine)
+        with db.writer() as session:
+            push.ensure_keys(session, settings)
         app.state.db = db
         task = asyncio.create_task(scheduler.run(app))
         logger.info("Started version %s with data in %s", VERSION, settings.data_dir)

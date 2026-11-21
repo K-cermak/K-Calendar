@@ -54,6 +54,7 @@ class ProfileUpdate(BaseModel):
     time_format: TimeFormat | None = None
     default_view: DefaultView | None = None
     theme: Theme | None = None
+    email_reminders_enabled: bool | None = None
 
 
 class PasswordChange(BaseModel):
@@ -94,3 +95,23 @@ class PasswordReset(TokenRequest):
 class Clock(BaseModel):
     timezone: str
     now: str = Field(description="The current wall-clock time in the zone, without an offset")
+
+
+class PushKeys(BaseModel):
+    p256dh: str = Field(max_length=200)
+    auth: str = Field(max_length=100)
+
+
+class PushSubscriptionIn(BaseModel):
+    """What the browser's PushSubscription.toJSON() gives."""
+
+    endpoint: str = Field(max_length=2000)
+    keys: PushKeys
+
+
+class PushEndpoint(BaseModel):
+    endpoint: str = Field(max_length=2000)
+
+
+class PasswordResetRequest(BaseModel):
+    email: str = Field(max_length=320)

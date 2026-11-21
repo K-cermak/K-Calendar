@@ -7,6 +7,7 @@ from app.models import Setting
 from app.schemas.admin import InstanceSettings, InstanceSettingsUpdate, InstanceStatus
 from app.schemas.public import PublicConfig
 from app.services import accounts
+from app.services.notify import push
 from app.version import VERSION
 
 _REGISTRATION = "registration_enabled"
@@ -31,6 +32,7 @@ def public_config(settings: Settings, db: Session) -> PublicConfig:
         oidc_enabled=settings.oidc_enabled,
         oidc_provider_name=settings.oidc_provider_name,
         email_enabled=settings.smtp_enabled,
+        vapid_public_key=push.public_key(db, settings),
     )
 
 
@@ -51,5 +53,6 @@ def status(settings: Settings, db: Session) -> InstanceStatus:
         user_count=accounts.user_count(db),
         smtp_configured=settings.smtp_enabled,
         oidc_configured=settings.oidc_enabled,
+        push_configured=push.public_key(db, settings) is not None,
         password_login_enabled=settings.password_login_enabled,
     )

@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from app.errors import InvalidInputError, NotFoundError
 from app.models import Calendar, Event, EventTag, Tag, User
 from app.schemas.calendar import EditScope, EventCreate, EventOut, EventUpdate
-from app.services import calendars, clock, recurrence, tags, zones
+from app.services import calendars, clock, recurrence, reminders, tags, zones
 
 
 def get_owned(db: Session, user: User, event_id: int) -> tuple[Event, Calendar]:
@@ -95,6 +95,7 @@ def to_out(
             "rrule": series.rrule if series else None,
             "recurring": series is not None,
             "occurrence": recurrence.occurrence_key(original_start) if original_start else None,
+            "reminders": reminders.minutes_of(db, [(series or event).id])[(series or event).id],
             "tags": [tags.to_out(t) for t in tags_of(db, [event.id])[event.id]],
             "read_only": calendar.kind == "subscription",
             "created_at_utc": event.created_at_utc,
@@ -235,6 +236,10 @@ def create(db: Session, user: User, body: EventCreate) -> EventOut:
     db.add(event)
     db.flush()
     _set_tags(db, user, event, body.tags)
+    # A new event takes its calendar's default reminder unless it says otherwise (SPEC 8).
+    default = [calendar.default_reminder_minutes] if calendar.default_reminder_minutes is not None else []
+    reminders.set_for(db, event, default if body.reminders is None else body.reminders)
+    reminders.refresh(db, [event.id])
     db.commit()
     return to_out(db, event, calendar)
 
@@ -345,6 +350,8 @@ def _update_plain(db: Session, user: User, target: Target, body: EventUpdate) ->
     derive(event)
     if body.tags is not None:
         _set_tags(db, user, event, body.tags)
+    if body.reminders is not None:
+        reminders.set_for(db, event, body.reminders)
     _touched(event)
     return event
 
@@ -418,6 +425,8 @@ def _update_all(db: Session, user: User, target: Target, body: EventUpdate) -> E
     derive(master)
     if body.tags is not None:
         _set_tags(db, user, master, body.tags)
+    if body.reminders is not None:
+        reminders.set_for(db, master, body.reminders)
     _touched(master)
     return master
 
@@ -480,6 +489,11 @@ def _update_following(db: Session, user: User, target: Target, body: EventUpdate
         _set_tags(db, user, follower, body.tags)
     else:
         _copy_tags(db, master, follower)
+    reminders.set_for(
+        db,
+        follower,
+        body.reminders if body.reminders is not None else reminders.minutes_of(db, [master.id])[master.id],
+    )
 
     later_exdates = [v for v in master.exdates if datetime.fromisoformat(v) >= split]
     if not _timing_changed(base, after, continued, new_rule) and calendar_id == master.calendar_id:
@@ -518,12 +532,14 @@ def update(
             for override in db.scalars(select(Event).where(Event.recurring_event_id == target.event.id)):
                 override.calendar_id = moved_to.id
         changed = _update_plain(db, user, target, body)
+        reminders.refresh(db, [changed.id])
         db.commit()
         return get(db, user, changed.id)
     if scope is None:
         raise InvalidInputError("scope_required", "Say whether to change this, following or all events")
     if scope == "this":
         _update_this(db, user, target, body)
+        reminders.refresh(db, [target.event.id])
         db.commit()
         return get(db, user, target.event.id, recurrence.occurrence_key(target.original_start))
     changed = (
@@ -568,4 +584,5 @@ def delete(
         _drop_exceptions(db, master, from_start=split)
     derive(master)
     _touched(master)
+    reminders.refresh(db, [master.id])
     db.commit()

@@ -7,7 +7,7 @@ from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
 from app.models import Calendar, Event, EventTag, User
-from app.services import clock, events, tags
+from app.services import clock, events, reminders, tags
 from app.services.ics import ParsedEvent, Skipped, local_in
 
 
@@ -54,6 +54,7 @@ def _write_series(
     master_data: ParsedEvent | None,
     overrides: list[ParsedEvent],
     uid: str,
+    with_reminders: bool,
 ) -> bool:
     """Creates or updates one event with its overrides. Returns True if it was new."""
     master = db.scalar(
@@ -75,6 +76,8 @@ def _write_series(
         events.derive(master)
         db.flush()
         _set_tags(db, user, master, master_data.categories)
+        if with_reminders:
+            reminders.set_for(db, master, master_data.alarms[:10])
         # The file is the whole truth about this series: its overrides replace the stored ones.
         db.execute(delete(Event).where(Event.recurring_event_id == master.id))
     elif master is None or master.rrule is None:
@@ -99,11 +102,19 @@ def _write_series(
         _set_tags(db, user, override, parsed.categories)
     if master_data is not None or overrides:
         events.derive(master)
+    if with_reminders:
+        reminders.refresh(db, [master.id])
     return created
 
 
 def apply(
-    db: Session, user: User, calendar: Calendar, parsed: list[ParsedEvent], skipped: list[Skipped]
+    db: Session,
+    user: User,
+    calendar: Calendar,
+    parsed: list[ParsedEvent],
+    skipped: list[Skipped],
+    *,
+    with_reminders: bool = True,
 ) -> ImportReport:
     """Matches events by UID within the calendar: a known UID is updated, a new one created.
 
@@ -125,7 +136,7 @@ def apply(
             overrides = []
         savepoint = db.begin_nested()
         try:
-            created = _write_series(db, user, calendar, master, overrides, uid)
+            created = _write_series(db, user, calendar, master, overrides, uid, with_reminders)
         except (ValueError, TypeError) as exc:
             savepoint.rollback()
             title = (master or overrides[0]).title if (master or overrides) else ""
@@ -143,4 +154,5 @@ def replace_all(db: Session, user: User, calendar: Calendar, parsed: list[Parsed
     """A subscription's new content replaces everything in its calendar, inside one transaction."""
     db.execute(delete(Event).where(Event.calendar_id == calendar.id))
     db.flush()
-    apply(db, user, calendar, parsed, [])
+    # Subscribed calendars have no reminders (SPEC 8), so their alarms are left out.
+    apply(db, user, calendar, parsed, [], with_reminders=False)

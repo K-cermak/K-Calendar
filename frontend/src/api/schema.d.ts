@@ -180,6 +180,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/auth/password-reset/request": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Request Reset
+         * @description E-mails a reset link when e-mail is set up. The answer is the same whether or not the address
+         *     has an account, so it cannot be used to find out who has one.
+         */
+        post: operations["request_reset"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/me": {
         parameters: {
             query?: never;
@@ -268,6 +289,63 @@ export interface paths {
         post?: never;
         /** Revoke Session */
         delete: operations["revoke_session"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/push-subscriptions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Subscribe Push
+         * @description Registers this browser for reminder notifications (the result of PushManager.subscribe).
+         */
+        post: operations["subscribe_push"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/push-subscriptions/check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Check Push
+         * @description Whether this browser's subscription is registered for the signed-in user.
+         */
+        post: operations["check_push"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/push-subscriptions/remove": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Unsubscribe Push */
+        post: operations["unsubscribe_push"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -389,6 +467,26 @@ export interface paths {
         get: operations["get_status"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/test-email": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Send Test Email
+         * @description Sends a test message to the admin's own address, to check the SMTP settings.
+         */
+        post: operations["send_test_email"];
         delete?: never;
         options?: never;
         head?: never;
@@ -821,6 +919,11 @@ export interface components {
              * Format: date-time
              */
             expires_at_utc: string;
+            /**
+             * Emailed
+             * @default false
+             */
+            emailed: boolean;
         };
         /** ErrorResponse */
         ErrorResponse: {
@@ -885,6 +988,11 @@ export interface components {
             tags: string[];
             /** Rrule */
             rrule?: string | null;
+            /**
+             * Reminders
+             * @description Minutes before the start (for all-day events, before local midnight; negative is later that day). Left out: the calendar's default reminder.
+             */
+            reminders?: number[] | null;
         };
         /** EventOut */
         EventOut: {
@@ -925,6 +1033,11 @@ export interface components {
              * @description Which occurrence of the series this describes
              */
             occurrence: string | null;
+            /**
+             * Reminders
+             * @description Minutes before; a series' reminders are on the series
+             */
+            reminders: number[];
             /** Tags */
             tags: components["schemas"]["TagOut"][];
             /** Read Only */
@@ -969,6 +1082,11 @@ export interface components {
              * @description Sent as null it ends the repetition
              */
             rrule?: string | null;
+            /**
+             * Reminders
+             * @description For the whole series
+             */
+            reminders?: number[] | null;
         };
         /** HealthResponse */
         HealthResponse: {
@@ -1018,6 +1136,8 @@ export interface components {
             smtp_configured: boolean;
             /** Oidc Configured */
             oidc_configured: boolean;
+            /** Push Configured */
+            push_configured: boolean;
             /** Password Login Enabled */
             password_login_enabled: boolean;
         };
@@ -1174,6 +1294,11 @@ export interface components {
             /** Password */
             password: string;
         };
+        /** PasswordResetRequest */
+        PasswordResetRequest: {
+            /** Email */
+            email: string;
+        };
         /** PendingInvite */
         PendingInvite: {
             /** Id */
@@ -1207,6 +1332,8 @@ export interface components {
             default_view?: ("auto" | "month" | "week" | "day" | "agenda") | null;
             /** Theme */
             theme?: ("system" | "light" | "dark") | null;
+            /** Email Reminders Enabled */
+            email_reminders_enabled?: boolean | null;
         };
         /** PublicConfig */
         PublicConfig: {
@@ -1226,6 +1353,29 @@ export interface components {
             oidc_provider_name: string;
             /** Email Enabled */
             email_enabled: boolean;
+            /** Vapid Public Key */
+            vapid_public_key: string | null;
+        };
+        /** PushEndpoint */
+        PushEndpoint: {
+            /** Endpoint */
+            endpoint: string;
+        };
+        /** PushKeys */
+        PushKeys: {
+            /** P256Dh */
+            p256dh: string;
+            /** Auth */
+            auth: string;
+        };
+        /**
+         * PushSubscriptionIn
+         * @description What the browser's PushSubscription.toJSON() gives.
+         */
+        PushSubscriptionIn: {
+            /** Endpoint */
+            endpoint: string;
+            keys: components["schemas"]["PushKeys"];
         };
         /** RegisterRequest */
         RegisterRequest: {
@@ -1731,6 +1881,37 @@ export interface operations {
             };
         };
     };
+    request_reset: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PasswordResetRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     get_me: {
         parameters: {
             query?: never;
@@ -1922,6 +2103,101 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    subscribe_push: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PushSubscriptionIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    check_push: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PushEndpoint"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": boolean;
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    unsubscribe_push: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PushEndpoint"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             204: {
@@ -2235,6 +2511,33 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["InstanceStatus"];
                 };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    send_test_email: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Default Response */
             default: {

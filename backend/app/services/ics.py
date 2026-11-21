@@ -19,7 +19,7 @@ from sqlalchemy.orm import Session
 from app.branding import get_branding
 from app.errors import InvalidInputError
 from app.models import Calendar, Event
-from app.services import clock, events, recurrence, zones
+from app.services import clock, events, recurrence, reminders, zones
 
 MAX_BYTES = 10 * 1024 * 1024
 
@@ -52,6 +52,7 @@ class ParsedEvent:
     cancelled: bool = False
     categories: list[str] = field(default_factory=list[str])
     sequence: int = 0
+    alarms: list[int] = field(default_factory=list[int])
 
 
 @dataclass
@@ -122,6 +123,21 @@ def _categories(component: Any) -> list[str]:
     return names
 
 
+def _alarms(component: Any) -> list[int]:
+    """Display alarms with a trigger relative to the start, as minutes before; others are ignored."""
+    minutes: list[int] = []
+    for alarm in component.walk("VALARM"):
+        if _text(alarm, "ACTION").upper() != "DISPLAY" or alarm.get("TRIGGER") is None:
+            continue
+        trigger = alarm["TRIGGER"]
+        if trigger.params.get("RELATED", "START").upper() != "START":
+            continue
+        value = trigger.dt
+        if isinstance(value, timedelta):
+            minutes.append(int(-value.total_seconds() // 60))
+    return minutes
+
+
 def _parse_event(component: Any, default_zone: str) -> ParsedEvent:
     uid = _text(component, "UID")
     if not uid:
@@ -181,6 +197,7 @@ def _parse_event(component: Any, default_zone: str) -> ParsedEvent:
         cancelled=_text(component, "STATUS").upper() == "CANCELLED",
         categories=_categories(component),
         sequence=int(sequence) if sequence is not None else 0,
+        alarms=_alarms(component),
     )
 
 
@@ -225,7 +242,17 @@ def _export_rule(event: Event) -> icalendar.vRecur:
     return icalendar.vRecur.from_ical(rule)
 
 
-def _component(event: Event, master: Event | None, tag_names: list[str]) -> icalendar.Event:
+def _alarm(minutes: int) -> icalendar.Alarm:
+    alarm = icalendar.Alarm()
+    alarm.add("ACTION", "DISPLAY")
+    alarm.add("DESCRIPTION", "Reminder")
+    alarm.add("TRIGGER", timedelta(minutes=-minutes))
+    return alarm
+
+
+def _component(
+    event: Event, master: Event | None, tag_names: list[str], alarms: list[int]
+) -> icalendar.Event:
     source = master or event
     vevent = icalendar.Event()
     vevent.add("UID", event.uid)
@@ -244,6 +271,8 @@ def _component(event: Event, master: Event | None, tag_names: list[str]) -> ical
     vevent.add("DTEND", _dt(event.end_local, event.timezone, event.all_day))
     if master is not None and event.original_start is not None:
         vevent.add("RECURRENCE-ID", _dt(event.original_start, source.timezone, source.all_day))
+    for minutes in alarms:
+        vevent.add_component(_alarm(minutes))
     if master is None and event.rrule:
         vevent.add("RRULE", _export_rule(event))
         if event.exdates:
@@ -263,10 +292,12 @@ def serialize(db: Session, calendar: Calendar) -> bytes:
     rows = list(db.scalars(select(Event).where(Event.calendar_id == calendar.id).order_by(Event.id)))
     masters = {e.id: e for e in rows if e.recurring_event_id is None}
     tags = events.tags_of(db, [e.id for e in rows])
+    alarms = reminders.minutes_of(db, list(masters))
     for event in rows:
         master = masters.get(event.recurring_event_id) if event.recurring_event_id else None
         if event.recurring_event_id is not None and master is None:
             continue
-        cal.add_component(_component(event, master, [t.name for t in tags[event.id]]))
+        own = alarms.get(event.id, []) if master is None else alarms.get(master.id, [])
+        cal.add_component(_component(event, master, [t.name for t in tags[event.id]], own))
     cal.add_missing_timezones()
     return cal.to_ical()

@@ -2,6 +2,7 @@ from fastapi import APIRouter, status
 
 from app.api.deps import AdminAuth, AppSettings
 from app.db import DbSession
+from app.errors import AppError
 from app.schemas.admin import (
     AdminUser,
     AdminUserUpdate,
@@ -13,6 +14,8 @@ from app.schemas.admin import (
     PendingInvite,
 )
 from app.services import admin, instance, invites
+from app.services.notify import email
+from app.services.reminders import DeliveryError
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -65,3 +68,14 @@ def update_settings(body: InstanceSettingsUpdate, _auth: AdminAuth, db: DbSessio
 @router.get("/status")
 def get_status(_auth: AdminAuth, db: DbSession, settings: AppSettings) -> InstanceStatus:
     return instance.status(settings, db)
+
+
+@router.post("/test-email", status_code=status.HTTP_204_NO_CONTENT)
+def send_test_email(auth: AdminAuth, settings: AppSettings) -> None:
+    """Sends a test message to the admin's own address, to check the SMTP settings."""
+    if not settings.smtp_enabled:
+        raise AppError(409, "email_disabled", "E-mail is not configured")
+    try:
+        email.send_test(settings, auth.user.locale, auth.user.email)
+    except DeliveryError as exc:
+        raise AppError(502, "email_failed", str(exc)) from None

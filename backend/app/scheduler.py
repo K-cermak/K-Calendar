@@ -11,7 +11,8 @@ from fastapi import FastAPI
 
 from app.config import Settings
 from app.db import Database
-from app.services import subscriptions
+from app.services import reminders, subscriptions
+from app.services.notify import email, push
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +31,25 @@ def refresh_subscriptions(db: Database, settings: Settings) -> None:
                 logger.exception("Refreshing subscription %s failed", calendar_id)
 
 
+SENDERS: dict[str, reminders.Sender] = {"push": push.send_reminder, "email": email.send_reminder}
+
+
+def send_reminders(
+    db: Database, settings: Settings, senders: dict[str, reminders.Sender] | None = None
+) -> None:
+    with db.reader() as session:
+        due = reminders.due(session)
+    for reminder_id in due:
+        with db.writer() as session:
+            try:
+                reminders.fire(session, settings, reminder_id, senders or SENDERS)
+            except Exception:
+                logger.exception("Sending reminder %s failed", reminder_id)
+
+
 def tick(db: Database, settings: Settings) -> None:
+    # Reminders first: they are due at a minute, subscriptions only roughly on their interval.
+    send_reminders(db, settings)
     refresh_subscriptions(db, settings)
 
 

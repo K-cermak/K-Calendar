@@ -17,3 +17,4 @@ class PublicConfig(BaseModel):
     oidc_enabled: bool
     oidc_provider_name: str
     email_enabled: bool
+    vapid_public_key: str | None

@@ -12,7 +12,7 @@ from app.errors import (
 )
 from app.models import User
 from app.schemas.account import Me, ProfileUpdate
-from app.services import calendars, clock, zones
+from app.services import calendars, clock, reminders, zones
 from app.services.auth import credentials, sessions
 from app.services.auth.throttle import LoginThrottle
 
@@ -128,6 +128,7 @@ def to_me(user: User) -> Me:
 def update_profile(db: Session, user: User, update: ProfileUpdate) -> User:
     if update.display_name is not None:
         user.display_name = check_display_name(update.display_name)
+    zone_changed = update.timezone is not None and update.timezone != user.timezone
     if update.timezone is not None:
         user.timezone = zones.check_zone(update.timezone)
     if update.locale is not None:
@@ -140,6 +141,10 @@ def update_profile(db: Session, user: User, update: ProfileUpdate) -> User:
         user.default_view = update.default_view
     if update.theme is not None:
         user.theme = update.theme
+    if update.email_reminders_enabled is not None:
+        user.email_reminders_enabled = update.email_reminders_enabled
+    if zone_changed:
+        reminders.refresh_user(db, user)
     db.commit()
     return user
 

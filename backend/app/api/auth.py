@@ -18,6 +18,7 @@ from app.schemas.account import (
     LoginRequest,
     Me,
     PasswordReset,
+    PasswordResetRequest,
     RegisterRequest,
     SetupRequest,
     TokenRequest,
@@ -132,3 +133,12 @@ def complete_reset(
 ) -> Me:
     user = invites.reset_password(db, body.token, body.password)
     return _sign_in(db, settings, request, response, user)
+
+
+@router.post("/password-reset/request", status_code=status.HTTP_204_NO_CONTENT)
+def request_reset(
+    body: PasswordResetRequest, request: Request, db: DbSession, settings: AppSettings, throttle: Throttle
+) -> None:
+    """E-mails a reset link when e-mail is set up. The answer is the same whether or not the address
+    has an account, so it cannot be used to find out who has one."""
+    invites.request_reset(db, settings, throttle, email=body.email, ip=client_ip(request))
