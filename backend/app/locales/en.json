@@ -1,5 +1,64 @@
 {
   "calendar": {
     "default_name": "Personal"
+  },
+  "event": {
+    "no_title": "(No title)"
+  },
+  "time": {
+    "twelve": "{hour}:{minute} {half}",
+    "am": "AM",
+    "pm": "PM"
+  },
+  "date": {
+    "day": "{weekday} {day} {month}",
+    "day_time": "{day}, {time}",
+    "weekday": {
+      "mon": "Mon",
+      "tue": "Tue",
+      "wed": "Wed",
+      "thu": "Thu",
+      "fri": "Fri",
+      "sat": "Sat",
+      "sun": "Sun"
+    },
+    "month": {
+      "jan": "Jan",
+      "feb": "Feb",
+      "mar": "Mar",
+      "apr": "Apr",
+      "may": "May",
+      "jun": "Jun",
+      "jul": "Jul",
+      "aug": "Aug",
+      "sep": "Sep",
+      "oct": "Oct",
+      "nov": "Nov",
+      "dec": "Dec"
+    }
+  },
+  "email": {
+    "signature": "Sent by {app} at {base_url}",
+    "reminder": {
+      "subject": "Reminder: {title}",
+      "text": "{title}\n{when}",
+      "location": "Location: {location}",
+      "open": "Open in {app}: {link}",
+      "settings": "You get these e-mails because e-mail reminders are on in your settings."
+    },
+    "invite": {
+      "subject": "You are invited to {app}",
+      "text": "You have been invited to {app}. Create your account with this link. It works once and expires in 7 days:",
+      "button": "Create your account"
+    },
+    "reset": {
+      "subject": "Reset your {app} password",
+      "text": "Set a new password with this link. It works once and expires in 24 hours. If you did not ask for this, ignore this e-mail.",
+      "button": "Set a new password"
+    },
+    "test": {
+      "subject": "{app}: test e-mail",
+      "text": "E-mail from {app} works."
+    }
   }
 }
