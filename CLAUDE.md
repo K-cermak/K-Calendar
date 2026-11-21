@@ -47,6 +47,7 @@ just api-types        # regenerate frontend/src/api/schema.d.ts from the OpenAPI
 just api-types-check  # fail if the generated API types are out of date (runs in CI)
 just docker           # build the production image locally
 just icons            # render the PWA icons in frontend/public from icon.svg
+just screenshots      # render the README screenshots in docs/screenshots from the built image
 ```
 
 Toolchain: Python 3.15 (`backend/.python-version`), Node 26 (`.node-version`), pnpm 12. TypeScript stays on 6.0 until vue-tsc and typescript-eslint support 7. Playwright needs `pnpm exec playwright install chromium` once.
