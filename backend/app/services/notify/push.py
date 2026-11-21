@@ -4,6 +4,7 @@ table, unless the environment provides one."""
 import base64
 import json
 import logging
+from urllib.parse import urlsplit
 
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import ec
@@ -14,7 +15,7 @@ from sqlalchemy.orm import Session
 from app.config import Settings
 from app.models import PushSubscription, Setting
 from app.services import clock
-from app.services.notify import messages
+from app.services.notify import devices, messages
 from app.services.reminders import Delivery, DeliveryError
 
 logger = logging.getLogger(__name__)
@@ -28,15 +29,16 @@ def ensure_keys(db: Session, settings: Settings) -> None:
     if settings.vapid_public_key or db.get(Setting, PUBLIC_KEY) is not None:
         return
     key = ec.generate_private_key(ec.SECP256R1())
-    private_pem = key.private_bytes(
-        serialization.Encoding.PEM,
+    # pywebpush reads a key given as text as base64url DER (or a raw 32-byte key), not PEM.
+    private_der = key.private_bytes(
+        serialization.Encoding.DER,
         serialization.PrivateFormat.PKCS8,
         serialization.NoEncryption(),
-    ).decode()
+    )
     raw_public = key.public_key().public_bytes(
         serialization.Encoding.X962, serialization.PublicFormat.UncompressedPoint
     )
-    db.add(Setting(key=PRIVATE_KEY, value=private_pem))
+    db.add(Setting(key=PRIVATE_KEY, value=base64.urlsafe_b64encode(private_der).rstrip(b"=").decode()))
     db.add(Setting(key=PUBLIC_KEY, value=base64.urlsafe_b64encode(raw_public).rstrip(b"=").decode()))
     db.commit()
     logger.info("Generated the VAPID key pair for push notifications")
@@ -59,11 +61,16 @@ def _private_key(db: Session, settings: Settings) -> str:
 
 
 def contact(settings: Settings) -> str:
+    """Who push services can reach about this instance. They accept only mailto: and https: URIs."""
     if settings.vapid_contact:
         return settings.vapid_contact
     if settings.smtp_from:
         return f"mailto:{settings.smtp_from}"
-    return settings.base_url
+    if settings.base_url.startswith("https://"):
+        return settings.base_url
+    host = urlsplit(settings.base_url).hostname or "localhost"
+    # py_vapid refuses an address whose domain has no dot, as on localhost during development.
+    return f"mailto:calendar@{host if '.' in host else host + '.localdomain'}"
 
 
 def send_payload(db: Session, settings: Settings, user_id: int, payload: dict[str, str]) -> int:
@@ -73,6 +80,10 @@ def send_payload(db: Session, settings: Settings, user_id: int, payload: dict[st
     errors: list[str] = []
     private = _private_key(db, settings)
     for subscription in list(db.scalars(select(PushSubscription).where(PushSubscription.user_id == user_id))):
+        # Checked again before each send: a name can resolve elsewhere than when it was stored.
+        if not devices.endpoint_allowed(settings, subscription.endpoint):
+            errors.append("address not allowed")
+            continue
         try:
             webpush(
                 subscription_info={

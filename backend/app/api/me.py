@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Query, Request, status
 
-from app.api.deps import CurrentAuth
+from app.api.deps import AppSettings, CurrentAuth
 from app.db import DbSession
 from app.schemas.account import (
     Clock,
@@ -65,9 +65,11 @@ def revoke_session(session_id: int, auth: CurrentAuth, db: DbSession) -> None:
 
 
 @router.post("/push-subscriptions", status_code=status.HTTP_204_NO_CONTENT)
-def subscribe_push(body: PushSubscriptionIn, request: Request, auth: CurrentAuth, db: DbSession) -> None:
+def subscribe_push(
+    body: PushSubscriptionIn, request: Request, auth: CurrentAuth, db: DbSession, settings: AppSettings
+) -> None:
     """Registers this browser for reminder notifications (the result of PushManager.subscribe)."""
-    devices.subscribe(db, auth.user, body, request.headers.get("user-agent"))
+    devices.subscribe(db, settings, auth.user, body, request.headers.get("user-agent"))
 
 
 @router.post("/push-subscriptions/check")

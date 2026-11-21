@@ -133,3 +133,12 @@ def test_clock_gives_the_wall_clock_time_in_the_profile_zone(admin: TestClient, 
     tokyo = admin.get("/api/v1/me/clock", params={"tz": "Asia/Tokyo"}).json()
     assert tokyo["now"] == "2026-11-20T21:00:00"
     assert admin.get("/api/v1/me/clock", params={"tz": "Nowhere"}).json()["code"] == "invalid_timezone"
+
+
+def test_subscribing_a_private_endpoint_is_refused(admin: TestClient) -> None:
+    response = admin.post(
+        "/api/v1/me/push-subscriptions",
+        json={"endpoint": "https://127.0.0.1/push", "keys": {"p256dh": "p", "auth": "a"}},
+    )
+    # The default test settings do not allow private addresses.
+    assert response.json()["code"] == "invalid_endpoint"

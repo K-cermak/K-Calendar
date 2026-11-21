@@ -45,6 +45,14 @@ def settings(tmp_path: Any) -> Settings:
     )
 
 
+@pytest.fixture(autouse=True)
+def public_push_endpoints(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The made-up push hosts in these tests do not resolve; the address check has its own tests."""
+    from app.services.notify import devices
+
+    monkeypatch.setattr(devices, "endpoint_allowed", lambda _settings, _endpoint: True)  # pyright: ignore[reportUnknownLambdaType, reportUnknownArgumentType]
+
+
 @pytest.fixture
 def travel(time_machine: time_machine.TimeMachineFixture) -> Callable[[str], None]:
     """Moves the frozen clock to a UTC moment given as text."""
