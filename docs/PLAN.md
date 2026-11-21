@@ -159,12 +159,12 @@ Section 6 (TOTP, OIDC, API tokens).
 
 Sections 16, 17.
 
-- [ ] Nightly cleanup job
-- [ ] Startup configuration validation with clear messages
-- [ ] Playwright suite from section 17, on desktop and phone viewports, running in CI against the image
-- [ ] Release workflow: multi-arch build and push to GHCR on a version tag
-- [ ] `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md`
-- [ ] Review pass over the whole app: empty states, loading states, error messages, every string through i18n, accessibility with keyboard only, both themes, 360 px width
-- [ ] Design pass against section 11 "Visual design": no rounded corners, no raw colour values outside the tokens, no stray shadows, mono used for times and numbers
+- [x] Nightly cleanup job
+- [x] Startup configuration validation with clear messages
+- [x] Playwright suite from section 17, on desktop and phone viewports, running in CI against the image
+- [x] Release workflow: multi-arch build and push to GHCR on a version tag
+- [x] `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md`
+- [x] Review pass over the whole app: empty states, loading states, error messages, every string through i18n, accessibility with keyboard only, both themes, 360 px width
+- [x] Design pass against section 11 "Visual design": no rounded corners, no raw colour values outside the tokens, no stray shadows, mono used for times and numbers
 
 **Acceptance:** Following only the README on a clean machine, a person can get a running instance behind HTTPS, and tagging `v0.1.0` publishes an image that runs on both a PC and a Raspberry Pi.
