@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Query, status
 
-from app.api.deps import CurrentAuth
+from app.api.deps import CurrentApiAuth
 from app.db import DbSession
 from app.schemas.calendar import (
     EditScope,
@@ -20,7 +20,7 @@ router = APIRouter(tags=["events"])
 
 @router.get("/occurrences")
 def list_occurrences(
-    auth: CurrentAuth,
+    auth: CurrentApiAuth,
     db: DbSession,
     start: Annotated[str, Query(max_length=40, description="Wall-clock in tz, or an ISO instant")],
     end: Annotated[str, Query(max_length=40, description="Exclusive; at most 400 days after start")],
@@ -35,7 +35,7 @@ def list_occurrences(
 @router.get("/occurrences/{occurrence_id}")
 def get_occurrence(
     occurrence_id: str,
-    auth: CurrentAuth,
+    auth: CurrentApiAuth,
     db: DbSession,
     tz: Annotated[
         str | None, Query(max_length=64, description="Display zone; the profile's if left out")
@@ -46,7 +46,7 @@ def get_occurrence(
 
 
 @router.post("/events", status_code=status.HTTP_201_CREATED)
-def create_event(body: EventCreate, auth: CurrentAuth, db: DbSession) -> EventOut:
+def create_event(body: EventCreate, auth: CurrentApiAuth, db: DbSession) -> EventOut:
     return events.create(db, auth.user, body)
 
 
@@ -65,7 +65,9 @@ Scope = Annotated[
 
 
 @router.get("/events/{event_id}")
-def get_event(event_id: int, auth: CurrentAuth, db: DbSession, occurrence: OccurrenceKey = None) -> EventOut:
+def get_event(
+    event_id: int, auth: CurrentApiAuth, db: DbSession, occurrence: OccurrenceKey = None
+) -> EventOut:
     """An event, or one occurrence of a series with its own values."""
     return events.get(db, auth.user, event_id, occurrence)
 
@@ -74,7 +76,7 @@ def get_event(event_id: int, auth: CurrentAuth, db: DbSession, occurrence: Occur
 def update_event(
     event_id: int,
     body: EventUpdate,
-    auth: CurrentAuth,
+    auth: CurrentApiAuth,
     db: DbSession,
     scope: Scope = None,
     occurrence: OccurrenceKey = None,
@@ -85,14 +87,14 @@ def update_event(
 
 @router.delete("/events/{event_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_event(
-    event_id: int, auth: CurrentAuth, db: DbSession, scope: Scope = None, occurrence: OccurrenceKey = None
+    event_id: int, auth: CurrentApiAuth, db: DbSession, scope: Scope = None, occurrence: OccurrenceKey = None
 ) -> None:
     events.delete(db, auth.user, event_id, scope=scope, occurrence=occurrence)
 
 
 @router.get("/search")
 def search_events(
-    auth: CurrentAuth,
+    auth: CurrentApiAuth,
     db: DbSession,
     q: Annotated[str, Query(max_length=200, description="Words to find; each may be the start of a word")],
     tz: Annotated[

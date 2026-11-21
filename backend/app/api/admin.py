@@ -35,6 +35,12 @@ def delete_user(user_id: int, auth: AdminAuth, db: DbSession) -> None:
     admin.delete_user(db, auth.user, user_id)
 
 
+@router.delete("/users/{user_id}/totp", status_code=status.HTTP_204_NO_CONTENT)
+def reset_totp(user_id: int, _auth: AdminAuth, db: DbSession) -> None:
+    """Turns off two-step verification for a user who lost the authenticator and the codes."""
+    admin.reset_totp(db, user_id)
+
+
 @router.post("/users/{user_id}/reset-link", status_code=status.HTTP_201_CREATED)
 def create_reset_link(user_id: int, auth: AdminAuth, db: DbSession, settings: AppSettings) -> CreatedLink:
     return invites.create_reset_link(db, settings, auth.user, user_id)

@@ -121,6 +121,8 @@ def to_me(user: User) -> Me:
             "theme": user.theme,
             "email_reminders_enabled": user.email_reminders_enabled,
             "has_password": user.password_hash is not None,
+            "totp_enabled": user.totp_enabled_at_utc is not None,
+            "oidc_linked": user.oidc_subject is not None,
         }
     )
 

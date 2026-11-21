@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from app.errors import ConflictError, NotFoundError
 from app.models import AuthSession, User
 from app.schemas.admin import AdminUser, AdminUserUpdate
-from app.services.auth import sessions
+from app.services.auth import sessions, totp
 
 
 def _to_admin_user(user: User, last_seen: datetime | None) -> AdminUser:
@@ -17,6 +17,8 @@ def _to_admin_user(user: User, last_seen: datetime | None) -> AdminUser:
         is_admin=user.is_admin,
         is_active=user.is_active,
         has_password=user.password_hash is not None,
+        totp_enabled=user.totp_enabled_at_utc is not None,
+        oidc_linked=user.oidc_subject is not None,
         created_at_utc=user.created_at_utc,
         last_seen_at_utc=last_seen,
     )
@@ -84,4 +86,10 @@ def delete_user(db: Session, actor: User | None, user_id: int) -> None:
     _guard(db, actor, user, removes_admin=True)
     # Everything the user owns goes with them through ON DELETE CASCADE.
     db.delete(user)
+    db.commit()
+
+
+def reset_totp(db: Session, user_id: int) -> None:
+    """For a user who lost both the authenticator and the recovery codes."""
+    totp.clear(db, _get(db, user_id))
     db.commit()

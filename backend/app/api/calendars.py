@@ -3,7 +3,7 @@ from urllib.parse import quote
 
 from fastapi import APIRouter, Response, UploadFile, status
 
-from app.api.deps import AppSettings, CurrentAuth
+from app.api.deps import AppSettings, CurrentApiAuth
 from app.db import DbSession
 from app.errors import AppError
 from app.schemas.calendar import (
@@ -21,20 +21,20 @@ router = APIRouter(prefix="/calendars", tags=["calendars"])
 
 
 @router.get("")
-def list_calendars(auth: CurrentAuth, db: DbSession, settings: AppSettings) -> list[CalendarOut]:
+def list_calendars(auth: CurrentApiAuth, db: DbSession, settings: AppSettings) -> list[CalendarOut]:
     return calendars.list_for(db, auth.user, settings.base_url)
 
 
 @router.post("", status_code=status.HTTP_201_CREATED)
 def create_calendar(
-    body: CalendarCreate, auth: CurrentAuth, db: DbSession, settings: AppSettings
+    body: CalendarCreate, auth: CurrentApiAuth, db: DbSession, settings: AppSettings
 ) -> CalendarOut:
     return calendars.create(db, auth.user, body, settings.base_url)
 
 
 @router.post("/subscriptions", status_code=status.HTTP_201_CREATED)
 def subscribe(
-    body: SubscriptionCreate, auth: CurrentAuth, db: DbSession, settings: AppSettings
+    body: SubscriptionCreate, auth: CurrentApiAuth, db: DbSession, settings: AppSettings
 ) -> CalendarOut:
     """Adds a read-only calendar that follows an external ICS address, and fetches it at once."""
     calendar = subscriptions.create(
@@ -51,27 +51,27 @@ def subscribe(
 
 @router.put("/order")
 def reorder_calendars(
-    body: CalendarOrder, auth: CurrentAuth, db: DbSession, settings: AppSettings
+    body: CalendarOrder, auth: CurrentApiAuth, db: DbSession, settings: AppSettings
 ) -> list[CalendarOut]:
     return calendars.reorder(db, auth.user, body, settings.base_url)
 
 
 @router.patch("/{calendar_id}")
 def update_calendar(
-    calendar_id: int, body: CalendarUpdate, auth: CurrentAuth, db: DbSession, settings: AppSettings
+    calendar_id: int, body: CalendarUpdate, auth: CurrentApiAuth, db: DbSession, settings: AppSettings
 ) -> CalendarOut:
     return calendars.update(db, auth.user, calendar_id, body, settings.base_url)
 
 
 @router.delete("/{calendar_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_calendar(calendar_id: int, auth: CurrentAuth, db: DbSession) -> None:
+def delete_calendar(calendar_id: int, auth: CurrentApiAuth, db: DbSession) -> None:
     """Deletes the calendar and every event in it."""
     calendars.delete(db, auth.user, calendar_id)
 
 
 @router.post("/{calendar_id}/refresh")
 def refresh_subscription(
-    calendar_id: int, auth: CurrentAuth, db: DbSession, settings: AppSettings
+    calendar_id: int, auth: CurrentApiAuth, db: DbSession, settings: AppSettings
 ) -> CalendarOut:
     """Fetches a subscribed calendar now, outside its schedule."""
     calendar = calendars.get_owned(db, auth.user, calendar_id)
@@ -81,13 +81,13 @@ def refresh_subscription(
 
 
 @router.put("/{calendar_id}/feed")
-def create_feed(calendar_id: int, auth: CurrentAuth, db: DbSession, settings: AppSettings) -> CalendarOut:
+def create_feed(calendar_id: int, auth: CurrentApiAuth, db: DbSession, settings: AppSettings) -> CalendarOut:
     """Switches on the secret feed address, or replaces it so the old one stops working."""
     return calendars.set_feed(db, auth.user, calendar_id, settings.base_url)
 
 
 @router.delete("/{calendar_id}/feed", status_code=status.HTTP_204_NO_CONTENT)
-def delete_feed(calendar_id: int, auth: CurrentAuth, db: DbSession) -> None:
+def delete_feed(calendar_id: int, auth: CurrentApiAuth, db: DbSession) -> None:
     calendars.remove_feed(db, auth.user, calendar_id)
 
 
@@ -96,7 +96,7 @@ def delete_feed(calendar_id: int, auth: CurrentAuth, db: DbSession) -> None:
     response_class=Response,
     responses={200: {"content": {"text/calendar": {}}, "description": "The calendar as an .ics file"}},
 )
-def export_calendar(calendar_id: int, auth: CurrentAuth, db: DbSession) -> Response:
+def export_calendar(calendar_id: int, auth: CurrentApiAuth, db: DbSession) -> Response:
     calendar = calendars.get_owned(db, auth.user, calendar_id)
     return Response(
         ics.serialize(db, calendar),
@@ -112,7 +112,7 @@ def _attachment(name: str) -> str:
 
 
 @router.post("/{calendar_id}/import")
-def import_calendar(calendar_id: int, file: UploadFile, auth: CurrentAuth, db: DbSession) -> ImportResult:
+def import_calendar(calendar_id: int, file: UploadFile, auth: CurrentApiAuth, db: DbSession) -> ImportResult:
     """Imports an .ics file of at most 10 MB. Events are matched by UID, so importing the same file
     twice changes nothing."""
     calendar = calendars.get_writable(db, auth.user, calendar_id)

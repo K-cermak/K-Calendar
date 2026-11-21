@@ -52,6 +52,7 @@ ADMIN = {
     "timezone": "Europe/Prague",
 }
 PASSWORD = "user-password"
+DAY_MS = 24 * 60 * 60 * 1000
 
 
 class Clock:
@@ -125,3 +126,22 @@ def count_rows(app: FastAPI, table: str) -> int:
     db: Database = app.state.db
     with db.reader() as session:
         return session.connection().exec_driver_sql(f"SELECT count(*) FROM {table}").scalar() or 0  # noqa: S608
+
+
+class FakeClock:
+    """Frozen time in milliseconds, for tests that think in TOTP steps and token lifetimes."""
+
+    def __init__(self, traveller: time_machine.TimeMachineFixture) -> None:
+        start = datetime(2026, 11, 20, 12, 0, tzinfo=UTC)
+        traveller.move_to(start, tick=False)
+        self._traveller = traveller
+        self.now = int(start.timestamp() * 1000)
+
+    def advance(self, ms: int) -> None:
+        self.now += ms
+        self._traveller.shift(timedelta(milliseconds=ms))
+
+
+@pytest.fixture
+def fake_clock(time_machine: time_machine.TimeMachineFixture) -> FakeClock:
+    return FakeClock(time_machine)

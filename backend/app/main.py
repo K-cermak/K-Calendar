@@ -7,13 +7,14 @@ from pathlib import Path
 from fastapi import FastAPI
 
 from app import scheduler
-from app.api import admin, auth, calendars, events, feeds, me, public, tags
+from app.api import admin, auth, calendars, events, feeds, me, oidc, public, tags
 from app.branding import REPO_ROOT, get_branding
 from app.config import Settings, load_settings
 from app.db import Database
 from app.errors import ErrorResponse, install_error_handlers
 from app.migrations import run_migrations
 from app.security import SecurityMiddleware, install_log_redaction
+from app.services.auth.oidc import OidcClient
 from app.services.auth.throttle import LoginThrottle
 from app.services.notify import push
 from app.spa import install_spa
@@ -59,6 +60,7 @@ def create_app(settings: Settings | None = None, static_dir: Path | None = None)
     )
     app.state.settings = settings
     app.state.throttle = LoginThrottle()
+    app.state.oidc = OidcClient(settings) if settings.oidc_enabled else None
     install_error_handlers(app)
     install_log_redaction()
     app.add_middleware(SecurityMiddleware, base_url=settings.base_url, docs_path="/api/docs")
@@ -70,6 +72,7 @@ def create_app(settings: Settings | None = None, static_dir: Path | None = None)
         calendars.router,
         events.router,
         tags.router,
+        oidc.router,
     ):
         app.include_router(router, prefix=API_PREFIX)
     app.include_router(feeds.router)

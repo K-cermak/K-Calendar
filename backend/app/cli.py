@@ -13,6 +13,7 @@ from app.migrations import run_migrations
 from app.models import User
 from app.schemas.admin import AdminUserUpdate
 from app.services import accounts, admin, invites
+from app.services.auth import totp
 
 
 def _user(db: Session, email: str) -> User:
@@ -30,10 +31,7 @@ def reset_password(db: Session, settings: Settings, email: str) -> str:
 
 
 def disable_totp(db: Session, _settings: Settings, email: str) -> str:
-    user = _user(db, email)
-    user.totp_secret_encrypted = None
-    user.totp_enabled_at_utc = None
-    user.totp_last_step = None
+    totp.clear(db, _user(db, email))
     db.commit()
     return f"Two-factor authentication is now off for {email}."
 
