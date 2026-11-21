@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useQuery } from '@tanstack/vue-query'
 import { PopoverAnchor, PopoverContent, PopoverPortal, PopoverRoot } from 'reka-ui'
@@ -32,8 +32,9 @@ const props = defineProps<{
   occurrences: Occurrence[]
   filter: (o: Occurrence) => boolean
   readOnly: boolean
+  pendingOpen: Occurrence | null
 }>()
-const emit = defineEmits<{ select: [day: PlainDate] }>()
+const emit = defineEmits<{ select: [day: PlainDate]; opened: [] }>()
 
 const { t } = useI18n()
 const toast = useToastStore()
@@ -196,6 +197,22 @@ async function onChange(change: GridChange): Promise<void> {
   }
   toast.show(t('event.moved'), { label: t('common.undo'), run: () => send(before) })
 }
+
+// Opens a linked occurrence once its day is on screen, at its block if the grid shows one.
+watch(
+  () => props.pendingOpen,
+  async (occurrence) => {
+    if (!occurrence) return
+    await nextTick()
+    await new Promise((resolve) => setTimeout(resolve, 150))
+    const element =
+      document.querySelector<HTMLElement>(`[data-testid="event-${occurrence.id}"]`) ??
+      document.querySelector<HTMLElement>(`[data-testid="agenda-${occurrence.id}"]`) ??
+      document.querySelector<HTMLElement>('[data-testid="calendar-area"]')
+    if (element) openDetail(occurrence, element)
+    emit('opened')
+  },
+)
 
 defineExpose({ newEvent })
 </script>

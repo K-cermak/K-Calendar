@@ -1,16 +1,17 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ChevronLeft, ChevronRight, Menu, PanelLeft, Search } from '@lucide/vue'
+import { ChevronLeft, ChevronRight, Menu, PanelLeft } from '@lucide/vue'
 import { VIEWS, type CalendarView } from '@/router'
 import AccountMenu from './AccountMenu.vue'
+import SearchField from './SearchField.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiSegmented from '@/components/ui/UiSegmented.vue'
 
 /** Desktop: today, previous, next, the range, views and search. Phone: a compact version (SPEC 11). */
 defineProps<{ compact: boolean; title: string }>()
 const view = defineModel<CalendarView>('view', { required: true })
-const emit = defineEmits<{ menu: []; today: []; previous: []; next: []; search: [] }>()
+const emit = defineEmits<{ menu: []; today: []; previous: []; next: [] }>()
 
 const { t } = useI18n()
 const viewOptions = computed(() => VIEWS.map((value) => ({ value, label: t(`views.${value}`) })))
@@ -18,7 +19,7 @@ const viewOptions = computed(() => VIEWS.map((value) => ({ value, label: t(`view
 
 <template>
   <header
-    class="flex h-14 shrink-0 items-center gap-2 border-b border-line px-2 pt-[env(safe-area-inset-top)] sm:px-3"
+    class="relative flex h-14 shrink-0 items-center gap-2 border-b border-line px-2 pt-[env(safe-area-inset-top)] sm:px-3"
   >
     <button
       type="button"
@@ -57,14 +58,7 @@ const viewOptions = computed(() => VIEWS.map((value) => ({ value, label: t(`view
     >
       {{ title }}
     </h1>
-    <button
-      type="button"
-      class="ui-icon-button"
-      :aria-label="$t('shell.search')"
-      @click="emit('search')"
-    >
-      <Search />
-    </button>
+    <SearchField :compact="compact" />
     <UiSegmented
       v-if="!compact"
       v-model="view"

@@ -376,5 +376,9 @@
     "this": "This event",
     "following": "This and following events",
     "all": "All events"
+  },
+  "search": {
+    "placeholder": "Search events",
+    "none": "No events found."
   }
 }

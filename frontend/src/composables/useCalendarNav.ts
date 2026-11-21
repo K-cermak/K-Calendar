@@ -12,9 +12,13 @@ export function useCalendarNav(
   const route = useRoute()
   const router = useRouter()
 
-  const view = computed<CalendarView>(
-    () => VIEWS.find((v) => v === route.params.view) ?? defaultView.value,
-  )
+  // The last view shown, so a link to one event keeps the view the user was in.
+  let lastView: CalendarView | null = null
+  const view = computed<CalendarView>(() => {
+    const fromRoute = VIEWS.find((v) => v === route.params.view)
+    if (fromRoute) lastView = fromRoute
+    return fromRoute ?? lastView ?? defaultView.value
+  })
   const today = computed<PlainDate | null>(() => now.value?.toPlainDate() ?? null)
   const anchor = computed<PlainDate | null>(() => {
     const fromRoute = route.params.date
@@ -43,7 +47,8 @@ export function useCalendarNav(
     today,
     setView: (next: CalendarView) => go(next, anchor.value),
     goToday: () => go(view.value, null),
-    goTo: (date: PlainDate, nextView: CalendarView = view.value) => go(nextView, date),
+    goTo: (date: PlainDate, nextView: CalendarView = view.value, replace = false) =>
+      go(nextView, date, replace),
     step: (direction: -1 | 1) => {
       if (anchor.value) go(view.value, shift(view.value, anchor.value, direction, compact.value))
     },

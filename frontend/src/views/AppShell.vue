@@ -3,13 +3,13 @@ import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useQuery } from '@tanstack/vue-query'
 import { Plus } from '@lucide/vue'
-import { calendarsQuery, useClock, useOccurrences } from '@/api/calendar'
+import { calendarsQuery, occurrenceQuery, useClock, useOccurrences } from '@/api/calendar'
 import type { Occurrence } from '@/api/client'
 import { useMe } from '@/api/session'
 import { useCalendarNav } from '@/composables/useCalendarNav'
 import { useMediaQuery } from '@/composables/useMediaQuery'
 import { useSwipe } from '@/composables/useSwipe'
-import { rangeTitle, visibleRange, type PlainDate } from '@/dates'
+import { parseDate, rangeTitle, visibleRange, type PlainDate } from '@/dates'
 import type { CalendarView } from '@/router'
 import { useUiStore } from '@/stores/ui'
 import CalendarArea from '@/components/calendar/CalendarArea.vue'
@@ -36,6 +36,28 @@ const defaultView = computed<CalendarView>(() => {
 })
 
 const nav = useCalendarNav(defaultView, now, compact)
+
+// /event/:occurrenceId (a search result or a notification): go to its day and open it there.
+const pendingOpen = ref<Occurrence | null>(null)
+const linked = useQuery(
+  computed(() => ({
+    ...occurrenceQuery(String(route.params.occurrenceId ?? ''), me.value?.timezone ?? 'UTC'),
+    enabled: route.name === 'event' && !!me.value,
+    retry: false,
+  })),
+)
+watch(
+  () => [linked.data.value, linked.error.value] as const,
+  ([occurrence, error]) => {
+    if (route.name !== 'event') return
+    if (occurrence) {
+      pendingOpen.value = occurrence
+      nav.goTo(parseDate(occurrence.start), nav.view.value, true)
+    } else if (error) {
+      void router.replace({ name: 'calendar', params: { view: defaultView.value } })
+    }
+  },
+)
 
 watch(
   () => route.name,
@@ -152,7 +174,9 @@ useSwipe(main, (direction) => {
           :occurrences="visibleOccurrences"
           :filter="shows"
           :read-only="false"
+          :pending-open="pendingOpen"
           @select="(day) => nav.goTo(day)"
+          @opened="pendingOpen = null"
         />
       </main>
     </div>

@@ -48,6 +48,18 @@ export function useOccurrences(
   )
 }
 
+export function occurrenceQuery(id: string, tz: string) {
+  return queryOptions({
+    queryKey: ['occurrence', id, tz],
+    queryFn: () =>
+      call(() =>
+        api.GET('/api/v1/occurrences/{occurrence_id}', {
+          params: { path: { occurrence_id: id }, query: { tz } },
+        }),
+      ),
+  })
+}
+
 export function eventQuery(id: number, occurrence: string | null = null) {
   return queryOptions({
     queryKey: ['event', id, occurrence],
