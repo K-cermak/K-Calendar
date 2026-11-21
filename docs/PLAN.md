@@ -132,15 +132,15 @@ Section 12.
 
 Section 8.
 
-- [ ] Models and migration: reminders, push_subscriptions, notification_log
-- [ ] Reminder editing in the event editor, for timed and all-day events; calendar default reminder
-- [ ] `next_fire_at_utc` maintenance on every relevant change
-- [ ] Reminder tick in the background loop with the late rule, idempotency and retries
-- [ ] Web Push: VAPID keys, subscribe and unsubscribe per device in settings, service worker handlers, dead-subscription cleanup
-- [ ] E-mail: SMTP sender, templates for reminder, invite and reset; test-mail button in admin; features hidden when SMTP is absent
-- [ ] Server-side locale file for notification texts
-- [ ] Password reset by e-mail, and e-mailing of invites, now that mail exists
-- [ ] Scheduler tests with frozen time
+- [x] Models and migration: reminders, push_subscriptions, notification_log
+- [x] Reminder editing in the event editor, for timed and all-day events; calendar default reminder
+- [x] `next_fire_at_utc` maintenance on every relevant change
+- [x] Reminder tick in the background loop with the late rule, idempotency and retries
+- [x] Web Push: VAPID keys, subscribe and unsubscribe per device in settings, service worker handlers, dead-subscription cleanup
+- [x] E-mail: SMTP sender, templates for reminder, invite and reset; test-mail button in admin; features hidden when SMTP is absent
+- [x] Server-side locale file for notification texts
+- [x] Password reset by e-mail, and e-mailing of invites, now that mail exists
+- [x] Scheduler tests with frozen time
 
 **Acceptance:** An event ten minutes from now with a five-minute reminder produces a push notification on my phone and an e-mail, each exactly once, and tapping the notification opens the event. A weekly series reminds me every week. Restarting the container does not send anything twice.
 
