@@ -1,46 +1,87 @@
 <script setup lang="ts">
-import { computed, watch } from 'vue'
-import { useI18n } from 'vue-i18n'
+import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useQuery } from '@tanstack/vue-query'
 import { Plus } from '@lucide/vue'
+import { calendarsQuery, useClock, useOccurrences } from '@/api/calendar'
+import type { Occurrence } from '@/api/client'
 import { useMe } from '@/api/session'
+import { useCalendarNav } from '@/composables/useCalendarNav'
 import { useMediaQuery } from '@/composables/useMediaQuery'
-import { VIEWS, type CalendarView } from '@/router'
+import { useSwipe } from '@/composables/useSwipe'
+import { rangeTitle, visibleRange, type PlainDate } from '@/dates'
+import type { CalendarView } from '@/router'
 import { useUiStore } from '@/stores/ui'
+import CalendarArea from '@/components/calendar/CalendarArea.vue'
+import ZoneBanner from '@/components/calendar/ZoneBanner.vue'
 import PhoneDrawer from '@/components/shell/PhoneDrawer.vue'
 import SidebarContent from '@/components/shell/SidebarContent.vue'
 import TopBar from '@/components/shell/TopBar.vue'
 
 const route = useRoute()
 const router = useRouter()
-const { t } = useI18n()
 const me = useMe()
 const ui = useUiStore()
 const compact = useMediaQuery('(max-width: 767px)')
+const now = useClock(() => me.value?.timezone)
+const calendars = useQuery(calendarsQuery)
+const area = ref<{ newEvent: () => void } | null>(null)
+const main = ref<HTMLElement | null>(null)
 
-/** The view in the URL, or the user's default: week on a wide screen, agenda on a phone. */
+/** The user's default: week on a wide screen and agenda on a phone, unless they chose one. */
 const defaultView = computed<CalendarView>(() => {
   const chosen = me.value?.default_view
   if (chosen && chosen !== 'auto') return chosen
   return compact.value ? 'agenda' : 'week'
 })
 
-const view = computed<CalendarView>({
-  get: () => {
-    const fromRoute = route.params.view
-    return VIEWS.find((v) => v === fromRoute) ?? defaultView.value
-  },
-  set: (value) => {
-    void router.push({ name: 'calendar', params: { view: value, date: route.params.date } })
-  },
-})
+const nav = useCalendarNav(defaultView, now, compact)
 
 watch(
   () => route.name,
   (name) => {
-    if (name === 'home') void router.replace({ name: 'calendar', params: { view: view.value } })
+    if (name === 'home') {
+      void router.replace({ name: 'calendar', params: { view: defaultView.value } })
+    }
   },
   { immediate: true },
+)
+
+const range = computed(() => {
+  if (!nav.anchor.value || !me.value || nav.view.value === 'agenda') return null
+  const { start, end } = visibleRange(
+    nav.view.value,
+    nav.anchor.value,
+    me.value.week_start,
+    compact.value,
+  )
+  return { start: start.toString(), end: end.toString(), tz: me.value.timezone }
+})
+const occurrences = useOccurrences(range)
+
+// Hidden calendars are left out by the server too; filtering here as well makes a toggle instant.
+const hidden = computed(
+  () => new Set((calendars.data.value ?? []).filter((c) => !c.is_visible).map((c) => c.id)),
+)
+function shows(o: Occurrence): boolean {
+  const filter = ui.tagFilter
+  return (
+    !hidden.value.has(o.calendar_id) &&
+    (!filter.length || o.tags.some((t) => filter.includes(t.id)))
+  )
+}
+const visibleOccurrences = computed(() => (occurrences.data.value?.items ?? []).filter(shows))
+
+const title = computed(() =>
+  nav.anchor.value && me.value
+    ? rangeTitle(
+        nav.view.value,
+        nav.anchor.value,
+        me.value.locale,
+        me.value.week_start,
+        compact.value,
+      )
+    : '',
 )
 
 function toggleMenu(): void {
@@ -48,24 +89,103 @@ function toggleMenu(): void {
   else ui.sidebarOpen = !ui.sidebarOpen
 }
 
-const title = computed(() => t(`views.${view.value}`))
+function selectDay(day: PlainDate): void {
+  ui.drawerOpen = false
+  const view = nav.view.value === 'agenda' || nav.view.value === 'month' ? nav.view.value : 'day'
+  nav.goTo(day, compact.value ? view : nav.view.value === 'month' ? 'month' : nav.view.value)
+}
+
+function newEvent(): void {
+  ui.drawerOpen = false
+  area.value?.newEvent()
+}
+
+useSwipe(main, (direction) => {
+  if (compact.value && nav.view.value !== 'agenda') nav.step(direction)
+})
 </script>
 
 <template>
   <div class="flex h-dvh flex-col">
-    <TopBar v-model:view="view" :compact="compact" :title="title" @menu="toggleMenu" />
+    <TopBar
+      :view="nav.view.value"
+      :compact="compact"
+      :title="title"
+      @update:view="nav.setView"
+      @menu="toggleMenu"
+      @today="nav.goToday"
+      @previous="nav.step(-1)"
+      @next="nav.step(1)"
+    />
+    <ZoneBanner />
     <div class="flex min-h-0 flex-1">
       <aside
-        v-if="!compact && ui.sidebarOpen"
+        v-if="!compact && ui.sidebarOpen && me"
         class="w-64 shrink-0 overflow-y-auto border-r border-line"
         data-testid="sidebar"
       >
-        <SidebarContent />
+        <SidebarContent
+          :selected="nav.anchor.value"
+          :today="nav.today.value"
+          :week-start="me.week_start"
+          :locale="me.locale"
+          :read-only="false"
+          show-mini-month
+          @select="selectDay"
+          @new-event="newEvent"
+        />
       </aside>
-      <main class="min-w-0 flex-1 overflow-auto" data-testid="calendar-area" />
+      <main
+        ref="main"
+        class="relative flex min-w-0 flex-1 flex-col overflow-hidden"
+        data-testid="calendar-area"
+      >
+        <CalendarArea
+          v-if="me && nav.anchor.value"
+          ref="area"
+          :view="nav.view.value"
+          :anchor="nav.anchor.value"
+          :today="nav.today.value"
+          :now="now"
+          :compact="compact"
+          :me="me"
+          :occurrences="visibleOccurrences"
+          :filter="shows"
+          :read-only="false"
+          @select="(day) => nav.goTo(day)"
+        />
+      </main>
     </div>
-    <PhoneDrawer v-if="compact" v-model:open="ui.drawerOpen">
-      <SidebarContent />
+    <PhoneDrawer v-if="compact && me" v-model:open="ui.drawerOpen">
+      <div class="flex flex-col">
+        <div
+          class="ui-segmented mx-4 mt-4 flex! self-stretch!"
+          role="radiogroup"
+          :aria-label="$t('views.label')"
+        >
+          <button
+            v-for="view in ['agenda', 'day', 'week', 'month'] as const"
+            :key="view"
+            type="button"
+            role="radio"
+            class="ui-segmented__option flex-1"
+            :aria-checked="nav.view.value === view"
+            @click="((ui.drawerOpen = false), nav.setView(view))"
+          >
+            {{ $t(`views.${view}`) }}
+          </button>
+        </div>
+        <SidebarContent
+          :selected="nav.anchor.value"
+          :today="nav.today.value"
+          :week-start="me.week_start"
+          :locale="me.locale"
+          :read-only="false"
+          :show-mini-month="false"
+          @select="selectDay"
+          @new-event="newEvent"
+        />
+      </div>
     </PhoneDrawer>
     <button
       v-if="compact"
@@ -73,6 +193,7 @@ const title = computed(() => t(`views.${view.value}`))
       class="ui-button ui-button--primary ui-button--icon fixed right-4 bottom-[max(16px,env(safe-area-inset-bottom))] z-20 size-14!"
       :aria-label="$t('shell.newEvent')"
       data-testid="fab"
+      @click="newEvent"
     >
       <Plus :size="24" />
     </button>

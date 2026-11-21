@@ -68,7 +68,17 @@
     "self_change": "You cannot do this to your own account.",
     "last_admin": "The instance must keep at least one active administrator.",
     "password_login_disabled": "Sign in with single sign-on.",
-    "not_found": "This no longer exists."
+    "not_found": "This no longer exists.",
+    "read_only_calendar": "Events in a subscribed calendar cannot be changed.",
+    "last_calendar": "Keep at least one calendar of your own.",
+    "tag_exists": "A tag with this name already exists.",
+    "name_required": "Enter a name.",
+    "invalid_span": "The end must be after the start.",
+    "times_required": "Set a start and an end.",
+    "invalid_datetime": "Enter a valid date and time.",
+    "invalid_order": "The order could not be saved.",
+    "range_too_long": "That range is too long.",
+    "invalid_range": "That range is not valid."
   },
   "shell": {
     "openMenu": "Open menu",
@@ -79,7 +89,9 @@
     "search": "Search",
     "newEvent": "New event",
     "calendars": "Calendars",
-    "tags": "Tags"
+    "tags": "Tags",
+    "previousMonth": "Previous month",
+    "nextMonth": "Next month"
   },
   "settings": {
     "title": "Settings",
@@ -191,7 +203,8 @@
     "violet": "Violet",
     "pink": "Pink",
     "brown": "Brown",
-    "graphite": "Graphite"
+    "graphite": "Graphite",
+    "none": "Calendar colour"
   },
   "showcase": {
     "title": "Design showcase",
@@ -238,5 +251,68 @@
     "tagTravel": "travel",
     "tagKids": "kids",
     "tagDeadline": "deadline"
+  },
+  "event": {
+    "noTitle": "(No title)",
+    "newTitle": "New event",
+    "editTitle": "Edit event",
+    "title": "Title",
+    "titlePlaceholder": "Add a title",
+    "calendar": "Calendar",
+    "allDay": "All day",
+    "starts": "Starts",
+    "ends": "Ends",
+    "lastDay": "Last day",
+    "startTime": "Start time",
+    "endTime": "End time",
+    "endBeforeStart": "The end is before the start.",
+    "location": "Location",
+    "description": "Description",
+    "tags": "Tags",
+    "moreOptions": "More options",
+    "timezone": "Time zone",
+    "timezoneHint": "The times above are in this zone. New events use the zone from your profile.",
+    "color": "Colour",
+    "delete": "Delete",
+    "edit": "Edit",
+    "readOnly": "Read-only",
+    "deleted": "Event deleted",
+    "moved": "Event moved",
+    "moveFailed": "The event could not be moved. {reason}"
+  },
+  "calendars": {
+    "new": "New calendar",
+    "newTitle": "New calendar",
+    "editTitle": "Edit calendar",
+    "name": "Name",
+    "color": "Colour",
+    "actions": "Actions for {name}",
+    "edit": "Rename and recolour",
+    "delete": "Delete calendar",
+    "deleteTitle": "Delete {name}?",
+    "deleteMessage": "The calendar and all its events are deleted for good."
+  },
+  "tags": {
+    "empty": "Tags you add to events appear here.",
+    "actions": "Actions for {name}",
+    "edit": "Rename and recolour",
+    "editTitle": "Edit tag",
+    "name": "Name",
+    "color": "Colour",
+    "delete": "Delete tag",
+    "deleteTitle": "Delete the tag {name}?",
+    "deleteMessage": "It is removed from its events. The events stay.",
+    "clearFilter": "Show all events",
+    "remove": "Remove {name}",
+    "placeholder": "Add tags",
+    "createHint": "Press Enter to create “{name}”"
+  },
+  "agenda": {
+    "empty": "Nothing coming up.",
+    "nothing": "No events."
+  },
+  "zone": {
+    "differs": "This device is in {device}; your calendar shows {profile}.",
+    "switch": "Use {device}"
   }
 }
