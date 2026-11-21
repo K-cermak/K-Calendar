@@ -93,6 +93,7 @@ function dayLabel(day: string): string {
         @open="(o, el) => emit('open', o, el)"
       />
     </section>
-    <div ref="sentinel" class="h-16" />
+    <!-- Tall enough that the last day scrolls clear of the round button on a phone. -->
+    <div ref="sentinel" class="h-24" />
   </div>
 </template>
