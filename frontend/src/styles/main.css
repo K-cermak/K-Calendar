@@ -137,6 +137,16 @@
     }
   }
 
+  /* A quarter of an hour is 12 px tall: one tight line, pulled up over the block's top padding
+     (a container query cannot change the container's own padding). */
+  @container (max-height: 16px) {
+    .cal-event__body {
+      margin-top: -2px;
+      font-size: var(--size-meta);
+      line-height: 12px;
+    }
+  }
+
   .cal-event__title {
     overflow: hidden;
     font-weight: 500;
