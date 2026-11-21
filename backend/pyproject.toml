@@ -17,6 +17,7 @@ dependencies = [
     "pyotp>=2.12.1",
     "python-dateutil>=4.0.0",
     "python-multipart>=0.0.34",
+    "pywebpush>=2.5.0",
     "sqlalchemy>=2.1.9",
     "tzdata>=2026.6",
     "uvicorn[standard]>=0.54.0",
