@@ -40,6 +40,10 @@ fmt:
     cd backend && uv run ruff format . && uv run ruff check --fix .
     cd frontend && pnpm format
 
+# Render the PWA icons in frontend/public from frontend/public/icon.svg
+icons:
+    cd frontend && node scripts/icons.ts
+
 # Regenerate frontend/src/api/schema.d.ts from the OpenAPI schema
 api-types:
     #!/usr/bin/env bash

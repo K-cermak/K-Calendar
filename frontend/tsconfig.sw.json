@@ -1,0 +1,10 @@
+{
+  "extends": "@vue/tsconfig/tsconfig.json",
+  "include": ["src/sw.ts", "src/offline.ts"],
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.sw.tsbuildinfo",
+    "lib": ["ES2023", "WebWorker"],
+    "types": [],
+    "noEmit": true
+  }
+}
