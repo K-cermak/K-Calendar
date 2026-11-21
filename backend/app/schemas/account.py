@@ -44,6 +44,8 @@ class Me(BaseModel):
     theme: Theme
     email_reminders_enabled: bool
     has_password: bool
+    totp_enabled: bool
+    oidc_linked: bool
 
 
 class ProfileUpdate(BaseModel):
@@ -115,3 +117,62 @@ class PushEndpoint(BaseModel):
 
 class PasswordResetRequest(BaseModel):
     email: str = Field(max_length=320)
+
+
+class TotpChallenge(BaseModel):
+    """The password was right; a TOTP or recovery code is still needed to sign in."""
+
+    totp_required: Literal[True] = True
+    pending_token: str
+
+
+class TotpLogin(BaseModel):
+    pending_token: str = Field(max_length=200)
+    code: str = Field(max_length=32)
+
+
+class TotpSetup(BaseModel):
+    secret: str
+    uri: str
+
+
+class TotpCode(BaseModel):
+    code: str = Field(max_length=32)
+
+
+class TotpDisable(TotpCode):
+    password: str = PASSWORD
+
+
+class TotpStatus(BaseModel):
+    enabled: bool
+    recovery_codes_left: int
+
+
+class RecoveryCodes(BaseModel):
+    codes: list[str]
+
+
+TokenScope = Literal["read", "write"]
+
+
+class ApiTokenCreate(BaseModel):
+    name: str = Field(max_length=100)
+    scope: TokenScope
+    expires_in_days: int | None = Field(default=None, ge=1, le=3650)
+
+
+class ApiTokenInfo(BaseModel):
+    id: int
+    name: str
+    prefix: str
+    scope: TokenScope
+    created_at_utc: datetime
+    last_used_at_utc: datetime | None
+    expires_at_utc: datetime | None
+
+
+class CreatedApiToken(ApiTokenInfo):
+    """Includes the token itself, which is never shown again."""
+
+    token: str

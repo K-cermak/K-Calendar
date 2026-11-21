@@ -67,3 +67,29 @@ class Setting(Base):
 
     key: Mapped[str] = mapped_column(String(64), primary_key=True)
     value: Mapped[str]
+
+
+class RecoveryCode(Base):
+    """One-time TOTP recovery codes, stored as hashes (SPEC 6)."""
+
+    __tablename__ = "recovery_codes"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    code_hash: Mapped[str] = mapped_column(String(64))
+    used_at_utc: Mapped[datetime | None] = mapped_column(UtcDateTime)
+
+
+class ApiToken(Base):
+    __tablename__ = "api_tokens"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    name: Mapped[str] = mapped_column(String(100))
+    token_hash: Mapped[str] = mapped_column(String(64), unique=True)
+    token_prefix: Mapped[str] = mapped_column(String(16))
+    scope: Mapped[str] = mapped_column(String(8))
+    created_at_utc: Mapped[datetime] = mapped_column(UtcDateTime)
+    expires_at_utc: Mapped[datetime | None] = mapped_column(UtcDateTime)
+    last_used_at_utc: Mapped[datetime | None] = mapped_column(UtcDateTime)
+    revoked_at_utc: Mapped[datetime | None] = mapped_column(UtcDateTime)

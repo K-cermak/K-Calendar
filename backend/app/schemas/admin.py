@@ -10,6 +10,8 @@ class AdminUser(BaseModel):
     is_admin: bool
     is_active: bool
     has_password: bool
+    totp_enabled: bool
+    oidc_linked: bool
     created_at_utc: datetime
     last_seen_at_utc: datetime | None
 
