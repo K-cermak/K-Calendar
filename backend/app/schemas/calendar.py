@@ -19,6 +19,14 @@ ZoneName = Annotated[str, Field(max_length=64, examples=["Europe/Prague"])]
 ReminderMinutes = Annotated[int, Field(ge=0, le=60 * 24 * 28)]
 
 
+class SubscriptionInfo(BaseModel):
+    source_url: str
+    refresh_interval_minutes: int
+    last_fetched_at_utc: datetime | None = Field(description="The last refresh that worked")
+    last_status: Literal["pending", "ok", "error"]
+    last_error: str | None
+
+
 class CalendarOut(BaseModel):
     id: int
     name: str
@@ -28,6 +36,8 @@ class CalendarOut(BaseModel):
     sort_order: int
     default_reminder_minutes: int | None
     read_only: bool
+    feed_url: str | None = Field(description="The secret read-only address, when switched on")
+    subscription: SubscriptionInfo | None
 
 
 class CalendarCreate(BaseModel):
@@ -42,6 +52,28 @@ class CalendarUpdate(BaseModel):
     is_visible: bool | None = None
     # Sent as null it removes the default; left out it stays as it is.
     default_reminder_minutes: ReminderMinutes | None = None
+    refresh_interval_minutes: int | None = Field(
+        default=None, ge=15, le=60 * 24 * 7, description="Subscriptions only"
+    )
+
+
+class SubscriptionCreate(BaseModel):
+    url: str = Field(max_length=2000, description="http, https or webcal")
+    name: str = Field(default="", max_length=100, description="Left empty: the host name")
+    color: PaletteColor
+    refresh_interval_minutes: int = Field(default=60, ge=15, le=60 * 24 * 7)
+
+
+class ImportSkip(BaseModel):
+    uid: str
+    title: str
+    reason: str
+
+
+class ImportResult(BaseModel):
+    created: int
+    updated: int
+    skipped: list[ImportSkip]
 
 
 class CalendarOrder(BaseModel):

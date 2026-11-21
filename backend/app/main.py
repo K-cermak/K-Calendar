@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
@@ -5,7 +6,8 @@ from pathlib import Path
 
 from fastapi import FastAPI
 
-from app.api import admin, auth, calendars, events, me, public, tags
+from app import scheduler
+from app.api import admin, auth, calendars, events, feeds, me, public, tags
 from app.branding import REPO_ROOT, get_branding
 from app.config import Settings, load_settings
 from app.db import Database
@@ -36,8 +38,10 @@ def create_app(settings: Settings | None = None, static_dir: Path | None = None)
         db = Database(settings.database_path)
         run_migrations(db.write_engine)
         app.state.db = db
+        task = asyncio.create_task(scheduler.run(app))
         logger.info("Started version %s with data in %s", VERSION, settings.data_dir)
         yield
+        task.cancel()
         db.dispose()
 
     app = FastAPI(
@@ -65,5 +69,6 @@ def create_app(settings: Settings | None = None, static_dir: Path | None = None)
         tags.router,
     ):
         app.include_router(router, prefix=API_PREFIX)
+    app.include_router(feeds.router)
     install_spa(app, static_dir or DEFAULT_STATIC_DIR)
     return app

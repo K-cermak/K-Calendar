@@ -413,6 +413,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/calendars/subscriptions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Subscribe
+         * @description Adds a read-only calendar that follows an external ICS address, and fetches it at once.
+         */
+        post: operations["subscribe"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/calendars/order": {
         parameters: {
             query?: never;
@@ -449,6 +469,85 @@ export interface paths {
         head?: never;
         /** Update Calendar */
         patch: operations["update_calendar"];
+        trace?: never;
+    };
+    "/api/v1/calendars/{calendar_id}/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Refresh Subscription
+         * @description Fetches a subscribed calendar now, outside its schedule.
+         */
+        post: operations["refresh_subscription"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/calendars/{calendar_id}/feed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Create Feed
+         * @description Switches on the secret feed address, or replaces it so the old one stops working.
+         */
+        put: operations["create_feed"];
+        post?: never;
+        /** Delete Feed */
+        delete: operations["delete_feed"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/calendars/{calendar_id}/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Export Calendar */
+        get: operations["export_calendar"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/calendars/{calendar_id}/import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Import Calendar
+         * @description Imports an .ics file of at most 10 MB. Events are matched by UID, so importing the same file
+         *     twice changes nothing.
+         */
+        post: operations["import_calendar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/v1/occurrences": {
@@ -626,6 +725,11 @@ export interface components {
             /** Is Admin */
             is_admin?: boolean | null;
         };
+        /** Body_import_calendar */
+        Body_import_calendar: {
+            /** File */
+            file: string;
+        };
         /** CalendarCreate */
         CalendarCreate: {
             /** Name */
@@ -670,6 +774,12 @@ export interface components {
             default_reminder_minutes: number | null;
             /** Read Only */
             read_only: boolean;
+            /**
+             * Feed Url
+             * @description The secret read-only address, when switched on
+             */
+            feed_url: string | null;
+            subscription: components["schemas"]["SubscriptionInfo"] | null;
         };
         /** CalendarUpdate */
         CalendarUpdate: {
@@ -681,6 +791,11 @@ export interface components {
             is_visible?: boolean | null;
             /** Default Reminder Minutes */
             default_reminder_minutes?: number | null;
+            /**
+             * Refresh Interval Minutes
+             * @description Subscriptions only
+             */
+            refresh_interval_minutes?: number | null;
         };
         /** Clock */
         Clock: {
@@ -864,6 +979,24 @@ export interface components {
             status: "ok";
             /** Version */
             version: string;
+        };
+        /** ImportResult */
+        ImportResult: {
+            /** Created */
+            created: number;
+            /** Updated */
+            updated: number;
+            /** Skipped */
+            skipped: components["schemas"]["ImportSkip"][];
+        };
+        /** ImportSkip */
+        ImportSkip: {
+            /** Uid */
+            uid: string;
+            /** Title */
+            title: string;
+            /** Reason */
+            reason: string;
         };
         /** InstanceSettings */
         InstanceSettings: {
@@ -1195,6 +1328,49 @@ export interface components {
              * @description The browser's zone, if known
              */
             timezone?: string | null;
+        };
+        /** SubscriptionCreate */
+        SubscriptionCreate: {
+            /**
+             * Url
+             * @description http, https or webcal
+             */
+            url: string;
+            /**
+             * Name
+             * @description Left empty: the host name
+             * @default
+             */
+            name: string;
+            /**
+             * Color
+             * @enum {string}
+             */
+            color: "red" | "orange" | "amber" | "lime" | "green" | "teal" | "cyan" | "blue" | "indigo" | "violet" | "pink" | "brown" | "graphite";
+            /**
+             * Refresh Interval Minutes
+             * @default 60
+             */
+            refresh_interval_minutes: number;
+        };
+        /** SubscriptionInfo */
+        SubscriptionInfo: {
+            /** Source Url */
+            source_url: string;
+            /** Refresh Interval Minutes */
+            refresh_interval_minutes: number;
+            /**
+             * Last Fetched At Utc
+             * @description The last refresh that worked
+             */
+            last_fetched_at_utc: string | null;
+            /**
+             * Last Status
+             * @enum {string}
+             */
+            last_status: "pending" | "ok" | "error";
+            /** Last Error */
+            last_error: string | null;
         };
         /** TagCreate */
         TagCreate: {
@@ -2133,6 +2309,39 @@ export interface operations {
             };
         };
     };
+    subscribe: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SubscriptionCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CalendarOut"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     reorder_calendars: {
         parameters: {
             query?: never;
@@ -2217,6 +2426,163 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CalendarOut"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    refresh_subscription: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                calendar_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CalendarOut"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    create_feed: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                calendar_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CalendarOut"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    delete_feed: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                calendar_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    export_calendar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                calendar_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The calendar as an .ics file */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/calendar": unknown;
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    import_calendar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                calendar_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_import_calendar"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportResult"];
                 };
             };
             /** @description Default Response */

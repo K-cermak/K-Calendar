@@ -96,11 +96,11 @@ async def _reject(send: Send, came_from: str, expected: str) -> None:
     await send({"type": "http.response.body", "body": body})
 
 
-_TOKEN_PATH = re.compile(r"^/(invite|reset)/[^/?#]+")
+_TOKEN_PATH = re.compile(r"^/(invite|reset|feeds)/[^/?#]+")
 
 
 class RedactTokensFilter(logging.Filter):
-    """Keeps invite and reset tokens, which appear in page URLs, out of the access log."""
+    """Keeps invite and reset tokens and feed addresses, which appear in URLs, out of the access log."""
 
     def filter(self, record: logging.LogRecord) -> bool:
         args = record.args

@@ -31,8 +31,9 @@ def install_spa(app: FastAPI, static_dir: Path) -> None:
             cache = _IMMUTABLE if path.startswith("assets/") else _REVALIDATE
             return FileResponse(candidate, headers={"Cache-Control": cache})
         # A chunk an old tab asks for after an update is gone; HTML in its place fails as a script
-        # with a confusing MIME type error rather than as a missing file.
-        if path.startswith("assets/"):
+        # with a confusing MIME type error rather than as a missing file. A feed reader likewise
+        # needs a clear 404 for an address that is wrong, not the app's page.
+        if path.startswith(("assets/", "feeds/")):
             raise NotFoundError()
         if not index.is_file():
             raise NotFoundError("The frontend has not been built")
