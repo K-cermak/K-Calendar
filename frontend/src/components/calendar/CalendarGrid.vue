@@ -45,6 +45,15 @@ const calendar = ref<InstanceType<typeof FullCalendar> | null>(null)
  * what it shows and what it hands back after a drag are plain wall-clock values in the display
  * zone, and the server converts them (SPEC 5).
  */
+/**
+ * Opens the grid an hour before `hour`. A quarter of an hour more stays above it, because each
+ * hour's label sits on its line and would otherwise be cut in half at the top edge.
+ */
+function scrollTime(hour: number): string {
+  const first = Math.max(0, hour - 1)
+  return first === 0 ? '00:00:00' : `${String(first - 1).padStart(2, '0')}:45:00`
+}
+
 function wallClock(date: Date | null, allDay: boolean): string {
   const iso = (date ?? new Date(0)).toISOString()
   return allDay ? iso.slice(0, 10) : iso.slice(0, 19)
@@ -85,9 +94,7 @@ const options = computed<CalendarOptions>(() => ({
   firstDay: props.weekStart === 'monday' ? 1 : 0,
   now: () => (props.now ? props.now.toString() : new Date()),
   nowIndicator: true,
-  scrollTime: props.now
-    ? `${String(Math.max(0, props.now.hour - 1)).padStart(2, '0')}:00:00`
-    : '08:00:00',
+  scrollTime: scrollTime(props.now?.hour ?? 9),
   views: { timeGridThreeDay: { type: 'timeGrid', duration: { days: PHONE_WEEK_DAYS } } },
   editable: !props.readOnly,
   selectable: !props.readOnly && !props.compact,
