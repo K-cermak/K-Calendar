@@ -375,6 +375,157 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/calendars": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Calendars */
+        get: operations["list_calendars"];
+        put?: never;
+        /** Create Calendar */
+        post: operations["create_calendar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/calendars/order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Reorder Calendars */
+        put: operations["reorder_calendars"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/calendars/{calendar_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete Calendar
+         * @description Deletes the calendar and every event in it.
+         */
+        delete: operations["delete_calendar"];
+        options?: never;
+        head?: never;
+        /** Update Calendar */
+        patch: operations["update_calendar"];
+        trace?: never;
+    };
+    "/api/v1/occurrences": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Occurrences
+         * @description Everything a view shows: ready-made occurrences with wall-clock times in the display zone.
+         */
+        get: operations["list_occurrences"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Event */
+        post: operations["create_event"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/events/{event_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Event */
+        get: operations["get_event"];
+        put?: never;
+        post?: never;
+        /** Delete Event */
+        delete: operations["delete_event"];
+        options?: never;
+        head?: never;
+        /** Update Event */
+        patch: operations["update_event"];
+        trace?: never;
+    };
+    "/api/v1/tags": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Tags */
+        get: operations["list_tags"];
+        put?: never;
+        /** Create Tag */
+        post: operations["create_tag"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tags/{tag_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete Tag
+         * @description Removes the tag from its events; the events stay.
+         */
+        delete: operations["delete_tag"];
+        options?: never;
+        head?: never;
+        /** Update Tag */
+        patch: operations["update_tag"];
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -408,6 +559,62 @@ export interface components {
             /** Is Admin */
             is_admin?: boolean | null;
         };
+        /** CalendarCreate */
+        CalendarCreate: {
+            /** Name */
+            name: string;
+            /**
+             * Color
+             * @enum {string}
+             */
+            color: "red" | "orange" | "amber" | "lime" | "green" | "teal" | "cyan" | "blue" | "indigo" | "violet" | "pink" | "brown" | "graphite";
+            /** Default Reminder Minutes */
+            default_reminder_minutes?: number | null;
+        };
+        /** CalendarOrder */
+        CalendarOrder: {
+            /**
+             * Ids
+             * @description Every calendar of the user, in the new order
+             */
+            ids: number[];
+        };
+        /** CalendarOut */
+        CalendarOut: {
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
+            /**
+             * Color
+             * @enum {string}
+             */
+            color: "red" | "orange" | "amber" | "lime" | "green" | "teal" | "cyan" | "blue" | "indigo" | "violet" | "pink" | "brown" | "graphite";
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "local" | "subscription";
+            /** Is Visible */
+            is_visible: boolean;
+            /** Sort Order */
+            sort_order: number;
+            /** Default Reminder Minutes */
+            default_reminder_minutes: number | null;
+            /** Read Only */
+            read_only: boolean;
+        };
+        /** CalendarUpdate */
+        CalendarUpdate: {
+            /** Name */
+            name?: string | null;
+            /** Color */
+            color?: ("red" | "orange" | "amber" | "lime" | "green" | "teal" | "cyan" | "blue" | "indigo" | "violet" | "pink" | "brown" | "graphite") | null;
+            /** Is Visible */
+            is_visible?: boolean | null;
+            /** Default Reminder Minutes */
+            default_reminder_minutes?: number | null;
+        };
         /**
          * CreatedLink
          * @description A one-time link. The URL is only available in this response; the server keeps a hash.
@@ -429,6 +636,130 @@ export interface components {
             code: string;
             /** Message */
             message: string;
+        };
+        /** EventCreate */
+        EventCreate: {
+            /** Calendar Id */
+            calendar_id: number;
+            /**
+             * Title
+             * @default
+             */
+            title: string;
+            /**
+             * Description
+             * @default
+             */
+            description: string;
+            /**
+             * Location
+             * @default
+             */
+            location: string;
+            /** Color */
+            color?: ("red" | "orange" | "amber" | "lime" | "green" | "teal" | "cyan" | "blue" | "indigo" | "violet" | "pink" | "brown" | "graphite") | null;
+            /**
+             * All Day
+             * @default false
+             */
+            all_day: boolean;
+            /**
+             * Start
+             * @example 2026-11-23T09:00:00
+             * @example 2026-11-23
+             */
+            start: string;
+            /**
+             * End
+             * @description Exclusive: an all-day event on 3 May ends on 4 May
+             * @example 2026-11-23T09:00:00
+             * @example 2026-11-23
+             */
+            end: string;
+            /**
+             * Timezone
+             * @description The event's zone for timed events; the profile's zone if left out
+             */
+            timezone?: string | null;
+            /**
+             * Input Timezone
+             * @description The zone start and end are written in, if not the event's own (after a drag)
+             */
+            input_timezone?: string | null;
+            /**
+             * Tags
+             * @default []
+             */
+            tags: string[];
+        };
+        /** EventOut */
+        EventOut: {
+            /** Id */
+            id: number;
+            /** Calendar Id */
+            calendar_id: number;
+            /** Uid */
+            uid: string;
+            /** Title */
+            title: string;
+            /** Description */
+            description: string;
+            /** Location */
+            location: string;
+            /** Color */
+            color: ("red" | "orange" | "amber" | "lime" | "green" | "teal" | "cyan" | "blue" | "indigo" | "violet" | "pink" | "brown" | "graphite") | null;
+            /** All Day */
+            all_day: boolean;
+            /**
+             * Start
+             * @description Wall-clock in the event's zone, or a date for all-day events
+             */
+            start: string;
+            /** End */
+            end: string;
+            /** Timezone */
+            timezone: string | null;
+            /** Rrule */
+            rrule: string | null;
+            /** Tags */
+            tags: components["schemas"]["TagOut"][];
+            /** Read Only */
+            read_only: boolean;
+            /**
+             * Created At Utc
+             * Format: date-time
+             */
+            created_at_utc: string;
+            /**
+             * Updated At Utc
+             * Format: date-time
+             */
+            updated_at_utc: string;
+        };
+        /** EventUpdate */
+        EventUpdate: {
+            /** Calendar Id */
+            calendar_id?: number | null;
+            /** Title */
+            title?: string | null;
+            /** Description */
+            description?: string | null;
+            /** Location */
+            location?: string | null;
+            /** Color */
+            color?: ("red" | "orange" | "amber" | "lime" | "green" | "teal" | "cyan" | "blue" | "indigo" | "violet" | "pink" | "brown" | "graphite") | null;
+            /** All Day */
+            all_day?: boolean | null;
+            /** Start */
+            start?: string | null;
+            /** End */
+            end?: string | null;
+            /** Timezone */
+            timezone?: string | null;
+            /** Input Timezone */
+            input_timezone?: string | null;
+            /** Tags */
+            tags?: string[] | null;
         };
         /** HealthResponse */
         HealthResponse: {
@@ -531,6 +862,68 @@ export interface components {
             email_reminders_enabled: boolean;
             /** Has Password */
             has_password: boolean;
+        };
+        /** Occurrence */
+        Occurrence: {
+            /**
+             * Id
+             * @description The event id, or {master id}_{original start} for one of a series
+             */
+            id: string;
+            /** Event Id */
+            event_id: number;
+            /** Calendar Id */
+            calendar_id: number;
+            /** Title */
+            title: string;
+            /** Location */
+            location: string;
+            /**
+             * Color
+             * @description The event's own colour, otherwise its calendar's
+             * @enum {string}
+             */
+            color: "red" | "orange" | "amber" | "lime" | "green" | "teal" | "cyan" | "blue" | "indigo" | "violet" | "pink" | "brown" | "graphite";
+            /** All Day */
+            all_day: boolean;
+            /**
+             * Start
+             * @description Wall-clock in the display zone; a date for all-day events
+             */
+            start: string;
+            /**
+             * End
+             * @description Exclusive, like start
+             */
+            end: string;
+            /**
+             * Start Utc
+             * Format: date-time
+             */
+            start_utc: string;
+            /**
+             * End Utc
+             * Format: date-time
+             */
+            end_utc: string;
+            /** Tags */
+            tags: components["schemas"]["TagOut"][];
+            /** Recurring */
+            recurring: boolean;
+            /** Read Only */
+            read_only: boolean;
+        };
+        /** OccurrenceList */
+        OccurrenceList: {
+            /** Timezone */
+            timezone: string;
+            /**
+             * Now
+             * @description The current wall-clock time in the display zone
+             */
+            now: string;
+            /** Items */
+            items: components["schemas"]["Occurrence"][];
         };
         /** PasswordChange */
         PasswordChange: {
@@ -654,6 +1047,35 @@ export interface components {
              * @description The browser's zone, if known
              */
             timezone?: string | null;
+        };
+        /** TagCreate */
+        TagCreate: {
+            /** Name */
+            name: string;
+            /**
+             * Color
+             * @description Left out: the least used colour
+             */
+            color?: ("red" | "orange" | "amber" | "lime" | "green" | "teal" | "cyan" | "blue" | "indigo" | "violet" | "pink" | "brown" | "graphite") | null;
+        };
+        /** TagOut */
+        TagOut: {
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
+            /**
+             * Color
+             * @enum {string}
+             */
+            color: "red" | "orange" | "amber" | "lime" | "green" | "teal" | "cyan" | "blue" | "indigo" | "violet" | "pink" | "brown" | "graphite";
+        };
+        /** TagUpdate */
+        TagUpdate: {
+            /** Name */
+            name?: string | null;
+            /** Color */
+            color?: ("red" | "orange" | "amber" | "lime" | "green" | "teal" | "cyan" | "blue" | "indigo" | "violet" | "pink" | "brown" | "graphite") | null;
         };
         /** TokenRequest */
         TokenRequest: {
@@ -1456,6 +1878,455 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["InstanceStatus"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_calendars: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CalendarOut"][];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    create_calendar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CalendarCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CalendarOut"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    reorder_calendars: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CalendarOrder"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CalendarOut"][];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    delete_calendar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                calendar_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    update_calendar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                calendar_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CalendarUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CalendarOut"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_occurrences: {
+        parameters: {
+            query: {
+                /** @description Wall-clock in tz, or an ISO instant */
+                start: string;
+                /** @description Exclusive; at most 400 days after start */
+                end: string;
+                /** @description Display zone; the profile's if left out */
+                tz?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OccurrenceList"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    create_event: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EventCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventOut"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_event: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventOut"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    delete_event: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    update_event: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EventUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventOut"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_tags: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TagOut"][];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    create_tag: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TagCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TagOut"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    delete_tag: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tag_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    update_tag: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tag_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TagUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TagOut"];
                 };
             };
             /** @description Default Response */
