@@ -1,0 +1,2 @@
+# iCalendar fixtures keep their CRLF line endings, as real exports have them.
+*.ics -text
