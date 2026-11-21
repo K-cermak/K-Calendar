@@ -3,11 +3,19 @@ import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useQuery } from '@tanstack/vue-query'
 import { Plus } from '@lucide/vue'
-import { calendarsQuery, occurrenceQuery, useClock, useOccurrences } from '@/api/calendar'
+import {
+  calendarsQuery,
+  occurrenceQuery,
+  occurrencesQuery,
+  useClock,
+  useOccurrences,
+} from '@/api/calendar'
+import { queryClient } from '@/api/queryClient'
 import type { Occurrence } from '@/api/client'
 import { useMe } from '@/api/session'
 import { useCalendarNav } from '@/composables/useCalendarNav'
 import { useMediaQuery } from '@/composables/useMediaQuery'
+import { useOnline } from '@/composables/useOnline'
 import { useSwipe } from '@/composables/useSwipe'
 import { parseDate, rangeTitle, visibleRange, type PlainDate } from '@/dates'
 import type { CalendarView } from '@/router'
@@ -36,6 +44,27 @@ const defaultView = computed<CalendarView>(() => {
 })
 
 const nav = useCalendarNav(defaultView, now, compact)
+const online = useOnline()
+const readOnly = computed(() => !online.value)
+
+/*
+ * While online, a month back and three ahead are loaded quietly, so that offline there is more
+ * to read than the last screen (SPEC 12). The service worker cuts any view's range out of it.
+ */
+const PREFETCH_EVERY_MS = 30 * 60_000
+let lastPrefetch = 0
+watch(
+  () => [online.value, nav.today.value?.toString(), me.value?.timezone] as const,
+  ([isOnline, today, tz]) => {
+    if (!isOnline || !today || !tz || Date.now() - lastPrefetch < PREFETCH_EVERY_MS) return
+    lastPrefetch = Date.now()
+    const day = parseDate(today)
+    const start = day.subtract({ months: 1 }).toString()
+    const end = day.add({ months: 3 }).toString()
+    void queryClient.prefetchQuery(occurrencesQuery(start, end, tz)).catch(() => undefined)
+  },
+  { immediate: true },
+)
 
 // /event/:occurrenceId (a search result or a notification): go to its day and open it there.
 const pendingOpen = ref<Occurrence | null>(null)
@@ -128,7 +157,7 @@ useSwipe(main, (direction) => {
 </script>
 
 <template>
-  <div class="flex h-dvh flex-col">
+  <div class="flex h-full flex-col">
     <TopBar
       :view="nav.view.value"
       :compact="compact"
@@ -151,7 +180,7 @@ useSwipe(main, (direction) => {
           :today="nav.today.value"
           :week-start="me.week_start"
           :locale="me.locale"
-          :read-only="false"
+          :read-only="readOnly"
           show-mini-month
           @select="selectDay"
           @new-event="newEvent"
@@ -173,7 +202,7 @@ useSwipe(main, (direction) => {
           :me="me"
           :occurrences="visibleOccurrences"
           :filter="shows"
-          :read-only="false"
+          :read-only="readOnly"
           :pending-open="pendingOpen"
           @select="(day) => nav.goTo(day)"
           @opened="pendingOpen = null"
@@ -204,7 +233,7 @@ useSwipe(main, (direction) => {
           :today="nav.today.value"
           :week-start="me.week_start"
           :locale="me.locale"
-          :read-only="false"
+          :read-only="readOnly"
           :show-mini-month="false"
           @select="selectDay"
           @new-event="newEvent"
@@ -212,7 +241,7 @@ useSwipe(main, (direction) => {
       </div>
     </PhoneDrawer>
     <button
-      v-if="compact"
+      v-if="compact && !readOnly"
       type="button"
       class="ui-button ui-button--primary ui-button--icon fixed right-4 bottom-[max(16px,env(safe-area-inset-bottom))] z-20 size-14!"
       :aria-label="$t('shell.newEvent')"

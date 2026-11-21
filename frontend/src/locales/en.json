@@ -138,6 +138,17 @@
       "signOut": "Sign out",
       "signOutOthers": "Sign out everywhere else",
       "unknown": "Unknown device"
+    },
+    "device": {
+      "title": "This device",
+      "intro": "These settings apply to this browser only.",
+      "install": "Install the app",
+      "installed": "The app is installed on this device.",
+      "iosIntro": "On iPhone and iPad, add the app to the Home Screen to install it. Notifications work only there.",
+      "iosShare": "Tap the Share button in Safari.",
+      "iosAdd": "Choose Add to Home Screen.",
+      "installButton": "Install",
+      "browserMenu": "Your browser can install the app from its menu, for example Install app or Add to Home Screen."
     }
   },
   "admin": {
@@ -430,5 +441,12 @@
     "replaceTitle": "Replace the secret address?",
     "replaceMessage": "The current address stops working. Apps that use it need the new one.",
     "off": "Turn off"
+  },
+  "offline": {
+    "banner": "You are offline. You can read what was loaded before; changes are not possible until you are back online."
+  },
+  "pwa": {
+    "updateReady": "A new version is available.",
+    "reload": "Reload"
   }
 }

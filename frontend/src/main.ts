@@ -8,9 +8,11 @@ import { isFailure } from './api/client'
 import { queryClient } from './api/queryClient'
 import { sessionEnded } from './api/session'
 import { applyTheme, rememberedTheme } from './theme'
+import { captureInstallPrompt } from './pwa'
 import './styles/main.css'
 
 applyTheme(rememberedTheme())
+captureInstallPrompt()
 
 // A session revoked elsewhere (another device, deactivation) shows up as a 401 on any request.
 function onFailure(error: unknown): void {

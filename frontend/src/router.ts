@@ -40,6 +40,11 @@ export const routes: RouteRecordRaw[] = [
         name: 'settings-security',
         component: () => import('@/views/settings/SecuritySettings.vue'),
       },
+      {
+        path: 'device',
+        name: 'settings-device',
+        component: () => import('@/views/settings/DeviceSettings.vue'),
+      },
     ],
   },
   {

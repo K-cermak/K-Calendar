@@ -2,6 +2,7 @@ import { queryOptions, useQuery } from '@tanstack/vue-query'
 import { computed } from 'vue'
 import { api, call, isFailure, type Me, type PublicConfig } from './client'
 import { queryClient } from './queryClient'
+import { clearPersonalCaches, rememberUser } from '@/pwa'
 
 export const configQuery = queryOptions({
   queryKey: ['config'],
@@ -40,6 +41,7 @@ export function useConfig() {
 export function signedIn(me: Me): void {
   const previous = queryClient.getQueryData(meQuery.queryKey)
   if (previous && previous.id !== me.id) forgetEverything()
+  void rememberUser(me.id)
   queryClient.setQueryData(meQuery.queryKey, me)
   // Someone is signed in, so setup is over; the router reads this before the refetch is back.
   queryClient.setQueryData(configQuery.queryKey, (config) =>
@@ -64,6 +66,7 @@ export function sessionEnded(): void {
 }
 
 function forgetEverything(): void {
+  void clearPersonalCaches()
   const config = queryClient.getQueryData(configQuery.queryKey)
   queryClient.clear()
   if (config) queryClient.setQueryData(configQuery.queryKey, config)
