@@ -89,12 +89,6 @@ export const routes: RouteRecordRaw[] = [
     meta: { public: true },
   },
   {
-    path: '/showcase',
-    name: 'showcase',
-    component: () => import('@/views/ShowcaseView.vue'),
-    meta: { public: true },
-  },
-  {
     path: '/:pathMatch(.*)*',
     name: 'not-found',
     component: () => import('@/views/NotFoundView.vue'),
@@ -113,7 +107,7 @@ router.beforeEach(async (to) => {
     return true
   }
   if (config.setup_required) {
-    return to.name === 'setup' || to.name === 'showcase' ? true : { name: 'setup' }
+    return to.name === 'setup' ? true : { name: 'setup' }
   }
   const me = await queryClient.ensureQueryData(meQuery).catch(() => null)
   if (to.name === 'setup') return { name: me ? 'home' : 'login' }
