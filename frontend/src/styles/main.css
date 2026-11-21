@@ -136,3 +136,32 @@
     background: var(--swatch-color);
   }
 }
+
+/* The phone drawer slides in from the left; with reduced motion it fades. */
+.cal-drawer {
+  animation: drawer-in var(--motion) var(--motion-ease) both;
+
+  &[data-state='closed'] {
+    animation: drawer-out var(--motion-fast) var(--motion-ease) both;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    animation-name: ui-fade;
+
+    &[data-state='closed'] {
+      animation-name: ui-fade-out;
+    }
+  }
+}
+
+@keyframes drawer-in {
+  from {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes drawer-out {
+  to {
+    transform: translateX(-100%);
+  }
+}
