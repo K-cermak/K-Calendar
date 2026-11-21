@@ -109,6 +109,13 @@ const range = computed(() => {
   return { start: start.toString(), end: end.toString(), tz: me.value.timezone }
 })
 const occurrences = useOccurrences(range)
+// The agenda loads its own pages and shows its own progress.
+const rangeLoading = computed(
+  () =>
+    range.value !== null &&
+    (occurrences.isPending.value || occurrences.isPlaceholderData.value) &&
+    occurrences.isFetching.value,
+)
 
 // Hidden calendars are left out by the server too; filtering here as well makes a toggle instant.
 const hidden = computed(
@@ -162,6 +169,7 @@ useSwipe(main, (direction) => {
       :view="nav.view.value"
       :compact="compact"
       :title="title"
+      :loading="rangeLoading"
       @update:view="nav.setView"
       @menu="toggleMenu"
       @today="nav.goToday"
@@ -190,6 +198,7 @@ useSwipe(main, (direction) => {
         ref="main"
         class="relative flex min-w-0 flex-1 flex-col overflow-hidden"
         data-testid="calendar-area"
+        :aria-busy="rangeLoading"
       >
         <CalendarArea
           v-if="me && nav.anchor.value"

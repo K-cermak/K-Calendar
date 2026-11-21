@@ -267,3 +267,7 @@
     transform: translateY(100%);
   }
 }
+
+.cal-delayed {
+  animation: ui-fade 150ms 300ms both;
+}
