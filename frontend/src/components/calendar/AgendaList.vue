@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useInfiniteQuery } from '@tanstack/vue-query'
 import { api, call, type Occurrence } from '@/api/client'
 import { formatDate, parseDate, type PlainDate } from '@/dates'
+import UiSpinner from '@/components/ui/UiSpinner.vue'
 import AgendaDay from './AgendaDay.vue'
 import { groupByDay } from './groupByDay'
 
@@ -57,6 +58,19 @@ onMounted(() => {
 })
 onUnmounted(() => observer?.disconnect())
 
+// An observer reports only changes. After a page with few or no events the end of the list is
+// still in view, so observing it afresh asks for the next page, until the list fills the screen
+// or the year has been searched.
+watch(
+  () => pages.data.value?.pages.length,
+  () => {
+    if (!observer || !sentinel.value) return
+    observer.unobserve(sentinel.value)
+    observer.observe(sentinel.value)
+  },
+  { flush: 'post' },
+)
+
 function dayLabel(day: string): string {
   return formatDate(parseDate(day), props.locale, {
     weekday: 'short',
@@ -94,6 +108,9 @@ function dayLabel(day: string): string {
       />
     </section>
     <!-- Tall enough that the last day scrolls clear of the round button on a phone. -->
-    <div ref="sentinel" class="h-24" />
+    <div ref="sentinel" class="flex h-24 justify-center pt-6 text-muted">
+      <UiSpinner v-if="pages.isFetching.value" />
+      <span v-if="pages.isFetching.value" class="sr-only">{{ $t('common.loading') }}</span>
+    </div>
   </div>
 </template>
