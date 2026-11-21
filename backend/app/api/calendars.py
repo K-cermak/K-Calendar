@@ -1,3 +1,6 @@
+import re
+from urllib.parse import quote
+
 from fastapi import APIRouter, Response, UploadFile, status
 
 from app.api.deps import AppSettings, CurrentAuth
@@ -98,8 +101,14 @@ def export_calendar(calendar_id: int, auth: CurrentAuth, db: DbSession) -> Respo
     return Response(
         ics.serialize(db, calendar),
         media_type="text/calendar; charset=utf-8",
-        headers={"Content-Disposition": 'attachment; filename="calendar.ics"'},
+        headers={"Content-Disposition": _attachment(calendar.name)},
     )
+
+
+def _attachment(name: str) -> str:
+    """The calendar's name as the file name: plain ASCII for old clients, UTF-8 for the rest."""
+    ascii_name = re.sub(r"[^A-Za-z0-9._-]+", "-", name).strip("-") or "calendar"
+    return f"attachment; filename=\"{ascii_name}.ics\"; filename*=UTF-8''{quote(name)}.ics"
 
 
 @router.post("/{calendar_id}/import")

@@ -136,7 +136,9 @@ def test_export_and_import_round_trip(admin: TestClient) -> None:
     response = admin.get(f"/api/v1/calendars/{source}/export")
     assert response.status_code == 200
     assert response.headers["content-type"].startswith("text/calendar")
-    assert "attachment" in response.headers["content-disposition"]
+    assert response.headers["content-disposition"] == (
+        "attachment; filename=\"Personal.ics\"; filename*=UTF-8''Personal.ics"
+    )
     body = response.content
     assert b"BEGIN:VTIMEZONE" in body
     assert b"UNTIL=20261221T225959Z" in body  # wall-clock UNTIL goes out in UTC
