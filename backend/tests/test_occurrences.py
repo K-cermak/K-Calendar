@@ -145,3 +145,35 @@ def test_only_own_events_are_listed(admin: TestClient, make_user: Callable[..., 
     create_event(admin, title="Mine")
     assert [o["title"] for o in occurrences(admin, "2026-11-23", "2026-11-24")] == ["Mine"]
     assert [o["title"] for o in occurrences(other, "2026-11-23", "2026-11-24")] == ["Theirs"]
+
+
+def test_one_occurrence_by_its_id(admin: TestClient, make_user: Callable[..., TestClient]) -> None:
+    single = create_event(admin, title="Single")
+    series = create_event(admin, title="Series", rrule="FREQ=DAILY;COUNT=3")
+    admin.patch(
+        f"/api/v1/events/{series['id']}",
+        params={"scope": "this", "occurrence": "20261124T090000"},
+        json={"title": "Moved", "start": "2026-11-28T15:00", "end": "2026-11-28T16:00"},
+    )
+
+    def one(occurrence_id: str, tz: str = "Europe/Prague") -> dict[str, object]:
+        return admin.get(f"/api/v1/occurrences/{occurrence_id}", params={"tz": tz}).json()
+
+    assert one(str(single["id"]))["start"] == "2026-11-23T09:00:00"
+    assert one(str(single["id"]), "UTC")["start"] == "2026-11-23T08:00:00"
+    generated = one(f"{series['id']}_20261125T090000")
+    assert (generated["title"], generated["start"], generated["occurrence"]) == (
+        "Series",
+        "2026-11-25T09:00:00",
+        "20261125T090000",
+    )
+    moved = one(f"{series['id']}_20261124T090000")
+    assert (moved["title"], moved["start"], moved["event_id"]) == (
+        "Moved",
+        "2026-11-28T15:00:00",
+        series["id"],
+    )
+    for missing in (f"{series['id']}_20261126T090000", "abc", f"{single['id']}_20261123T090000", "999"):
+        assert admin.get(f"/api/v1/occurrences/{missing}").status_code == 404, missing
+    other = make_user()
+    assert other.get(f"/api/v1/occurrences/{single['id']}").status_code == 404

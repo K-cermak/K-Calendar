@@ -4,8 +4,16 @@ from fastapi import APIRouter, Query, status
 
 from app.api.deps import CurrentAuth
 from app.db import DbSession
-from app.schemas.calendar import EditScope, EventCreate, EventOut, EventUpdate, OccurrenceList
-from app.services import events, occurrences
+from app.schemas.calendar import (
+    EditScope,
+    EventCreate,
+    EventOut,
+    EventUpdate,
+    Occurrence,
+    OccurrenceList,
+    SearchResult,
+)
+from app.services import events, occurrences, search
 
 router = APIRouter(tags=["events"])
 
@@ -22,6 +30,19 @@ def list_occurrences(
 ) -> OccurrenceList:
     """Everything a view shows: ready-made occurrences with wall-clock times in the display zone."""
     return occurrences.list_for(db, auth.user, start, end, tz)
+
+
+@router.get("/occurrences/{occurrence_id}")
+def get_occurrence(
+    occurrence_id: str,
+    auth: CurrentAuth,
+    db: DbSession,
+    tz: Annotated[
+        str | None, Query(max_length=64, description="Display zone; the profile's if left out")
+    ] = None,
+) -> Occurrence:
+    """One occurrence by its id from the occurrence list, as /event/{id} links use it."""
+    return occurrences.get_one(db, auth.user, occurrence_id, tz)
 
 
 @router.post("/events", status_code=status.HTTP_201_CREATED)
@@ -67,3 +88,17 @@ def delete_event(
     event_id: int, auth: CurrentAuth, db: DbSession, scope: Scope = None, occurrence: OccurrenceKey = None
 ) -> None:
     events.delete(db, auth.user, event_id, scope=scope, occurrence=occurrence)
+
+
+@router.get("/search")
+def search_events(
+    auth: CurrentAuth,
+    db: DbSession,
+    q: Annotated[str, Query(max_length=200, description="Words to find; each may be the start of a word")],
+    tz: Annotated[
+        str | None, Query(max_length=64, description="Display zone; the profile's if left out")
+    ] = None,
+) -> list[SearchResult]:
+    """Events whose title, description, location or tags match, in all calendars, hidden ones too.
+    Upcoming ones come first, nearest first, then past ones, most recent first."""
+    return search.search(db, auth.user, q, tz)

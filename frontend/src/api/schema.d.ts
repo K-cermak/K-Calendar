@@ -471,6 +471,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/occurrences/{occurrence_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Occurrence
+         * @description One occurrence by its id from the occurrence list, as /event/{id} links use it.
+         */
+        get: operations["get_occurrence"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/events": {
         parameters: {
             query?: never;
@@ -511,6 +531,27 @@ export interface paths {
          * @description Changes an event. For an occurrence of a series, scope says which occurrences change.
          */
         patch: operations["update_event"];
+        trace?: never;
+    };
+    "/api/v1/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Search Events
+         * @description Events whose title, description, location or tags match, in all calendars, hidden ones too.
+         *     Upcoming ones come first, nearest first, then past ones, most recent first.
+         */
+        get: operations["search_events"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/v1/tags": {
@@ -1066,6 +1107,52 @@ export interface components {
              * @description The browser's zone, if known
              */
             timezone?: string | null;
+        };
+        /**
+         * SearchResult
+         * @description An event that matched, shown at its next occurrence, or its last one if all are past.
+         */
+        SearchResult: {
+            /**
+             * Occurrence Id
+             * @description Open it with /event/{occurrence_id}
+             */
+            occurrence_id: string;
+            /** Event Id */
+            event_id: number;
+            /** Occurrence */
+            occurrence: string | null;
+            /** Calendar Id */
+            calendar_id: number;
+            /** Title */
+            title: string;
+            /** Location */
+            location: string;
+            /**
+             * Color
+             * @enum {string}
+             */
+            color: "red" | "orange" | "amber" | "lime" | "green" | "teal" | "cyan" | "blue" | "indigo" | "violet" | "pink" | "brown" | "graphite";
+            /** All Day */
+            all_day: boolean;
+            /**
+             * Start
+             * @description Wall-clock in the display zone; a date for all-day events
+             */
+            start: string;
+            /** End */
+            end: string;
+            /**
+             * Start Utc
+             * Format: date-time
+             */
+            start_utc: string;
+            /** Upcoming */
+            upcoming: boolean;
+            /** Recurring */
+            recurring: boolean;
+            /** Tags */
+            tags: components["schemas"]["TagOut"][];
         };
         /** SessionInfo */
         SessionInfo: {
@@ -2179,6 +2266,40 @@ export interface operations {
             };
         };
     };
+    get_occurrence: {
+        parameters: {
+            query?: {
+                /** @description Display zone; the profile's if left out */
+                tz?: string | null;
+            };
+            header?: never;
+            path: {
+                occurrence_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Occurrence"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     create_event: {
         parameters: {
             query?: never;
@@ -2307,6 +2428,40 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["EventOut"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    search_events: {
+        parameters: {
+            query: {
+                /** @description Words to find; each may be the start of a word */
+                q: string;
+                /** @description Display zone; the profile's if left out */
+                tz?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SearchResult"][];
                 };
             };
             /** @description Default Response */

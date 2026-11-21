@@ -265,7 +265,7 @@ class Target:
         return replace(master, start=self.original_start, end=self.original_start + master.duration)
 
 
-def _target(db: Session, user: User, event_id: int, occurrence: str | None) -> Target:
+def resolve_target(db: Session, user: User, event_id: int, occurrence: str | None) -> Target:
     event, calendar = get_owned(db, user, event_id)
     if event.recurring_event_id is not None:
         # An override addressed by its own id stands for that occurrence of its series.
@@ -282,7 +282,7 @@ def _target(db: Session, user: User, event_id: int, occurrence: str | None) -> T
 
 
 def get(db: Session, user: User, event_id: int, occurrence: str | None = None) -> EventOut:
-    target = _target(db, user, event_id, occurrence)
+    target = resolve_target(db, user, event_id, occurrence)
     if target.original_start is None:
         return to_out(db, target.event, target.calendar)
     if target.override is not None:
@@ -509,7 +509,7 @@ def update(
     scope: EditScope | None = None,
     occurrence: str | None = None,
 ) -> EventOut:
-    target = _target(db, user, event_id, occurrence)
+    target = resolve_target(db, user, event_id, occurrence)
     calendars.get_writable(db, user, target.calendar.id)
     if not target.is_series or target.original_start is None:
         if body.calendar_id is not None and body.calendar_id != target.calendar.id:
@@ -544,7 +544,7 @@ def delete(
     scope: EditScope | None = None,
     occurrence: str | None = None,
 ) -> None:
-    target = _target(db, user, event_id, occurrence)
+    target = resolve_target(db, user, event_id, occurrence)
     calendars.get_writable(db, user, target.calendar.id)
     master = target.event
     if not target.is_series or target.original_start is None or scope == "all":

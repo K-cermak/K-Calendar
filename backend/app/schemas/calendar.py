@@ -144,3 +144,22 @@ class OccurrenceList(BaseModel):
     timezone: str
     now: str = Field(description="The current wall-clock time in the display zone")
     items: list[Occurrence]
+
+
+class SearchResult(BaseModel):
+    """An event that matched, shown at its next occurrence, or its last one if all are past."""
+
+    occurrence_id: str = Field(description="Open it with /event/{occurrence_id}")
+    event_id: int
+    occurrence: str | None
+    calendar_id: int
+    title: str
+    location: str
+    color: PaletteColor
+    all_day: bool
+    start: str = Field(description="Wall-clock in the display zone; a date for all-day events")
+    end: str
+    start_utc: datetime
+    upcoming: bool
+    recurring: bool
+    tags: list[TagOut]
