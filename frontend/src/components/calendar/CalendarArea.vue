@@ -119,6 +119,14 @@ const detailReference = computed(() => {
   return rect ? { getBoundingClientRect: () => rect } : undefined
 })
 
+// Focus goes to the panel rather than its first button, so a click does not leave a focus ring
+// on Edit; Tab still moves on to the buttons. The event comes from the positioning wrapper.
+function focusPanel(event: Event): void {
+  event.preventDefault()
+  const panel = (event.target as HTMLElement).querySelector<HTMLElement>('[role="dialog"]')
+  panel?.focus()
+}
+
 async function editFromDetail(): Promise<void> {
   if (!detail.value) return
   const event = await queryClient.fetchQuery(
@@ -286,11 +294,12 @@ defineExpose({ newEvent })
     <PopoverAnchor :reference="detailReference" />
     <PopoverPortal>
       <PopoverContent
-        class="ui-panel w-[360px] p-4"
+        class="ui-panel w-[360px] p-4 outline-none"
         side="right"
         align="start"
         :side-offset="8"
         :collision-padding="12"
+        @open-auto-focus="focusPanel"
       >
         <EventDetailView
           v-if="detail"
