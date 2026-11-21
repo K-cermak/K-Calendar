@@ -363,7 +363,9 @@ onMounted(loadTotp)
           <span class="ui-meta">
             {{ $t('settings.sessions.lastUsed', { time: when(item.last_seen_at_utc) }) }}
             <template v-if="item.ip"> · {{ item.ip }}</template>
-            <template v-if="item.auth_method === 'oidc'"> · SSO</template>
+            <template v-if="item.auth_method === 'oidc'">
+              · {{ $t('settings.sessions.sso') }}</template
+            >
           </span>
         </div>
         <UiButton v-if="!item.current" size="sm" variant="ghost" @click="revoke(item.id)">

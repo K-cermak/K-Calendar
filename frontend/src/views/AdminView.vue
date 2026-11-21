@@ -259,7 +259,7 @@ async function deleteUser(user: AdminUser): Promise<void> {
             </span>
           </div>
           <span v-if="user.is_admin" class="ui-badge">{{ $t('admin.users.admin') }}</span>
-          <span v-if="user.totp_enabled" class="ui-badge">2FA</span>
+          <span v-if="user.totp_enabled" class="ui-badge">{{ $t('admin.users.twoStep') }}</span>
           <span v-if="!user.is_active" class="ui-badge ui-badge--error">
             {{ $t('admin.users.inactive') }}
           </span>
