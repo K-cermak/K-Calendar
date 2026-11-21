@@ -95,9 +95,9 @@ Section 5 (expanding, editing a series, the editor).
 
 Section 9.
 
-- [ ] FTS5 table kept in sync with events and tags
-- [ ] `GET /search` with prefix matching, diacritic folding and the result ordering from the spec
-- [ ] Search field with live results; choosing one navigates and opens the event
+- [x] FTS5 table kept in sync with events and tags
+- [x] `GET /search` with prefix matching, diacritic folding and the result ordering from the spec
+- [x] Search field with live results; choosing one navigates and opens the event
 
 **Acceptance:** Typing "zubar" finds an event titled "Zubař". A recurring event appears once, pointing at its next occurrence.
 
