@@ -127,6 +127,23 @@ function focusPanel(event: Event): void {
   panel?.focus()
 }
 
+// The grid may have drawn the event anew while its details were open, so Reka's own return of
+// focus would find the old element gone and drop focus on the page. A click elsewhere keeps its
+// focus.
+function returnFocus(event: Event): void {
+  const active = document.activeElement
+  if (active && active !== document.body && !(event.target as HTMLElement).contains(active)) return
+  const block = detail.value
+    ? document
+        .querySelector(`[data-testid="event-${detail.value.id}"]`)
+        ?.closest<HTMLElement>('[tabindex]')
+    : null
+  if (block) {
+    event.preventDefault()
+    block.focus()
+  }
+}
+
 async function editFromDetail(): Promise<void> {
   if (!detail.value) return
   const event = await queryClient.fetchQuery(
@@ -300,6 +317,7 @@ defineExpose({ newEvent })
         :side-offset="8"
         :collision-padding="12"
         @open-auto-focus="focusPanel"
+        @close-auto-focus="returnFocus"
       >
         <EventDetailView
           v-if="detail"
