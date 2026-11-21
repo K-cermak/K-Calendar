@@ -82,12 +82,12 @@ Section 11.
 
 Section 5 (expanding, editing a series, the editor).
 
-- [ ] Expansion in `services/recurrence.py` with exdates, overrides and the safety limits
-- [ ] The three edit scopes for update and delete
-- [ ] Occurrence ids; `scope` and `occurrence` parameters on the event endpoints
-- [ ] Recurrence editor: presets, custom rule, readable summary, handling of rules it cannot represent
-- [ ] Scope dialog on edit, delete and drag of a series occurrence
-- [ ] The full recurrence test list from section 17
+- [x] Expansion in `services/recurrence.py` with exdates, overrides and the safety limits
+- [x] The three edit scopes for update and delete
+- [x] Occurrence ids; `scope` and `occurrence` parameters on the event endpoints
+- [x] Recurrence editor: presets, custom rule, readable summary, handling of rules it cannot represent
+- [x] Scope dialog on edit, delete and drag of a series occurrence
+- [x] The full recurrence test list from section 17
 
 **Acceptance:** A weekly meeting stays at the same local time across a daylight saving change. I can move one occurrence, delete another, change "this and following" to a new time, and each change affects exactly the occurrences it should.
 
