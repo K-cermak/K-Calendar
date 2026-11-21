@@ -5,13 +5,14 @@ from pathlib import Path
 
 from fastapi import FastAPI
 
-from app.api import public
+from app.api import admin, auth, me, public
 from app.branding import REPO_ROOT, get_branding
 from app.config import Settings, load_settings
 from app.db import Database
 from app.errors import ErrorResponse, install_error_handlers
 from app.migrations import run_migrations
 from app.security import SecurityMiddleware, install_log_redaction
+from app.services.auth.throttle import LoginThrottle
 from app.spa import install_spa
 from app.version import VERSION
 
@@ -50,10 +51,11 @@ def create_app(settings: Settings | None = None, static_dir: Path | None = None)
         generate_unique_id_function=lambda route: route.name,
     )
     app.state.settings = settings
+    app.state.throttle = LoginThrottle()
     install_error_handlers(app)
     install_log_redaction()
     app.add_middleware(SecurityMiddleware, base_url=settings.base_url, docs_path="/api/docs")
-    for router in (public.router,):
+    for router in (public.router, auth.router, me.router, admin.router):
         app.include_router(router, prefix=API_PREFIX)
     install_spa(app, static_dir or DEFAULT_STATIC_DIR)
     return app

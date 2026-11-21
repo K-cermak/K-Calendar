@@ -1,20 +1,34 @@
 import os
 from logging.config import fileConfig
 from pathlib import Path
+from typing import Any, Literal
 
 from sqlalchemy import Connection
 
 import app.models  # noqa: F401  # pyright: ignore[reportUnusedImport]  registers the models on Base.metadata
 from alembic import context
 from app.db import Base, make_engine
+from app.models.types import UtcDateTime
 
 config = context.config
 target_metadata = Base.metadata
 
 
+def _render_item(type_: str, obj: Any, _autogen_context: Any) -> str | Literal[False]:
+    # Migrations must not import app code that may change later; the stored form is a plain DATETIME.
+    if type_ == "type" and isinstance(obj, UtcDateTime):
+        return "sa.DateTime()"
+    return False
+
+
 def _migrate(connection: Connection) -> None:
     # Batch mode lets autogenerate express ALTER TABLE changes that SQLite does not support natively.
-    context.configure(connection=connection, target_metadata=target_metadata, render_as_batch=True)
+    context.configure(
+        connection=connection,
+        target_metadata=target_metadata,
+        render_as_batch=True,
+        render_item=_render_item,
+    )
     with context.begin_transaction():
         context.run_migrations()
 

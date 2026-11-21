@@ -6,3 +6,14 @@ from pydantic import BaseModel
 class HealthResponse(BaseModel):
     status: Literal["ok"]
     version: str
+
+
+class PublicConfig(BaseModel):
+    app_name: str
+    version: str
+    setup_required: bool
+    registration_open: bool
+    password_login_enabled: bool
+    oidc_enabled: bool
+    oidc_provider_name: str
+    email_enabled: bool

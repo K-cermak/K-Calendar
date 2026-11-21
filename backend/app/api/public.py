@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Response
 
+from app.api.deps import AppSettings
 from app.db import DbSession
-from app.schemas.public import HealthResponse
+from app.schemas.public import HealthResponse, PublicConfig
 from app.services import instance
 from app.version import VERSION
 
@@ -19,3 +20,9 @@ def health(session: DbSession) -> HealthResponse:
 def health_head(session: DbSession) -> Response:
     instance.check_database(session)
     return Response()
+
+
+@router.get("/config")
+def config(settings: AppSettings, session: DbSession) -> PublicConfig:
+    """What the app needs before anyone signs in: the name, and which ways in are open."""
+    return instance.public_config(settings, session)
