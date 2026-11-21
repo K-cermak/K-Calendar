@@ -57,6 +57,13 @@ const resetLink = ref<{ user: AdminUser; link: CreatedLink } | null>(null)
 const copied = ref(false)
 const create = useSubmit()
 const toggle = useSubmit()
+const testMail = useSubmit()
+const testMailSent = ref(false)
+
+async function sendTestMail(): Promise<void> {
+  testMailSent.value = false
+  testMailSent.value = await testMail.run(() => call(() => api.POST('/api/v1/admin/test-email')))
+}
 const userAction = useSubmit()
 
 function when(iso: string): string {
@@ -194,6 +201,7 @@ async function deleteUser(user: AdminUser): Promise<void> {
           </UiButton>
         </div>
         <p class="ui-meta">{{ $t('admin.invite.once', { when: when(link.expires_at_utc) }) }}</p>
+        <p v-if="link.emailed" class="text-label text-success">{{ $t('admin.invite.emailed') }}</p>
       </div>
       <ul v-if="invites.data.value?.length" class="border border-line">
         <li
@@ -333,6 +341,10 @@ async function deleteUser(user: AdminUser): Promise<void> {
         <dd>
           {{ $t(status.data.value.smtp_configured ? 'admin.status.yes' : 'admin.status.no') }}
         </dd>
+        <dt class="text-muted">{{ $t('admin.status.push') }}</dt>
+        <dd>
+          {{ $t(status.data.value.push_configured ? 'admin.status.yes' : 'admin.status.no') }}
+        </dd>
         <dt class="text-muted">{{ $t('admin.status.oidc') }}</dt>
         <dd>
           {{ $t(status.data.value.oidc_configured ? 'admin.status.yes' : 'admin.status.no') }}
@@ -344,6 +356,20 @@ async function deleteUser(user: AdminUser): Promise<void> {
           }}
         </dd>
       </dl>
+      <div v-if="status.data.value.smtp_configured" class="flex flex-col gap-2">
+        <UiButton
+          class="self-start"
+          :loading="testMail.pending.value"
+          data-testid="test-mail"
+          @click="sendTestMail"
+        >
+          {{ $t('admin.status.testMail') }}
+        </UiButton>
+        <UiNotice v-if="testMailSent" tone="success">
+          {{ $t('admin.status.testMailSent', { email: me?.email }) }}
+        </UiNotice>
+        <UiNotice v-if="testMail.error.value" tone="error">{{ testMail.error.value }}</UiNotice>
+      </div>
     </section>
   </main>
 </template>

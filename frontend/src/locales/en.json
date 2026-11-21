@@ -5,7 +5,8 @@
     "close": "Close",
     "undo": "Undo",
     "save": "Save",
-    "saved": "Changes saved"
+    "saved": "Changes saved",
+    "add": "Add"
   },
   "home": {
     "version": "Version {version}"
@@ -24,7 +25,12 @@
     "submit": "Sign in",
     "invalid": "The e-mail address or password is not correct.",
     "forgot": "Forgot your password? Ask your administrator for a reset link.",
-    "noAccount": "No account yet?"
+    "noAccount": "No account yet?",
+    "forgotLink": "Forgot your password?",
+    "resetTitle": "Reset your password",
+    "resetIntro": "Enter your e-mail address. If it belongs to an account, a link to set a new password is on its way.",
+    "resetSubmit": "Send the link",
+    "resetSent": "If the address has an account, the link is on its way. It works for 24 hours."
   },
   "setup": {
     "title": "Set up {name}",
@@ -88,7 +94,10 @@
     "scope_required": "Choose which events to change.",
     "rule_for_series": "Change the repetition for the whole series.",
     "calendar_for_series": "Move the whole series to another calendar.",
-    "invalid_occurrence": "This occurrence does not exist."
+    "invalid_occurrence": "This occurrence does not exist.",
+    "email_disabled": "E-mail is not set up on this server.",
+    "email_failed": "The e-mail could not be sent. Check the SMTP settings.",
+    "invalid_reminder": "A reminder can be at most four weeks before."
   },
   "shell": {
     "openMenu": "Open menu",
@@ -119,7 +128,9 @@
       "hours12": "12-hour",
       "defaultView": "Default view",
       "defaultViewHint": "Automatic is week on a large screen and agenda on a phone.",
-      "auto": "Automatic"
+      "auto": "Automatic",
+      "emailReminders": "Send reminders by e-mail too",
+      "emailRemindersHint": "To {email}, in addition to notifications."
     },
     "security": {
       "title": "Security"
@@ -148,21 +159,30 @@
       "iosShare": "Tap the Share button in Safari.",
       "iosAdd": "Choose Add to Home Screen.",
       "installButton": "Install",
-      "browserMenu": "Your browser can install the app from its menu, for example Install app or Add to Home Screen."
+      "browserMenu": "Your browser can install the app from its menu, for example Install app or Add to Home Screen.",
+      "notifications": "Notifications",
+      "notificationsIntro": "Reminders appear as notifications on every device where you turn them on.",
+      "iosPush": "On iPhone and iPad, notifications work only once the app is on the Home Screen. Add it as shown below, open it from there and turn notifications on.",
+      "noPush": "This browser does not support notifications.",
+      "pushDenied": "Notifications are blocked for this site. Allow them in the browser's site settings, then come back.",
+      "pushOn": "Reminders arrive on this device.",
+      "pushTurnOn": "Turn on notifications",
+      "pushTurnOff": "Turn off notifications"
     }
   },
   "admin": {
     "title": "Administration",
     "invite": {
       "title": "Invite people",
-      "description": "Create a link and pass it on. It works once and expires after 7 days.",
+      "description": "Create a link and pass it on, or enter an e-mail address to send it there too. It works once and expires after 7 days.",
       "email": "E-mail address (optional)",
       "create": "Create invite link",
       "copy": "Copy link",
       "once": "Works once. Expires {when}.",
       "anyone": "Anyone with the link",
       "expires": "expires {when}",
-      "revoke": "Revoke invite"
+      "revoke": "Revoke invite",
+      "emailed": "The link was also sent by e-mail."
     },
     "users": {
       "title": "Users",
@@ -196,7 +216,10 @@
       "yes": "Configured",
       "no": "Not configured",
       "on": "On",
-      "off": "Off"
+      "off": "Off",
+      "push": "Push notifications",
+      "testMail": "Send a test e-mail",
+      "testMailSent": "A test e-mail is on its way to {email}."
     }
   },
   "theme": {
@@ -315,7 +338,9 @@
     "description": "Choose a name and a colour for the calendar.",
     "add": "Add a calendar",
     "settings": "Settings",
-    "settingsTitle": "Calendar settings"
+    "settingsTitle": "Calendar settings",
+    "defaultReminder": "Default reminder",
+    "defaultReminderHint": "New events in this calendar start with this reminder."
   },
   "tags": {
     "empty": "Tags you add to events appear here.",
@@ -448,5 +473,29 @@
   "pwa": {
     "updateReady": "A new version is available.",
     "reload": "Reload"
+  },
+  "reminders": {
+    "label": "Reminders",
+    "add": "Add reminder",
+    "custom": "Custom…",
+    "remove": "Remove reminder",
+    "atStart": "At the start",
+    "before": {
+      "minutes": "{n} minute before | {n} minutes before",
+      "hours": "{n} hour before | {n} hours before",
+      "days": "{n} day before | {n} days before"
+    },
+    "sameDay": "On the day at {time}",
+    "dayBefore": "The day before at {time}",
+    "none": "No reminders",
+    "unit": {
+      "minutes": "minutes",
+      "hours": "hours",
+      "days": "days"
+    },
+    "beforeWord": "before",
+    "onTheDay": "On the day",
+    "theDayBefore": "The day before",
+    "at": "at"
   }
 }

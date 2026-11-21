@@ -3,12 +3,13 @@ import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { ProfileUpdate } from '@/api/client'
 import { useUpdateProfile } from '@/api/profile'
-import { useMe } from '@/api/session'
+import { useConfig, useMe } from '@/api/session'
 import { useSubmit } from '@/composables/useSubmit'
 import { LOCALES } from '@/i18n'
 import { VIEWS } from '@/router'
 import { useToastStore } from '@/stores/toast'
 import ThemeSwitch from '@/components/ThemeSwitch.vue'
+import UiCheckbox from '@/components/ui/UiCheckbox.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiField from '@/components/ui/UiField.vue'
 import UiInput from '@/components/ui/UiInput.vue'
@@ -17,6 +18,7 @@ import UiSegmented from '@/components/ui/UiSegmented.vue'
 
 const { t } = useI18n()
 const me = useMe()
+const config = useConfig()
 const toast = useToastStore()
 const mutation = useUpdateProfile()
 const { error, run } = useSubmit()
@@ -140,6 +142,20 @@ function selected(event: Event): string {
         </option>
       </select>
     </UiField>
+    <label v-if="config?.email_enabled" class="flex cursor-pointer items-start gap-3">
+      <UiCheckbox
+        :model-value="me.email_reminders_enabled"
+        class="mt-0.5"
+        data-testid="email-reminders"
+        @update:model-value="update({ email_reminders_enabled: $event === true })"
+      />
+      <span class="flex flex-col">
+        <span>{{ $t('settings.profile.emailReminders') }}</span>
+        <span class="text-label text-muted">{{
+          $t('settings.profile.emailRemindersHint', { email: me.email })
+        }}</span>
+      </span>
+    </label>
     <div class="flex flex-col gap-2">
       <span class="ui-label">{{ $t('theme.label') }}</span>
       <ThemeSwitch :model-value="me.theme" @update:model-value="(theme) => update({ theme })" />
