@@ -148,10 +148,10 @@ Section 8.
 
 Section 6 (TOTP, OIDC, API tokens).
 
-- [ ] TOTP enrolment with QR code, confirmation, recovery codes; two-step login; disable; admin reset
-- [ ] OIDC login with the account resolution order from the spec; link and unlink in settings; `APP_PASSWORD_LOGIN_ENABLED`, including first-run setup through OIDC when password login is off
-- [ ] API tokens: create with scope and expiry, show once, list, revoke; Bearer authentication; scope enforcement and the blocked endpoint groups
-- [ ] Tests for each flow, with a fake OIDC provider
+- [x] TOTP enrolment with QR code, confirmation, recovery codes; two-step login; disable; admin reset
+- [x] OIDC login with the account resolution order from the spec; link and unlink in settings; `APP_PASSWORD_LOGIN_ENABLED`, including first-run setup through OIDC when password login is off
+- [x] API tokens: create with scope and expiry, show once, list, revoke; Bearer authentication; scope enforcement and the blocked endpoint groups
+- [x] Tests for each flow, with a fake OIDC provider
 
 **Acceptance:** With TOTP on, login asks for a code and a recovery code works once. Login through a real provider (for example a local Keycloak or Authentik) works, and an unknown user is refused unless auto-provisioning is on. A read token can list occurrences with `curl` and is refused when it tries to create an event or touch `/me/tokens`.
 
