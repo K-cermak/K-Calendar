@@ -78,7 +78,17 @@
     "invalid_datetime": "Enter a valid date and time.",
     "invalid_order": "The order could not be saved.",
     "range_too_long": "That range is too long.",
-    "invalid_range": "That range is not valid."
+    "invalid_range": "That range is not valid.",
+    "invalid_url": "Enter an http, https or webcal address.",
+    "invalid_ics": "This is not an iCalendar (.ics) file.",
+    "file_too_large": "The file is larger than 10 MB.",
+    "not_subscription": "This calendar is not a subscription.",
+    "unsupported_rrule": "This repetition is not supported.",
+    "invalid_rrule": "This repetition is not valid.",
+    "scope_required": "Choose which events to change.",
+    "rule_for_series": "Change the repetition for the whole series.",
+    "calendar_for_series": "Move the whole series to another calendar.",
+    "invalid_occurrence": "This occurrence does not exist."
   },
   "shell": {
     "openMenu": "Open menu",
@@ -288,11 +298,13 @@
     "name": "Name",
     "color": "Colour",
     "actions": "Actions for {name}",
-    "edit": "Rename and recolour",
     "delete": "Delete calendar",
     "deleteTitle": "Delete {name}?",
     "deleteMessage": "The calendar and all its events are deleted for good.",
-    "description": "Choose a name and a colour for the calendar."
+    "description": "Choose a name and a colour for the calendar.",
+    "add": "Add a calendar",
+    "settings": "Settings",
+    "settingsTitle": "Calendar settings"
   },
   "tags": {
     "empty": "Tags you add to events appear here.",
@@ -380,5 +392,43 @@
   "search": {
     "placeholder": "Search events",
     "none": "No events found."
+  },
+  "subscription": {
+    "title": "Subscription",
+    "newTitle": "Subscribe to a calendar",
+    "newDescription": "Add a calendar from an address such as a public holiday calendar. It stays read-only and refreshes by itself.",
+    "url": "Calendar address",
+    "name": "Name",
+    "nameHint": "Left empty, the address's host name is used.",
+    "subscribe": "Subscribe",
+    "added": "Subscribed.",
+    "addedWithError": "Subscribed, but the first refresh failed: {error}",
+    "failed": "The last refresh failed: {error}",
+    "lastRefresh": "Last refreshed {when}",
+    "never": "Not refreshed yet",
+    "refresh": "Refresh now",
+    "interval": "Refresh",
+    "minutes": "Every minute | Every {n} minutes",
+    "hours": "Every hour | Every {n} hours",
+    "readOnly": "Events in a subscribed calendar are read-only. Changes come from the source.",
+    "hasError": "The last refresh failed"
+  },
+  "transfer": {
+    "title": "Import and export",
+    "description": "Bring in events from an .ics file, or download this calendar as one.",
+    "export": "Export .ics",
+    "import": "Import .ics",
+    "result": "Created {created}, updated {updated}, skipped {skipped}."
+  },
+  "feed": {
+    "title": "Secret address",
+    "description": "Add this calendar to another calendar app, such as Google Calendar or a phone. It is read-only there.",
+    "on": "Create a secret address",
+    "copy": "Copy address",
+    "secret": "Anyone with this address can see the events. Keep it private.",
+    "replace": "New address",
+    "replaceTitle": "Replace the secret address?",
+    "replaceMessage": "The current address stops working. Apps that use it need the new one.",
+    "off": "Turn off"
   }
 }

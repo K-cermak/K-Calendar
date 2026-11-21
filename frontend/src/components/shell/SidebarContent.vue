@@ -9,7 +9,7 @@ import {
   DropdownMenuRoot,
   DropdownMenuTrigger,
 } from 'reka-ui'
-import { Check, EllipsisVertical, Plus } from '@lucide/vue'
+import { Check, CircleAlert, EllipsisVertical, Plus, Rss } from '@lucide/vue'
 import {
   calendarApi,
   calendarsQuery,
@@ -25,6 +25,8 @@ import { useConfirmStore } from '@/stores/confirm'
 import { useToastStore } from '@/stores/toast'
 import { useUiStore } from '@/stores/ui'
 import CalendarDialog from '@/components/calendar/CalendarDialog.vue'
+import CalendarSettings from '@/components/calendar/CalendarSettings.vue'
+import SubscribeDialog from '@/components/calendar/SubscribeDialog.vue'
 import MonthGrid from '@/components/calendar/MonthGrid.vue'
 import TagDialog from '@/components/calendar/TagDialog.vue'
 import { iconButton, menuItem, menuPanel } from '@/components/ui/menu'
@@ -52,6 +54,9 @@ const action = useSubmit()
 
 const calendarDialog = ref(false)
 const editingCalendar = ref<Calendar | null>(null)
+const settingsOpen = ref(false)
+const settingsFor = ref<number | null>(null)
+const subscribeOpen = ref(false)
 const tagDialog = ref(false)
 const editingTag = ref<Tag | null>(null)
 
@@ -60,9 +65,9 @@ function newCalendar(): void {
   calendarDialog.value = true
 }
 
-function editCalendar(calendar: Calendar): void {
-  editingCalendar.value = calendar
-  calendarDialog.value = true
+function openSettings(calendar: Calendar): void {
+  settingsFor.value = calendar.id
+  settingsOpen.value = true
 }
 
 async function deleteCalendar(calendar: Calendar): Promise<void> {
@@ -125,17 +130,30 @@ const row = 'group flex min-h-9 items-center gap-2 pl-1 pointer-coarse:min-h-11 
     <section class="flex flex-col gap-1" data-testid="calendar-list">
       <div class="flex items-center justify-between">
         <h2 class="text-label font-medium text-muted">{{ $t('shell.calendars') }}</h2>
-        <button
-          v-if="!readOnly"
-          type="button"
-          :class="iconButton"
-          class="size-8!"
-          :aria-label="$t('calendars.new')"
-          data-testid="new-calendar"
-          @click="newCalendar"
-        >
-          <Plus :size="16" />
-        </button>
+        <DropdownMenuRoot v-if="!readOnly" :modal="false">
+          <DropdownMenuTrigger
+            :class="iconButton"
+            class="size-8!"
+            :aria-label="$t('calendars.add')"
+            data-testid="add-calendar"
+          >
+            <Plus :size="16" />
+          </DropdownMenuTrigger>
+          <DropdownMenuPortal>
+            <DropdownMenuContent :class="menuPanel" align="end" :side-offset="4">
+              <DropdownMenuItem :class="menuItem" data-testid="new-calendar" @select="newCalendar">
+                {{ $t('calendars.new') }}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                :class="menuItem"
+                data-testid="new-subscription"
+                @select="subscribeOpen = true"
+              >
+                {{ $t('subscription.newTitle') }}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenuPortal>
+        </DropdownMenuRoot>
       </div>
       <ul>
         <li v-for="calendar in calendars.data.value" :key="calendar.id" :class="row">
@@ -165,6 +183,18 @@ const row = 'group flex min-h-9 items-center gap-2 pl-1 pointer-coarse:min-h-11 
             <span class="truncate" :class="!calendar.is_visible && 'text-muted'">
               {{ calendar.name }}
             </span>
+            <Rss
+              v-if="calendar.subscription"
+              :size="12"
+              class="shrink-0 text-faint"
+              :aria-label="$t('subscription.title')"
+            />
+            <CircleAlert
+              v-if="calendar.subscription?.last_status === 'error'"
+              :size="14"
+              class="shrink-0 text-warning"
+              :aria-label="$t('subscription.hasError')"
+            />
           </label>
           <DropdownMenuRoot v-if="!readOnly" :modal="false">
             <DropdownMenuTrigger
@@ -176,8 +206,8 @@ const row = 'group flex min-h-9 items-center gap-2 pl-1 pointer-coarse:min-h-11 
             </DropdownMenuTrigger>
             <DropdownMenuPortal>
               <DropdownMenuContent :class="menuPanel" align="end" :side-offset="4">
-                <DropdownMenuItem :class="menuItem" @select="editCalendar(calendar)">
-                  {{ $t('calendars.edit') }}
+                <DropdownMenuItem :class="menuItem" @select="openSettings(calendar)">
+                  {{ $t('calendars.settings') }}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   :class="[menuItem, 'text-danger']"
@@ -245,6 +275,8 @@ const row = 'group flex min-h-9 items-center gap-2 pl-1 pointer-coarse:min-h-11 
       </button>
     </section>
     <CalendarDialog v-model:open="calendarDialog" :calendar="editingCalendar" />
+    <CalendarSettings v-model:open="settingsOpen" :calendar-id="settingsFor" />
+    <SubscribeDialog v-model:open="subscribeOpen" />
     <TagDialog v-model:open="tagDialog" :tag="editingTag" />
   </div>
 </template>

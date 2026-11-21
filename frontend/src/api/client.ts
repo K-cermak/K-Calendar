@@ -24,6 +24,9 @@ export type EventUpdate = Schemas['EventUpdate']
 export type Occurrence = Schemas['Occurrence']
 export type OccurrenceList = Schemas['OccurrenceList']
 export type PaletteColor = Schemas['CalendarOut']['color']
+export type SubscriptionCreate = Schemas['SubscriptionCreate']
+export type ImportResult = Schemas['ImportResult']
+export type SearchResult = Schemas['SearchResult']
 
 /** A failed call, reduced to what the UI shows. Network errors have no status. */
 export class Failure extends Error {

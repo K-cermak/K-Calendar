@@ -10,6 +10,8 @@ import {
   type EventCreate,
   type EventDetail,
   type EventUpdate,
+  type ImportResult,
+  type SubscriptionCreate,
   type TagUpdate,
 } from './client'
 import { queryClient } from './queryClient'
@@ -143,6 +145,52 @@ export const calendarApi = {
     )
     await calendarsChanged()
   },
+  async subscribe(body: SubscriptionCreate): Promise<Calendar> {
+    const created = await call(() => api.POST('/api/v1/calendars/subscriptions', { body }))
+    await calendarsChanged()
+    return created
+  },
+  async refresh(id: number): Promise<Calendar> {
+    const refreshed = await call(() =>
+      api.POST('/api/v1/calendars/{calendar_id}/refresh', {
+        params: { path: { calendar_id: id } },
+      }),
+    )
+    await calendarsChanged()
+    return refreshed
+  },
+  async setFeed(id: number): Promise<Calendar> {
+    const updated = await call(() =>
+      api.PUT('/api/v1/calendars/{calendar_id}/feed', { params: { path: { calendar_id: id } } }),
+    )
+    await calendarsChanged()
+    return updated
+  },
+  async removeFeed(id: number): Promise<void> {
+    await call(() =>
+      api.DELETE('/api/v1/calendars/{calendar_id}/feed', {
+        params: { path: { calendar_id: id } },
+      }),
+    )
+    await calendarsChanged()
+  },
+  async importFile(id: number, file: File): Promise<ImportResult> {
+    const result = await call(() =>
+      api.POST('/api/v1/calendars/{calendar_id}/import', {
+        params: { path: { calendar_id: id } },
+        // The generated type says string, as OpenAPI describes a binary upload; the browser sends the File.
+        body: { file: file as unknown as string },
+        bodySerializer: (body) => {
+          const form = new FormData()
+          form.append('file', body.file as unknown as Blob)
+          return form
+        },
+      }),
+    )
+    await eventsChanged()
+    return result
+  },
+  exportUrl: (id: number): string => `/api/v1/calendars/${id}/export`,
 }
 
 export const tagApi = {
