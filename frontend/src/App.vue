@@ -7,6 +7,7 @@ import { applyLocale } from '@/i18n'
 import { applyTheme, rememberTheme } from '@/theme'
 import AppToast from '@/components/AppToast.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
+import ScopeDialog from '@/components/ScopeDialog.vue'
 
 setLucideProps({ strokeWidth: 1.6, size: 18 })
 
@@ -28,5 +29,6 @@ watch(() => me.value?.locale, applyLocale, { immediate: true })
 <template>
   <RouterView />
   <ConfirmDialog />
+  <ScopeDialog />
   <AppToast />
 </template>

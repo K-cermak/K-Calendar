@@ -7,7 +7,9 @@ import type { EventDetail } from '@/api/client'
 import { useMe } from '@/api/session'
 import { useSubmit } from '@/composables/useSubmit'
 import { draftFromEvent, moveStart, problem, toBody, toggleAllDay, type Draft } from '@/eventDraft'
+import { useScopeStore } from '@/stores/scope'
 import ColorPicker from './ColorPicker.vue'
+import RepeatField from './RepeatField.vue'
 import TagInput from './TagInput.vue'
 import type { EditorTarget } from './types'
 import UiButton from '@/components/ui/UiButton.vue'
@@ -28,9 +30,12 @@ const calendars = useQuery(calendarsQuery)
 const writable = computed(() => (calendars.data.value ?? []).filter((c) => !c.read_only))
 const { pending, error, run } = useSubmit()
 
+const scopes = useScopeStore()
 const draft = ref<Draft | null>(null)
 const moreOptions = ref(false)
 const attempted = ref(false)
+// A new key per opening resets the repeat field to the event being edited.
+const session = ref(0)
 
 watch(
   () => [open.value, props.target] as const,
@@ -45,6 +50,7 @@ watch(
       !!draft.value.color || (!draft.value.all_day && draft.value.timezone !== me.value?.timezone)
     attempted.value = false
     error.value = null
+    session.value += 1
   },
   { immediate: true },
 )
@@ -71,12 +77,24 @@ async function save(): Promise<void> {
   attempted.value = true
   const current = draft.value
   if (!current || invalid.value) return
+  const event = editing.value
+  const body = toBody(current)
+  let save: () => Promise<EventDetail> = () => eventApi.create(body)
+  if (event?.recurring && event.occurrence) {
+    // One occurrence keeps the series' rule and calendar, so "this event" is only offered without
+    // changes to those.
+    const seriesOnly = current.rrule !== event.rrule || current.calendar_id !== event.calendar_id
+    const scope = await scopes.ask('edit', !seriesOnly)
+    if (!scope) return
+    const { rrule: _rule, calendar_id: _calendar, ...forOne } = body
+    const sent = scope === 'this' ? forOne : body
+    save = () => eventApi.update(event.id, sent, { scope, occurrence: event.occurrence })
+  } else if (event) {
+    save = () => eventApi.update(event.id, body)
+  }
   let saved: EventDetail | null = null
   const ok = await run(async () => {
-    const body = toBody(current)
-    saved = editing.value
-      ? await eventApi.update(editing.value.id, body)
-      : await eventApi.create(body)
+    saved = await save()
   })
   if (ok && saved) {
     emit('saved', saved)
@@ -163,6 +181,13 @@ async function save(): Promise<void> {
         </div>
       </div>
       <p v-if="attempted && invalid" class="ui-error">{{ $t('event.endBeforeStart') }}</p>
+
+      <RepeatField
+        :key="session"
+        v-model="draft.rrule"
+        :start-date="draft.startDate"
+        :all-day="draft.all_day"
+      />
 
       <UiField :label="$t('event.location')" for="event-location">
         <UiInput id="event-location" v-model="draft.location" maxlength="500" />

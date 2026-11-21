@@ -13,6 +13,7 @@ import {
   type TagUpdate,
 } from './client'
 import { queryClient } from './queryClient'
+import type { Scope } from '@/stores/scope'
 
 export const calendarsQuery = queryOptions({
   queryKey: ['calendars'],
@@ -47,12 +48,26 @@ export function useOccurrences(
   )
 }
 
-export function eventQuery(id: number) {
+export function eventQuery(id: number, occurrence: string | null = null) {
   return queryOptions({
-    queryKey: ['event', id],
+    queryKey: ['event', id, occurrence],
     queryFn: () =>
-      call(() => api.GET('/api/v1/events/{event_id}', { params: { path: { event_id: id } } })),
+      call(() =>
+        api.GET('/api/v1/events/{event_id}', {
+          params: { path: { event_id: id }, query: occurrence ? { occurrence } : {} },
+        }),
+      ),
   })
+}
+
+/** Which occurrences of a series a change applies to; left out for single events. */
+export interface Which {
+  scope?: Scope
+  occurrence?: string | null
+}
+
+function whichQuery(which: Which): { scope?: Scope; occurrence?: string } {
+  return which.scope && which.occurrence ? { scope: which.scope, occurrence: which.occurrence } : {}
 }
 
 /** Anything that changes events makes every cached range stale; the visible one refetches at once. */
@@ -74,16 +89,21 @@ export const eventApi = {
     await eventsChanged()
     return created
   },
-  async update(id: number, body: EventUpdate): Promise<EventDetail> {
+  async update(id: number, body: EventUpdate, which: Which = {}): Promise<EventDetail> {
     const updated = await call(() =>
-      api.PATCH('/api/v1/events/{event_id}', { params: { path: { event_id: id } }, body }),
+      api.PATCH('/api/v1/events/{event_id}', {
+        params: { path: { event_id: id }, query: whichQuery(which) },
+        body,
+      }),
     )
     await eventsChanged()
     return updated
   },
-  async remove(id: number): Promise<void> {
+  async remove(id: number, which: Which = {}): Promise<void> {
     await call(() =>
-      api.DELETE('/api/v1/events/{event_id}', { params: { path: { event_id: id } } }),
+      api.DELETE('/api/v1/events/{event_id}', {
+        params: { path: { event_id: id }, query: whichQuery(which) },
+      }),
     )
     await eventsChanged()
   },

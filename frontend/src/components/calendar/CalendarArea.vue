@@ -10,6 +10,7 @@ import { useSubmit } from '@/composables/useSubmit'
 import type { PlainDate, PlainDateTime } from '@/dates'
 import { draftFromEvent, draftFromSpan, toBody, type Draft } from '@/eventDraft'
 import type { CalendarView } from '@/router'
+import { useScopeStore } from '@/stores/scope'
 import { useToastStore } from '@/stores/toast'
 import AgendaList from './AgendaList.vue'
 import CalendarGrid from './CalendarGrid.vue'
@@ -36,6 +37,7 @@ const emit = defineEmits<{ select: [day: PlainDate] }>()
 
 const { t } = useI18n()
 const toast = useToastStore()
+const scopes = useScopeStore()
 const calendars = useQuery(calendarsQuery)
 const grid = ref<{ unselect: () => void } | null>(null)
 const action = useSubmit()
@@ -100,7 +102,7 @@ const detailAnchor = ref<DOMRect | null>(null)
 const detailOpen = ref(false)
 const detailEvent = useQuery(
   computed(() => ({
-    ...eventQuery(detail.value?.event_id ?? 0),
+    ...eventQuery(detail.value?.event_id ?? 0, detail.value?.occurrence ?? null),
     enabled: detailOpen.value && !!detail.value,
   })),
 )
@@ -118,16 +120,29 @@ const detailReference = computed(() => {
 
 async function editFromDetail(): Promise<void> {
   if (!detail.value) return
-  const event = await queryClient.fetchQuery(eventQuery(detail.value.event_id))
+  const event = await queryClient.fetchQuery(
+    eventQuery(detail.value.event_id, detail.value.occurrence),
+  )
   detailOpen.value = false
   openEditor({ kind: 'edit', event })
 }
 
-// Deleting, with undo: the event is created again from what was saved before.
+/**
+ * Deleting, with undo: a single event is created again from what was saved before. Deleting from
+ * a series changes its rule and exceptions, which cannot be restored that simply, so it has none.
+ */
 async function remove(event: EventDetail): Promise<void> {
-  const ok = await action.run(() => eventApi.remove(event.id))
+  const scope = event.recurring && event.occurrence ? await scopes.ask('delete') : undefined
+  if (scope === null) return
+  const ok = await action.run(() =>
+    eventApi.remove(event.id, { scope, occurrence: event.occurrence }),
+  )
   if (!ok) {
     if (action.error.value) toast.show(action.error.value)
+    return
+  }
+  if (event.recurring) {
+    toast.show(t('event.deleted'))
     return
   }
   toast.show(t('event.deleted'), {
@@ -138,7 +153,9 @@ async function remove(event: EventDetail): Promise<void> {
 
 async function deleteFromDetail(): Promise<void> {
   if (!detail.value) return
-  const event = await queryClient.fetchQuery(eventQuery(detail.value.event_id))
+  const event = await queryClient.fetchQuery(
+    eventQuery(detail.value.event_id, detail.value.occurrence),
+  )
   detailOpen.value = false
   await remove(event)
 }
@@ -156,14 +173,25 @@ async function onChange(change: GridChange): Promise<void> {
   const { occurrence } = change
   const before = { start: occurrence.start, end: occurrence.end, all_day: occurrence.all_day }
   const after = { start: change.start, end: change.end, all_day: change.allDay }
+  const scope = occurrence.recurring ? await scopes.ask('move') : undefined
+  if (scope === null) {
+    change.revert()
+    return
+  }
   patchCache(occurrence.id, after)
+  const which = { scope, occurrence: occurrence.occurrence }
   const send = (span: typeof after) =>
-    eventApi.update(occurrence.event_id, { ...span, input_timezone: props.me.timezone })
+    eventApi.update(occurrence.event_id, { ...span, input_timezone: props.me.timezone }, which)
   const ok = await action.run(() => send(after))
   if (!ok) {
     change.revert()
     patchCache(occurrence.id, before)
     toast.show(t('event.moveFailed', { reason: action.error.value ?? '' }))
+    return
+  }
+  // Moving one occurrence back is the same kind of change; moving a whole series is not undone.
+  if (scope && scope !== 'this') {
+    toast.show(t('event.moved'))
     return
   }
   toast.show(t('event.moved'), { label: t('common.undo'), run: () => send(before) })

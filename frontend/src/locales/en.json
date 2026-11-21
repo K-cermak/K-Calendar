@@ -91,7 +91,8 @@
     "calendars": "Calendars",
     "tags": "Tags",
     "previousMonth": "Previous month",
-    "nextMonth": "Next month"
+    "nextMonth": "Next month",
+    "drawerDescription": "Views, calendars and tags."
   },
   "settings": {
     "title": "Settings",
@@ -290,7 +291,8 @@
     "edit": "Rename and recolour",
     "delete": "Delete calendar",
     "deleteTitle": "Delete {name}?",
-    "deleteMessage": "The calendar and all its events are deleted for good."
+    "deleteMessage": "The calendar and all its events are deleted for good.",
+    "description": "Choose a name and a colour for the calendar."
   },
   "tags": {
     "empty": "Tags you add to events appear here.",
@@ -305,7 +307,8 @@
     "clearFilter": "Show all events",
     "remove": "Remove {name}",
     "placeholder": "Add tags",
-    "createHint": "Press Enter to create “{name}”"
+    "createHint": "Press Enter to create “{name}”",
+    "description": "Choose a name and a colour for the tag."
   },
   "agenda": {
     "empty": "Nothing coming up.",
@@ -314,5 +317,64 @@
   "zone": {
     "differs": "This device is in {device}; your calendar shows {profile}.",
     "switch": "Use {device}"
+  },
+  "repeat": {
+    "label": "Repeat",
+    "preset": {
+      "none": "Does not repeat",
+      "daily": "Every day",
+      "weekdays": "Every weekday (Monday to Friday)",
+      "weekly": "Every week on {day}",
+      "monthlyDay": "Every month on day {date}",
+      "monthlyWeekday": "Every month on {nth}",
+      "yearly": "Every year on {month}",
+      "custom": "Custom…"
+    },
+    "summary": {
+      "every": {
+        "day": "Every day | Every {n} days",
+        "week": "Every week | Every {n} weeks",
+        "month": "Every month | Every {n} months",
+        "year": "Every year | Every {n} years"
+      },
+      "onDays": "on {days}",
+      "onMonthDay": "on day {days}",
+      "ordinal": {
+        "first": "the first {day}",
+        "second": "the second {day}",
+        "third": "the third {day}",
+        "fourth": "the fourth {day}",
+        "last": "the last {day}"
+      },
+      "count": "once | {n} times",
+      "until": "until {date}",
+      "more": "with {parts}",
+      "raw": "Custom rule: {rule}"
+    },
+    "custom": {
+      "every": "Every",
+      "unit": {
+        "DAILY": "day | days",
+        "WEEKLY": "week | weeks",
+        "MONTHLY": "month | months",
+        "YEARLY": "year | years"
+      },
+      "on": "On",
+      "ends": "Ends",
+      "never": "Never",
+      "onDate": "On",
+      "after": "After",
+      "times": "time | times"
+    },
+    "unsupported": "This rule comes from another calendar and is kept as it is unless you choose another.",
+    "keep": "Keep: {summary}"
+  },
+  "scope": {
+    "editTitle": "Change a repeating event",
+    "deleteTitle": "Delete a repeating event",
+    "moveTitle": "Move a repeating event",
+    "this": "This event",
+    "following": "This and following events",
+    "all": "All events"
   }
 }

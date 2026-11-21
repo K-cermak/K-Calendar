@@ -6,6 +6,7 @@ import {
   DialogOverlay,
   DialogPortal,
   DialogRoot,
+  DialogDescription,
   DialogTitle,
 } from 'reka-ui'
 import { tagApi } from '@/api/calendar'
@@ -48,6 +49,7 @@ async function save(): Promise<void> {
       <DialogOverlay class="ui-overlay" />
       <DialogContent class="ui-dialog" data-testid="tag-dialog">
         <DialogTitle class="ui-dialog__title">{{ $t('tags.editTitle') }}</DialogTitle>
+        <DialogDescription class="sr-only">{{ $t('tags.description') }}</DialogDescription>
         <form class="flex flex-col gap-4" @submit.prevent="save">
           <UiField :label="$t('tags.name')" for="tag-name">
             <UiInput id="tag-name" v-model="name" maxlength="100" required autofocus />

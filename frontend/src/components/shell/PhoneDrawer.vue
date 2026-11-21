@@ -1,5 +1,12 @@
 <script setup lang="ts">
-import { DialogContent, DialogOverlay, DialogPortal, DialogRoot, DialogTitle } from 'reka-ui'
+import {
+  DialogContent,
+  DialogOverlay,
+  DialogPortal,
+  DialogRoot,
+  DialogDescription,
+  DialogTitle,
+} from 'reka-ui'
 import { X } from '@lucide/vue'
 import branding from '@branding'
 
@@ -18,6 +25,7 @@ const open = defineModel<boolean>('open', { required: true })
           <DialogTitle class="text-base font-semibold tracking-[-0.02em]">
             {{ branding.name }}
           </DialogTitle>
+          <DialogDescription class="sr-only">{{ $t('shell.drawerDescription') }}</DialogDescription>
           <button
             type="button"
             class="ui-icon-button"

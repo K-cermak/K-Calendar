@@ -7,6 +7,7 @@ function occ(id: string, start: string, end: string, allDay = false): Occurrence
   return {
     id,
     event_id: 1,
+    occurrence: null,
     calendar_id: 1,
     title: id,
     location: '',

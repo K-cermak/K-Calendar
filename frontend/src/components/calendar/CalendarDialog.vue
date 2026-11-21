@@ -6,6 +6,7 @@ import {
   DialogOverlay,
   DialogPortal,
   DialogRoot,
+  DialogDescription,
   DialogTitle,
 } from 'reka-ui'
 import { calendarApi } from '@/api/calendar'
@@ -49,6 +50,7 @@ async function save(): Promise<void> {
         <DialogTitle class="ui-dialog__title">
           {{ $t(calendar ? 'calendars.editTitle' : 'calendars.newTitle') }}
         </DialogTitle>
+        <DialogDescription class="sr-only">{{ $t('calendars.description') }}</DialogDescription>
         <form class="flex flex-col gap-4" @submit.prevent="save">
           <UiField :label="$t('calendars.name')" for="calendar-name">
             <UiInput id="calendar-name" v-model="name" maxlength="100" required autofocus />

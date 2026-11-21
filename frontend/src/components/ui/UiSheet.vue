@@ -1,5 +1,12 @@
 <script setup lang="ts">
-import { DialogContent, DialogOverlay, DialogPortal, DialogRoot, DialogTitle } from 'reka-ui'
+import {
+  DialogContent,
+  DialogOverlay,
+  DialogPortal,
+  DialogRoot,
+  DialogDescription,
+  DialogTitle,
+} from 'reka-ui'
 import { X } from '@lucide/vue'
 
 /** A dialog that rises from the bottom on a phone: square corners, a hairline top (SPEC 11). */
@@ -19,11 +26,12 @@ function focusFirst(event: Event): void {
   <DialogRoot v-model:open="open">
     <DialogPortal>
       <DialogOverlay class="ui-overlay" />
-      <DialogContent class="cal-sheet" :aria-describedby="undefined" @open-auto-focus="focusFirst">
+      <DialogContent class="cal-sheet" @open-auto-focus="focusFirst">
         <div class="flex h-12 shrink-0 items-center justify-between pr-1 pl-4">
           <DialogTitle class="font-semibold tracking-[-0.01em]" :class="hideTitle && 'sr-only'">
             {{ title }}
           </DialogTitle>
+          <DialogDescription class="sr-only">{{ title }}</DialogDescription>
           <button
             type="button"
             class="ui-icon-button"
