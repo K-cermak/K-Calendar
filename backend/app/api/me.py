@@ -1,9 +1,11 @@
-from fastapi import APIRouter, status
+from typing import Annotated
+
+from fastapi import APIRouter, Query, status
 
 from app.api.deps import CurrentAuth
 from app.db import DbSession
-from app.schemas.account import Me, PasswordChange, ProfileUpdate, SessionInfo
-from app.services import accounts
+from app.schemas.account import Clock, Me, PasswordChange, ProfileUpdate, SessionInfo
+from app.services import accounts, clock, zones
 from app.services.auth import sessions
 
 router = APIRouter(prefix="/me", tags=["account"])
@@ -12,6 +14,16 @@ router = APIRouter(prefix="/me", tags=["account"])
 @router.get("")
 def get_me(auth: CurrentAuth) -> Me:
     return accounts.to_me(auth.user)
+
+
+@router.get("/clock")
+def get_clock(
+    auth: CurrentAuth,
+    tz: Annotated[str | None, Query(max_length=64, description="The profile's zone if left out")] = None,
+) -> Clock:
+    """What time it is for the user, so the app knows "today" without a time zone database."""
+    zone = zones.check_zone(tz or auth.user.timezone)
+    return Clock(timezone=zone, now=zones.format_local(zones.to_local(clock.now(), zone)))
 
 
 @router.patch("")

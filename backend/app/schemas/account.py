@@ -89,3 +89,8 @@ class InviteAccept(TokenRequest):
 
 class PasswordReset(TokenRequest):
     password: str = PASSWORD
+
+
+class Clock(BaseModel):
+    timezone: str
+    now: str = Field(description="The current wall-clock time in the zone, without an offset")

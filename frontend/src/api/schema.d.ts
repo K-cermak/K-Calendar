@@ -198,6 +198,26 @@ export interface paths {
         patch: operations["update_me"];
         trace?: never;
     };
+    "/api/v1/me/clock": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Clock
+         * @description What time it is for the user, so the app knows "today" without a time zone database.
+         */
+        get: operations["get_clock"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/me/password": {
         parameters: {
             query?: never;
@@ -614,6 +634,16 @@ export interface components {
             is_visible?: boolean | null;
             /** Default Reminder Minutes */
             default_reminder_minutes?: number | null;
+        };
+        /** Clock */
+        Clock: {
+            /** Timezone */
+            timezone: string;
+            /**
+             * Now
+             * @description The current wall-clock time in the zone, without an offset
+             */
+            now: string;
         };
         /**
          * CreatedLink
@@ -1456,6 +1486,38 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Me"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_clock: {
+        parameters: {
+            query?: {
+                /** @description The profile's zone if left out */
+                tz?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Clock"];
                 };
             };
             /** @description Default Response */

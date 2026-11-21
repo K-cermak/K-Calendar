@@ -2,7 +2,7 @@ from collections.abc import Callable
 
 from fastapi.testclient import TestClient
 
-from tests.conftest import ADMIN, PASSWORD
+from tests.conftest import ADMIN, PASSWORD, Clock
 
 
 def test_profile_update(admin: TestClient) -> None:
@@ -126,3 +126,10 @@ def test_password_is_never_returned(admin: TestClient, make_user: Callable[..., 
     for path in ("/api/v1/me", "/api/v1/admin/users"):
         assert PASSWORD not in admin.get(path).text
         assert "password_hash" not in admin.get(path).text
+
+
+def test_clock_gives_the_wall_clock_time_in_the_profile_zone(admin: TestClient, clock: Clock) -> None:
+    assert admin.get("/api/v1/me/clock").json() == {"timezone": "Europe/Prague", "now": "2026-11-20T13:00:00"}
+    tokyo = admin.get("/api/v1/me/clock", params={"tz": "Asia/Tokyo"}).json()
+    assert tokyo["now"] == "2026-11-20T21:00:00"
+    assert admin.get("/api/v1/me/clock", params={"tz": "Nowhere"}).json()["code"] == "invalid_timezone"
