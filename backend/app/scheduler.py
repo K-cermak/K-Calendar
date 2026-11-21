@@ -6,17 +6,20 @@ every other database access does.
 
 import asyncio
 import logging
+from datetime import date, datetime
 
 from fastapi import FastAPI
 
 from app.config import Settings
 from app.db import Database
-from app.services import reminders, subscriptions
+from app.services import cleanup, clock, reminders, subscriptions
 from app.services.notify import email, push
 
 logger = logging.getLogger(__name__)
 
 TICK_S = 30
+# A quiet hour almost everywhere in Europe, where most instances are expected to run.
+CLEANUP_HOUR_UTC = 2
 
 
 def refresh_subscriptions(db: Database, settings: Settings) -> None:
@@ -47,6 +50,36 @@ def send_reminders(
                 logger.exception("Sending reminder %s failed", reminder_id)
 
 
+def clean_up(db: Database) -> None:
+    with db.writer() as session:
+        removed = cleanup.run(session)
+        session.commit()
+    logger.info(
+        "Cleaned up %s expired sessions, %s invites and %s reminder log entries",
+        removed.sessions,
+        removed.invites,
+        removed.log_entries,
+    )
+
+
+def cleanup_due(last_run: date | None, now: datetime) -> bool:
+    return now.hour >= CLEANUP_HOUR_UTC and last_run != now.date()
+
+
+class Loop:
+    """What the loop remembers between ticks; it lives only as long as the process."""
+
+    def __init__(self) -> None:
+        self.cleaned_on: date | None = None
+
+    def tick(self, db: Database, settings: Settings) -> None:
+        tick(db, settings)
+        now = clock.now()
+        if cleanup_due(self.cleaned_on, now):
+            self.cleaned_on = now.date()
+            clean_up(db)
+
+
 def tick(db: Database, settings: Settings) -> None:
     # Reminders first: they are due at a minute, subscriptions only roughly on their interval.
     send_reminders(db, settings)
@@ -56,9 +89,10 @@ def tick(db: Database, settings: Settings) -> None:
 async def run(app: FastAPI) -> None:
     db: Database = app.state.db
     settings: Settings = app.state.settings
+    loop = Loop()
     while True:
         await asyncio.sleep(TICK_S)
         try:
-            await asyncio.to_thread(tick, db, settings)
+            await asyncio.to_thread(loop.tick, db, settings)
         except Exception:
             logger.exception("Background tick failed")

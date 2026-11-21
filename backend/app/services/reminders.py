@@ -10,7 +10,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 
-from sqlalchemy import delete, select
+from sqlalchemy import CursorResult, delete, select
 from sqlalchemy.orm import Session
 
 from app.config import Settings
@@ -263,5 +263,12 @@ def due(db: Session) -> list[int]:
     )
 
 
-def clean_up_log(db: Session, keep: timedelta) -> None:
-    db.execute(delete(NotificationLog).where(NotificationLog.sent_at_utc < clock.now() - keep))
+def clean_up_log(db: Session, keep: timedelta) -> int:
+    """Forgets deliveries of occurrences that are long past, whatever became of them.
+
+    The log only has to outlive the moment an occurrence's reminder could still fire. Its start
+    is wall-clock time in the owner's zone, so a day is added for zones up to 14 hours from UTC.
+    """
+    cutoff = (clock.now() - keep - timedelta(days=1)).replace(tzinfo=None)
+    result = db.execute(delete(NotificationLog).where(NotificationLog.occurrence_start < cutoff))
+    return result.rowcount if isinstance(result, CursorResult) else 0
