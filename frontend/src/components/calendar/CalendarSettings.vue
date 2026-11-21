@@ -9,6 +9,7 @@ import { useMe } from '@/api/session'
 import { useSubmit } from '@/composables/useSubmit'
 import { relativeTime } from '@/format'
 import { useConfirmStore } from '@/stores/confirm'
+import { TIMED_PRESETS, describeReminder } from '@/reminders'
 import ColorPicker from './ColorPicker.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiField from '@/components/ui/UiField.vue'
@@ -51,6 +52,22 @@ watch(open, (isOpen) => {
 })
 
 const intervals = [15, 30, 60, 180, 360, 1440]
+
+const reminderWords = {
+  t: (key: string, values?: Record<string, unknown>, plural?: number) =>
+    plural === undefined ? t(key, values ?? {}) : t(key, values ?? {}, plural),
+  time: (value: string) => value,
+}
+
+async function setDefaultReminder(value: string): Promise<void> {
+  const current = calendar.value
+  if (!current) return
+  await saving.run(() =>
+    calendarApi.update(current.id, {
+      default_reminder_minutes: value === '' ? null : Number(value),
+    }),
+  )
+}
 
 function intervalLabel(minutes: number): string {
   if (minutes < 60) return t('subscription.minutes', { n: minutes }, minutes)
@@ -131,6 +148,28 @@ function when(iso: string): string {
           <span class="ui-label">{{ $t('calendars.color') }}</span>
           <ColorPicker v-model="color" :label="$t('calendars.color')" />
         </div>
+        <UiField
+          v-if="!calendar.subscription"
+          :label="$t('calendars.defaultReminder')"
+          for="settings-reminder"
+          :hint="$t('calendars.defaultReminderHint')"
+        >
+          <select
+            id="settings-reminder"
+            class="ui-select"
+            :value="
+              calendar.default_reminder_minutes === null
+                ? ''
+                : String(calendar.default_reminder_minutes)
+            "
+            @change="setDefaultReminder(($event.target as HTMLSelectElement).value)"
+          >
+            <option value="">{{ $t('reminders.none') }}</option>
+            <option v-for="minutes in TIMED_PRESETS" :key="minutes" :value="String(minutes)">
+              {{ describeReminder(minutes, false, reminderWords) }}
+            </option>
+          </select>
+        </UiField>
         <UiNotice v-if="saving.error.value" tone="error">{{ saving.error.value }}</UiNotice>
         <UiButton
           type="submit"

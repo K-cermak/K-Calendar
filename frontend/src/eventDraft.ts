@@ -16,6 +16,8 @@ export interface Draft {
   timezone: string
   tags: string[]
   rrule: string | null
+  /** null until chosen: the calendar's default reminder then applies. */
+  reminders: number[] | null
 }
 
 export interface DraftSpan {
@@ -41,6 +43,7 @@ export function draftFromSpan(span: DraftSpan, calendarId: number, timezone: str
     tags: [],
     timezone,
     rrule: null,
+    reminders: null,
   }
   if (span.allDay) {
     const end = span.end || exclusiveEnd(span.start)
@@ -70,6 +73,7 @@ export function draftFromEvent(event: EventDetail, fallbackZone: string): Draft 
     tags: event.tags.map((t) => t.name),
     timezone: event.timezone ?? fallbackZone,
     rrule: event.rrule,
+    reminders: event.reminders,
   }
   if (event.all_day) {
     return {
@@ -124,6 +128,7 @@ export function toBody(draft: Draft): EventCreate {
     all_day: draft.all_day,
     tags: draft.tags,
     rrule: draft.rrule,
+    ...(draft.reminders === null ? {} : { reminders: draft.reminders }),
   }
   if (draft.all_day) {
     return { ...body, start: draft.startDate, end: exclusiveEnd(draft.endDate) }

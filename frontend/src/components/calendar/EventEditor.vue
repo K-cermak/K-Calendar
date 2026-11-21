@@ -9,6 +9,7 @@ import { useSubmit } from '@/composables/useSubmit'
 import { draftFromEvent, moveStart, problem, toBody, toggleAllDay, type Draft } from '@/eventDraft'
 import { useScopeStore } from '@/stores/scope'
 import ColorPicker from './ColorPicker.vue'
+import ReminderField from './ReminderField.vue'
 import RepeatField from './RepeatField.vue'
 import TagInput from './TagInput.vue'
 import type { EditorTarget } from './types'
@@ -55,6 +56,22 @@ watch(
   { immediate: true },
 )
 
+// Until the user picks reminders, a new event shows the default of the calendar it goes into.
+const reminders = computed<number[]>({
+  get: () => {
+    const current = draft.value
+    if (!current) return []
+    if (current.reminders !== null) return current.reminders
+    const fallback = writable.value.find(
+      (c) => c.id === current.calendar_id,
+    )?.default_reminder_minutes
+    return fallback === null || fallback === undefined ? [] : [fallback]
+  },
+  set: (value) => {
+    if (draft.value) draft.value.reminders = value
+  },
+})
+
 const zones = computed(() => {
   const known = Intl.supportedValuesOf('timeZone')
   const current = draft.value?.timezone
@@ -83,10 +100,13 @@ async function save(): Promise<void> {
   if (event?.recurring && event.occurrence) {
     // One occurrence keeps the series' rule and calendar, so "this event" is only offered without
     // changes to those.
-    const seriesOnly = current.rrule !== event.rrule || current.calendar_id !== event.calendar_id
+    const remindersChanged =
+      current.reminders !== null && current.reminders.join() !== event.reminders.join()
+    const seriesOnly =
+      current.rrule !== event.rrule || current.calendar_id !== event.calendar_id || remindersChanged
     const scope = await scopes.ask('edit', !seriesOnly)
     if (!scope) return
-    const { rrule: _rule, calendar_id: _calendar, ...forOne } = body
+    const { rrule: _rule, calendar_id: _calendar, reminders: _reminders, ...forOne } = body
     const sent = scope === 'this' ? forOne : body
     save = () => eventApi.update(event.id, sent, { scope, occurrence: event.occurrence })
   } else if (event) {
@@ -188,6 +208,8 @@ async function save(): Promise<void> {
         :start-date="draft.startDate"
         :all-day="draft.all_day"
       />
+
+      <ReminderField v-model="reminders" :all-day="draft.all_day" />
 
       <UiField :label="$t('event.location')" for="event-location">
         <UiInput id="event-location" v-model="draft.location" maxlength="500" />

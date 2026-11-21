@@ -80,6 +80,7 @@ describe('editing', () => {
     timezone: null,
     rrule: null,
     recurring: false,
+    reminders: [],
     occurrence: null,
     tags: [{ id: 1, name: 'travel', color: 'teal' }],
     read_only: false,
