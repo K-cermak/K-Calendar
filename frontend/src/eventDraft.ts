@@ -15,6 +15,7 @@ export interface Draft {
   endTime: string
   timezone: string
   tags: string[]
+  rrule: string | null
 }
 
 export interface DraftSpan {
@@ -39,6 +40,7 @@ export function draftFromSpan(span: DraftSpan, calendarId: number, timezone: str
     color: null,
     tags: [],
     timezone,
+    rrule: null,
   }
   if (span.allDay) {
     const end = span.end || exclusiveEnd(span.start)
@@ -67,6 +69,7 @@ export function draftFromEvent(event: EventDetail, fallbackZone: string): Draft 
     color: event.color,
     tags: event.tags.map((t) => t.name),
     timezone: event.timezone ?? fallbackZone,
+    rrule: event.rrule,
   }
   if (event.all_day) {
     return {
@@ -120,6 +123,7 @@ export function toBody(draft: Draft): EventCreate {
     color: draft.color,
     all_day: draft.all_day,
     tags: draft.tags,
+    rrule: draft.rrule,
   }
   if (draft.all_day) {
     return { ...body, start: draft.startDate, end: exclusiveEnd(draft.endDate) }

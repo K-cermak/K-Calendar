@@ -79,6 +79,8 @@ describe('editing', () => {
     end: '2026-07-13',
     timezone: null,
     rrule: null,
+    recurring: false,
+    occurrence: null,
     tags: [{ id: 1, name: 'travel', color: 'teal' }],
     read_only: false,
     created_at_utc: '',
