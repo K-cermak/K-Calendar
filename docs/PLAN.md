@@ -65,16 +65,16 @@ Sections 4, 5 (storing time, occurrences endpoint), 7.
 
 Section 11.
 
-- [ ] FullCalendar integrated and restyled; month, week, day and agenda views; phone variants (three-day week, dot month with day list, agenda as default)
-- [ ] Navigation: today, previous, next, mini month, swipe on touch, view and date in the URL
-- [ ] Sidebar and drawer: calendar list with visibility toggles, calendar create and edit, tag filters with the rename, colour and delete menu
-- [ ] Event rendering from section 11: tinted blocks with a colour bar, tag markers in week, day and agenda, the shared colour palette checked in both themes
-- [ ] Tag field in the event editor with autocomplete and create-on-type
-- [ ] Quick create popover; full event editor (bottom sheet on a phone); event detail popover
-- [ ] Drag to move and resize with optimistic update and rollback; long-press drag on touch
-- [ ] Undo toast for delete and move
-- [ ] Now indicator, scroll to current time, device-zone banner
-- [ ] Keyboard and focus handling for dialogs and popovers
+- [x] FullCalendar integrated and restyled; month, week, day and agenda views; phone variants (three-day week, dot month with day list, agenda as default)
+- [x] Navigation: today, previous, next, mini month, swipe on touch, view and date in the URL
+- [x] Sidebar and drawer: calendar list with visibility toggles, calendar create and edit, tag filters with the rename, colour and delete menu
+- [x] Event rendering from section 11: tinted blocks with a colour bar, tag markers in week, day and agenda, the shared colour palette checked in both themes
+- [x] Tag field in the event editor with autocomplete and create-on-type
+- [x] Quick create popover; full event editor (bottom sheet on a phone); event detail popover
+- [x] Drag to move and resize with optimistic update and rollback; long-press drag on touch
+- [x] Undo toast for delete and move
+- [x] Now indicator, scroll to current time, device-zone banner
+- [x] Keyboard and focus handling for dialogs and popovers
 
 **Acceptance:** I can run my week from the UI on a laptop and on a phone: create by clicking and by dragging, edit, move, resize, delete and undo, switch views, hide a calendar, filter by a tag. Nothing overflows or needs horizontal scrolling at 360 px width.
 
