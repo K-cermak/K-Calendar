@@ -34,17 +34,17 @@ Sections 2, 3, 16.
 
 Sections 4, 6 (first run, passwords and sessions), 13, 15.
 
-- [ ] Models and migration: users, sessions, invites, settings
-- [ ] Setup screen that creates the admin when there are no users
-- [ ] Login, logout, session cookie, origin check, login throttling
-- [ ] Current-user dependency and the user-scoping pattern that all later services follow
-- [ ] `GET /config`; profile settings (name, zone, locale, week start, time format, theme, default view); change password; list and revoke sessions
-- [ ] Admin area: list users, invite, deactivate and reactivate, delete, reset link, granting and revoking admin rights with the last-admin and self-change guards (section 6), open registration toggle
-- [ ] Deactivation and admin revocation that take effect at once
-- [ ] CLI: `reset-password`, `disable-totp`, `make-admin`
-- [ ] Invite acceptance, self-registration and password reset pages
-- [ ] Security headers and CSP
-- [ ] App shell: the responsive layout from section 11 with empty content, settings and admin pages inside it
+- [x] Models and migration: users, sessions, invites, settings
+- [x] Setup screen that creates the admin when there are no users
+- [x] Login, logout, session cookie, origin check, login throttling
+- [x] Current-user dependency and the user-scoping pattern that all later services follow
+- [x] `GET /config`; profile settings (name, zone, locale, week start, time format, theme, default view); change password; list and revoke sessions
+- [x] Admin area: list users, invite, deactivate and reactivate, delete, reset link, granting and revoking admin rights with the last-admin and self-change guards (section 6), open registration toggle
+- [x] Deactivation and admin revocation that take effect at once
+- [x] CLI: `reset-password`, `disable-totp`, `make-admin`
+- [x] Invite acceptance, self-registration and password reset pages
+- [x] Security headers and CSP
+- [x] App shell: the responsive layout from section 11 with empty content, settings and admin pages inside it
 
 **Acceptance:** On a fresh instance I can create the admin, invite a second user by link, log in as each on a phone-sized and a desktop-sized window, and revoke a session from the other device. The last active admin cannot be demoted, deactivated or deleted, admins cannot demote or deactivate themselves, and a deactivated user's session stops working at once.
 
