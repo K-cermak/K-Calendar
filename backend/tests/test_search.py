@@ -155,3 +155,15 @@ def test_clock_moves_results_into_the_past(admin: TestClient, clock: Clock) -> N
     assert search(admin, "meeting")[0]["upcoming"] is True
     clock.advance(timedelta(days=2))
     assert search(admin, "meeting")[0]["upcoming"] is False
+
+
+def test_a_moved_occurrence_can_be_the_last_one(admin: TestClient, clock: Clock) -> None:
+    event = create_event(
+        admin, title="Course", rrule="FREQ=WEEKLY;COUNT=2", start="2026-09-01T18:00", end="2026-09-01T19:00"
+    )
+    admin.patch(
+        f"/api/v1/events/{event['id']}",
+        params={"scope": "this", "occurrence": "20260908T180000"},
+        json={"start": "2026-09-10T18:00", "end": "2026-09-10T19:00"},
+    )
+    assert [r["start"] for r in search(admin, "course")] == ["2026-09-10T18:00:00"]

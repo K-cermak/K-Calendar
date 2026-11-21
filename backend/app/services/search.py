@@ -69,13 +69,15 @@ def _occurrence_for(
         instance = recurrence.instants(event, event.start_local, event.end_local, zone)
         return instance, instance.end_utc > now
     overridden = overridden_starts(db, [event.id])
-    ahead = recurrence.expand([event], now, now + HORIZON, zone, overridden)
+    # Overrides take part too: a moved occurrence may be the next or the last one.
+    rows = [event, *db.scalars(select(Event).where(Event.recurring_event_id == event.id))]
+    ahead = recurrence.expand(rows, now, now + HORIZON, zone, overridden)
     if ahead:
         return _pick(ahead, now)
     # The series is over, or skips the next year: look back for its last occurrence.
-    end = event.series_end_utc or now
+    end = max([event.series_end_utc or now, *(r.end_utc for r in rows[1:])])
     behind = recurrence.expand(
-        [event], max(event.start_utc, end - HORIZON), end + timedelta(days=1), zone, overridden
+        rows, max(event.start_utc, end - HORIZON), end + timedelta(days=1), zone, overridden
     )
     return _pick(behind, now)
 
