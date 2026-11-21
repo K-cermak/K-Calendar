@@ -1,0 +1,138 @@
+/*
+ * The app's stylesheet: Tailwind, then the shared design files, which work on their own too:
+ *   tokens.css   colours, type and motion as custom properties
+ *   base.css     element defaults and keyframes
+ *   ui.css       shared interface elements as .ui-* classes
+ *   palette.css  the calendar and tag colours
+ * Below: the tokens exposed to Tailwind, and the styles only this app needs.
+ */
+@import 'tailwindcss';
+@import '@fontsource-variable/geist';
+@import '@fontsource-variable/geist-mono';
+@import './tokens.css';
+@import './base.css';
+@import './ui.css';
+@import './palette.css';
+
+/* Resetting the default palette, radii and shadows means a raw colour or a rounded corner cannot slip in through a utility class. */
+@theme {
+  --color-*: initial;
+  --radius-*: initial;
+  --shadow-*: initial;
+  --inset-shadow-*: initial;
+  --drop-shadow-*: initial;
+  --text-shadow-*: initial;
+}
+
+@theme inline {
+  --font-sans: var(--font-text);
+  --font-mono: var(--font-code);
+
+  --text-label: var(--size-label);
+  --text-label--line-height: 1.4;
+  --text-meta: var(--size-meta);
+  --text-meta--line-height: 1.4;
+
+  --ease-out: var(--motion-ease);
+  --animate-rise: ui-rise var(--motion) var(--motion-ease) both;
+  --animate-fade: ui-fade var(--motion) var(--motion-ease) both;
+
+  --color-bg: var(--bg);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-line: var(--line);
+  --color-line-hover: var(--line-hover);
+  --color-ring: var(--ring);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-on-accent: var(--on-accent);
+  --color-danger: var(--danger);
+  --color-warning: var(--warning);
+  --color-success: var(--success);
+  --color-hover-tint: var(--hover-tint);
+  --shadow-float: var(--float);
+}
+
+/* Touch devices keep :hover after a tap, so hover styles only apply to a real pointer. */
+@custom-variant hover {
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      @slot;
+    }
+  }
+}
+
+@layer components {
+  /* SPEC 11 asks for the active option of a segmented control inverted, as in the view switcher. */
+  .ui-segmented__option[aria-checked='true'] {
+    background: var(--ink);
+    color: var(--bg);
+  }
+}
+
+@layer components {
+  /*
+   * An event: a tint of its colour with a 2 px bar of the full colour on the left (SPEC 11).
+   * Set --event-color on the element, for example to var(--cal-teal).
+   */
+  .cal-event {
+    --event-color: var(--cal-graphite);
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: 2px 6px;
+    border-left: 2px solid var(--event-color);
+    background: color-mix(in srgb, var(--event-color) 16%, var(--bg));
+    color: var(--ink);
+    font-size: var(--size-label);
+    line-height: 1.35;
+    overflow: hidden;
+  }
+
+  .cal-event--past {
+    opacity: 0.55;
+  }
+
+  .cal-event__title {
+    overflow: hidden;
+    font-weight: 500;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .cal-event__time {
+    color: var(--muted);
+    font-family: var(--font-code);
+    font-size: var(--size-meta);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* A tag: a square of its colour, alone on an event or with its name inside a hairline chip. */
+  .cal-tag-marker {
+    display: inline-block;
+    flex-shrink: 0;
+    width: 8px;
+    height: 8px;
+    background: var(--tag-color);
+  }
+
+  .cal-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 22px;
+    padding: 0 6px;
+    border: 1px solid var(--line);
+    color: var(--ink);
+    font-size: var(--size-meta);
+    white-space: nowrap;
+  }
+
+  /* A colour choice: a filled square. */
+  .cal-swatch {
+    width: 20px;
+    height: 20px;
+    background: var(--swatch-color);
+  }
+}

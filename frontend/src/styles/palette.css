@@ -1,0 +1,21 @@
+/*
+ * The one palette shared by calendars, per-event colours and tags (SPEC 11). The server stores the
+ * key (for example "teal"), so each theme can use its own value of a hue. Light values are dark
+ * enough to read as a 2 px bar on white; dark values are lifted so they do not sink into the page.
+ * Event blocks tint these into --bg, which keeps --ink titles readable in both themes.
+ */
+:root {
+  --cal-red: light-dark(#dc3e42, #ff6166);
+  --cal-orange: light-dark(#e5600e, #ff8b3e);
+  --cal-amber: light-dark(#c98a00, #ffc53d);
+  --cal-lime: light-dark(#5e9b1e, #a6d65a);
+  --cal-green: light-dark(#2b9a66, #3dd68c);
+  --cal-teal: light-dark(#0d9b8a, #0bd8b6);
+  --cal-cyan: light-dark(#0797b9, #4ccce6);
+  --cal-blue: light-dark(#0d74ce, #70b8ff);
+  --cal-indigo: light-dark(#3a5bc7, #9eb1ff);
+  --cal-violet: light-dark(#8347b9, #d19dff);
+  --cal-pink: light-dark(#cf3897, #ff8dcc);
+  --cal-brown: light-dark(#a07553, #dbb594);
+  --cal-graphite: light-dark(#646464, #b4b4b4);
+}

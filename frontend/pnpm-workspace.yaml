@@ -1,0 +1,4 @@
+allowBuilds:
+  esbuild: false
+  # Its postinstall only switches between Vue 2 and 3 builds; the default is already Vue 3.
+  vue-demi: false
