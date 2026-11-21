@@ -5,7 +5,7 @@ from pathlib import Path
 
 from fastapi import FastAPI
 
-from app.api import admin, auth, me, public
+from app.api import admin, auth, calendars, events, me, public, tags
 from app.branding import REPO_ROOT, get_branding
 from app.config import Settings, load_settings
 from app.db import Database
@@ -55,7 +55,15 @@ def create_app(settings: Settings | None = None, static_dir: Path | None = None)
     install_error_handlers(app)
     install_log_redaction()
     app.add_middleware(SecurityMiddleware, base_url=settings.base_url, docs_path="/api/docs")
-    for router in (public.router, auth.router, me.router, admin.router):
+    for router in (
+        public.router,
+        auth.router,
+        me.router,
+        admin.router,
+        calendars.router,
+        events.router,
+        tags.router,
+    ):
         app.include_router(router, prefix=API_PREFIX)
     install_spa(app, static_dir or DEFAULT_STATIC_DIR)
     return app
