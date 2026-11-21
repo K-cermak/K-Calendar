@@ -112,10 +112,13 @@ dependencies = [
     { name = "authlib" },
     { name = "cryptography" },
     { name = "fastapi" },
+    { name = "httpx2" },
+    { name = "icalendar" },
     { name = "pydantic" },
     { name = "pydantic-settings" },
     { name = "pyotp" },
     { name = "python-dateutil" },
+    { name = "python-multipart" },
     { name = "sqlalchemy" },
     { name = "tzdata" },
     { name = "uvicorn", extra = ["standard"] },
@@ -123,7 +126,6 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
-    { name = "httpx2" },
     { name = "pyright" },
     { name = "pytest" },
     { name = "ruff" },
@@ -137,10 +139,13 @@ requires-dist = [
     { name = "authlib", specifier = ">=1.9.10" },
     { name = "cryptography", specifier = ">=50.0.2" },
     { name = "fastapi", specifier = ">=0.165.0" },
+    { name = "httpx2", specifier = ">=2.16.2" },
+    { name = "icalendar", specifier = ">=7.3.2" },
     { name = "pydantic", specifier = ">=2.14.4" },
     { name = "pydantic-settings", specifier = ">=2.16.3" },
     { name = "pyotp", specifier = ">=2.12.1" },
     { name = "python-dateutil", specifier = ">=4.0.0" },
+    { name = "python-multipart", specifier = ">=0.0.34" },
     { name = "sqlalchemy", specifier = ">=2.1.9" },
     { name = "tzdata", specifier = ">=2026.6" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.54.0" },
@@ -148,7 +153,6 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "httpx2", specifier = ">=2.16.2" },
     { name = "pyright", specifier = ">=1.1.414" },
     { name = "pytest", specifier = ">=9.2.0" },
     { name = "ruff", specifier = ">=0.17.6" },
@@ -355,6 +359,19 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/cd/c4/0e5636363151a2a1795e0a77617168b9ca438e1748ec05fc9b5687f93d64/httpx2_jsfetch-1.0.tar.gz", hash = "sha256:70a0e3eabfef7cce5ad9c629f7d01ca05e418f586646f4ddf14782e4c1454c60", size = 6872, upload-time = "2026-08-07T00:13:07.492Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/9b/43/832f631d32e4f1211caa2ba368317739fe71f0b8530e4c9d15dc454bac2a/httpx2_jsfetch-1.0-py3-none-any.whl", hash = "sha256:cb916b707601e69a07721aabc8f3f6659be3a6893bc1ff5c6f9e02241df2da32", size = 6382, upload-time = "2026-08-07T00:13:06.567Z" },
+]
+
+[[package]]
+name = "icalendar"
+version = "7.3.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "python-dateutil" },
+    { name = "tzdata" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/9d/2d/db155eaa6ffe65b370b9899a69ac67cd439a33a9e9610327cef1ffaac86e/icalendar-7.3.2.tar.gz", hash = "sha256:f15380927aed4318860e001c03b543c48578c73aec46e2d384c5d0802082b808", size = 525771, upload-time = "2026-11-20T11:05:15.591Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a5/f9/ececbb7618626dd6f70603d2b8d6faa39d7c81631b434fa242288ede4719/icalendar-7.3.2-py3-none-any.whl", hash = "sha256:f95ce4ff8f41d8ad9ca253a676ef40c672abd3774458d197c215055a0d805cc4", size = 542537, upload-time = "2026-11-20T11:05:13.921Z" },
 ]
 
 [[package]]
@@ -627,6 +644,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/74/26/2fbeedb218a787a5eea551c7532cac4e009f83d689dd2faa0d0353473f86/python_dotenv-1.2.4.tar.gz", hash = "sha256:f0d53e69935a851c0dcc78f3ab7aaccd8cabef0b92382b576b824212902873c0", size = 60824, upload-time = "2026-10-01T05:36:10Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/60/d1/38f3a3405989a89ac18390803e70c6ad7c7760da4f9b83cbeca0c44a0c72/python_dotenv-1.2.4-py3-none-any.whl", hash = "sha256:42269a8a5b3fd54ffa6f3d84b18abed50064717576b4ecf03dc4a55d8aa04fdc", size = 23266, upload-time = "2026-10-01T05:36:08.633Z" },
+]
+
+[[package]]
+name = "python-multipart"
+version = "0.0.34"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/7e/c0/c753d487a83d873f6946cee6cbc26cea3fe59a476ad0de99a14938a2fbd8/python_multipart-0.0.34.tar.gz", hash = "sha256:b998ae90ca6e1e363261ce2e0e230281b8af53867b757970abd69ee9edcd843a", size = 52456, upload-time = "2026-11-16T10:40:38.261Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/f5/0e/090c52b122d8ec5fa37942c1410fea9cf04ce98bca0c84dde7f0aa11594d/python_multipart-0.0.34-py3-none-any.whl", hash = "sha256:ebacd224bd686eee2f9aa1066a657affe07435a185834e05e5235e2e59173e91", size = 32585, upload-time = "2026-11-16T10:40:37.119Z" },
 ]
 
 [[package]]
