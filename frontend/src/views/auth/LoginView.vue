@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, nextTick, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
-import { api, call } from '@/api/client'
+import { api, call, type Me } from '@/api/client'
 import { signedIn, useConfig } from '@/api/session'
 import { useSubmit } from '@/composables/useSubmit'
 import { afterSignIn } from '@/router'
 import AuthLayout from '@/components/AuthLayout.vue'
+import OidcButton from '@/components/OidcButton.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiField from '@/components/ui/UiField.vue'
 import UiInput from '@/components/ui/UiInput.vue'
@@ -29,24 +31,93 @@ async function requestReset(): Promise<void> {
   if (ok) resetSent.value = true
 }
 
+const i18n = useI18n()
+const second = useSubmit({ unauthorized: 'login.invalidCode' })
+// With two-step verification on, the password step returns a pending token for the code step.
+const pendingToken = ref<string | null>(null)
+const code = ref('')
+const codeField = ref<{ focus: () => void } | null>(null)
+
 const passwordLogin = computed(() => config.value?.password_login_enabled ?? true)
+// A single sign-on that failed comes back here with ?error=<code>.
+const redirectError = computed(() => {
+  const value = route.query.error
+  if (typeof value !== 'string') return null
+  return i18n.te(`errors.${value}`) ? i18n.t(`errors.${value}`) : i18n.t('errors.unknown')
+})
+
+async function finish(me: Me): Promise<void> {
+  signedIn(me)
+  await router.replace(afterSignIn(route.query.next))
+}
 
 async function submit(): Promise<void> {
-  const me = await attempt(() =>
+  const result = await attempt(() =>
     call(() =>
       api.POST('/api/v1/auth/login', { body: { email: email.value, password: password.value } }),
     ),
   )
-  if (!me) return
-  signedIn(me)
-  await router.replace(afterSignIn(route.query.next))
+  if (!result) return
+  if ('pending_token' in result) {
+    pendingToken.value = result.pending_token
+    await nextTick()
+    codeField.value?.focus()
+    return
+  }
+  await finish(result)
+}
+
+async function submitCode(): Promise<void> {
+  const token = pendingToken.value
+  if (!token) return
+  const me = await second.attempt(() =>
+    call(() =>
+      api.POST('/api/v1/auth/login/totp', { body: { pending_token: token, code: code.value } }),
+    ),
+  )
+  if (me) await finish(me)
+  else if (second.failure.value?.code === 'login_expired') pendingToken.value = null
 }
 </script>
 
 <template>
-  <AuthLayout :title="$t(resetting ? 'login.resetTitle' : 'login.title')">
+  <AuthLayout
+    :title="$t(pendingToken ? 'login.codeTitle' : resetting ? 'login.resetTitle' : 'login.title')"
+  >
+    <UiNotice v-if="redirectError" tone="error">{{ redirectError }}</UiNotice>
     <form
-      v-if="resetting"
+      v-if="pendingToken"
+      class="flex flex-col gap-5"
+      novalidate
+      data-testid="totp-step"
+      @submit.prevent="submitCode"
+    >
+      <p class="text-muted">{{ $t('login.codeHint') }}</p>
+      <UiField :label="$t('login.code')" for="login-code">
+        <UiInput
+          id="login-code"
+          ref="codeField"
+          v-model="code"
+          inputmode="numeric"
+          autocomplete="one-time-code"
+          maxlength="32"
+          required
+        />
+      </UiField>
+      <UiNotice v-if="second.error.value" tone="error">{{ second.error.value }}</UiNotice>
+      <UiButton type="submit" variant="primary" :loading="second.pending.value">
+        {{ $t('login.verify') }}
+      </UiButton>
+      <button
+        type="button"
+        class="cursor-pointer self-start font-medium text-accent"
+        @click="((pendingToken = null), (code = ''))"
+      >
+        {{ $t('common.back') }}
+      </button>
+    </form>
+    <form
+      v-else-if="resetting"
       class="flex flex-col gap-5"
       novalidate
       data-testid="reset-request"
@@ -94,7 +165,11 @@ async function submit(): Promise<void> {
         {{ $t('login.submit') }}
       </UiButton>
     </form>
-    <div v-if="!resetting" class="flex flex-col gap-2 text-muted">
+    <OidcButton
+      v-if="!resetting && !pendingToken && config?.oidc_enabled"
+      :next="route.query.next"
+    />
+    <div v-if="!resetting && !pendingToken" class="flex flex-col gap-2 text-muted">
       <p v-if="passwordLogin && !config?.email_enabled">{{ $t('login.forgot') }}</p>
       <button
         v-if="passwordLogin && config?.email_enabled"

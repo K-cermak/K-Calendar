@@ -6,7 +6,8 @@
     "undo": "Undo",
     "save": "Save",
     "saved": "Changes saved",
-    "add": "Add"
+    "add": "Add",
+    "done": "Done"
   },
   "home": {
     "version": "Version {version}"
@@ -30,12 +31,18 @@
     "resetTitle": "Reset your password",
     "resetIntro": "Enter your e-mail address. If it belongs to an account, a link to set a new password is on its way.",
     "resetSubmit": "Send the link",
-    "resetSent": "If the address has an account, the link is on its way. It works for 24 hours."
+    "resetSent": "If the address has an account, the link is on its way. It works for 24 hours.",
+    "codeTitle": "Two-step verification",
+    "codeHint": "Enter the 6-digit code from your authenticator app, or one of your recovery codes.",
+    "code": "Code",
+    "verify": "Verify",
+    "invalidCode": "The code is not correct."
   },
   "setup": {
     "title": "Set up {name}",
     "description": "Create the administrator account. You can invite other people afterwards.",
-    "submit": "Create account"
+    "submit": "Create account",
+    "ssoDescription": "Sign in with single sign-on. The first account becomes the administrator."
   },
   "invite": {
     "title": "You are invited",
@@ -97,7 +104,19 @@
     "invalid_occurrence": "This occurrence does not exist.",
     "email_disabled": "E-mail is not set up on this server.",
     "email_failed": "The e-mail could not be sent. Check the SMTP settings.",
-    "invalid_reminder": "A reminder can be at most four weeks before."
+    "invalid_reminder": "A reminder can be at most four weeks before.",
+    "login_expired": "The sign-in took too long. Start again.",
+    "invalid_code": "The code is not correct.",
+    "token_not_allowed": "API tokens cannot be used for this.",
+    "oidc_failed": "Single sign-on did not work. Try again.",
+    "oidc_no_account": "There is no account for you yet. Ask an administrator to create one.",
+    "oidc_taken": "That single sign-on account is already linked to another account.",
+    "last_login_method": "This is your only way to sign in.",
+    "setup_required": "Set up the instance first.",
+    "totp_enabled": "Two-step verification is already on.",
+    "no_password": "Accounts that use single sign-on get two-step verification from it.",
+    "insufficient_scope": "This token can only read.",
+    "invalid_endpoint": "This browser's push address is not allowed."
   },
   "shell": {
     "openMenu": "Open menu",
@@ -168,6 +187,49 @@
       "pushOn": "Reminders arrive on this device.",
       "pushTurnOn": "Turn on notifications",
       "pushTurnOff": "Turn off notifications"
+    },
+    "totp": {
+      "title": "Two-step verification",
+      "intro": "Asks for a code from an authenticator app after your password.",
+      "setUp": "Set up",
+      "scan": "Scan this code with your authenticator app.",
+      "qr": "QR code for the authenticator app",
+      "manual": "Or enter this key by hand:",
+      "enterCode": "Enter the 6-digit code it shows",
+      "confirm": "Turn on",
+      "saveCodes": "Save these recovery codes somewhere safe. Each one signs you in once if you lose your phone. They are shown only now.",
+      "on": "On",
+      "codesLeft": "{count} recovery code left | {count} recovery codes left",
+      "codeOrRecovery": "Code from the app, or a recovery code",
+      "renew": "New recovery codes",
+      "turnOff": "Turn off"
+    },
+    "sso": {
+      "title": "Single sign-on ({provider})",
+      "isLinked": "Your account is linked to {provider}. You can sign in with it.",
+      "notLinked": "Link your {provider} account to sign in with it.",
+      "unlink": "Unlink",
+      "onlyWay": "This is your only way to sign in, so it cannot be unlinked.",
+      "linked": "Linked. You can now sign in with single sign-on."
+    },
+    "tokens": {
+      "title": "API tokens",
+      "intro": "Tokens let scripts read or change your calendars through the REST API. They cannot reach your account, security settings or administration.",
+      "name": "Name",
+      "scope": "Access",
+      "read": "Read",
+      "write": "Read and write",
+      "expiry": "Expires",
+      "days": "In {count} day | In {count} days",
+      "never": "Never",
+      "create": "Create token",
+      "once": "Copy the token now. It is not shown again.",
+      "expires": "expires {date}",
+      "used": "used {date}",
+      "unused": "never used",
+      "revoke": "Revoke",
+      "revokeTitle": "Revoke “{name}”?",
+      "revokeMessage": "Scripts using this token stop working at once."
     }
   },
   "admin": {
@@ -199,7 +261,10 @@
       "reactivate": "Reactivate",
       "delete": "Delete account",
       "deleteTitle": "Delete {name}?",
-      "deleteMessage": "Their account, calendars and events are deleted for good."
+      "deleteMessage": "Their account, calendars and events are deleted for good.",
+      "resetTotp": "Turn off two-step verification",
+      "resetTotpTitle": "Turn off two-step verification for {name}?",
+      "resetTotpMessage": "Use this when they lost their phone and their recovery codes. They can set it up again."
     },
     "registration": {
       "title": "Registration",
@@ -497,5 +562,9 @@
     "onTheDay": "On the day",
     "theDayBefore": "The day before",
     "at": "at"
+  },
+  "oidc": {
+    "signIn": "Sign in with {provider}",
+    "link": "Link {provider}"
   }
 }

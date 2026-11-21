@@ -146,6 +146,21 @@ async function createResetLink(user: AdminUser): Promise<void> {
   })
 }
 
+async function resetTotp(user: AdminUser): Promise<void> {
+  const sure = await confirm.ask({
+    title: i18n.t('admin.users.resetTotpTitle', { name: user.display_name }),
+    message: i18n.t('admin.users.resetTotpMessage'),
+    confirmLabel: i18n.t('admin.users.resetTotp'),
+  })
+  if (!sure) return
+  await userAction.run(async () => {
+    await call(() =>
+      api.DELETE('/api/v1/admin/users/{user_id}/totp', { params: { path: { user_id: user.id } } }),
+    )
+    await users.refetch()
+  })
+}
+
 async function deleteUser(user: AdminUser): Promise<void> {
   const sure = await confirm.ask({
     title: i18n.t('admin.users.deleteTitle', { name: user.display_name }),
@@ -244,6 +259,7 @@ async function deleteUser(user: AdminUser): Promise<void> {
             </span>
           </div>
           <span v-if="user.is_admin" class="ui-badge">{{ $t('admin.users.admin') }}</span>
+          <span v-if="user.totp_enabled" class="ui-badge">2FA</span>
           <span v-if="!user.is_active" class="ui-badge ui-badge--error">
             {{ $t('admin.users.inactive') }}
           </span>
@@ -263,6 +279,13 @@ async function deleteUser(user: AdminUser): Promise<void> {
                   @select="createResetLink(user)"
                 >
                   {{ $t('admin.users.resetLink') }}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  v-if="user.totp_enabled"
+                  :class="menuItem"
+                  @select="resetTotp(user)"
+                >
+                  {{ $t('admin.users.resetTotp') }}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator class="ui-menu-separator" />
                 <DropdownMenuItem
