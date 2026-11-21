@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, useTemplateRef, watch } from 'vue'
 import { ChevronLeft, ChevronRight } from '@lucide/vue'
 import { formatDate, startOfWeek, type PlainDate, type WeekStart } from '@/dates'
 import { colorVar } from '@/palette'
@@ -19,9 +19,14 @@ const props = defineProps<{
 const emit = defineEmits<{ select: [day: PlainDate]; month: [first: PlainDate] }>()
 
 const shown = ref(props.selected.with({ day: 1 }))
+// The one day that Tab reaches; the arrow keys move it (the date grid pattern of WAI-ARIA).
+const focused = ref(props.selected)
 watch(
   () => props.selected.toString(),
-  () => (shown.value = props.selected.with({ day: 1 })),
+  () => {
+    shown.value = props.selected.with({ day: 1 })
+    focused.value = props.selected
+  },
 )
 
 const weeks = computed(() => {
@@ -40,6 +45,38 @@ const title = computed(() =>
 function move(step: -1 | 1): void {
   shown.value = shown.value.add({ months: step })
   emit('month', shown.value)
+}
+
+const tabStop = computed(() =>
+  weeks.value.flat().some((day) => day.equals(focused.value)) ? focused.value : shown.value,
+)
+
+const table = useTemplateRef<HTMLTableElement>('table')
+
+function onKey(event: KeyboardEvent): void {
+  const day = tabStop.value
+  const weekday = weeks.value[0]!.findIndex((d) => d.dayOfWeek === day.dayOfWeek)
+  const moves: Record<string, (() => PlainDate) | undefined> = {
+    ArrowLeft: () => day.subtract({ days: 1 }),
+    ArrowRight: () => day.add({ days: 1 }),
+    ArrowUp: () => day.subtract({ days: 7 }),
+    ArrowDown: () => day.add({ days: 7 }),
+    Home: () => day.subtract({ days: weekday }),
+    End: () => day.add({ days: 6 - weekday }),
+    PageUp: () => day.subtract({ months: 1 }),
+    PageDown: () => day.add({ months: 1 }),
+  }
+  const next = moves[event.key]?.()
+  if (!next) return
+  event.preventDefault()
+  focused.value = next
+  if (next.month !== shown.value.month || next.year !== shown.value.year) {
+    shown.value = next.with({ day: 1 })
+    emit('month', shown.value)
+  }
+  void nextTick(() =>
+    table.value?.querySelector<HTMLButtonElement>(`[data-day="${next.toString()}"]`)?.focus(),
+  )
 }
 
 const MAX_DOTS = 3
@@ -68,7 +105,7 @@ const MAX_DOTS = 3
         </button>
       </div>
     </div>
-    <table class="w-full table-fixed border-collapse text-center">
+    <table ref="table" class="w-full table-fixed border-collapse text-center" @keydown="onKey">
       <thead>
         <tr>
           <th
@@ -93,7 +130,9 @@ const MAX_DOTS = 3
               "
               :aria-current="today && day.equals(today) ? 'date' : undefined"
               :aria-pressed="day.equals(selected)"
-              @click="emit('select', day)"
+              :data-day="day.toString()"
+              :tabindex="day.equals(tabStop) ? 0 : -1"
+              @click="((focused = day), emit('select', day))"
             >
               <span
                 class="ui-numeric inline-grid h-6 min-w-6 place-items-center px-1 font-mono text-meta"
