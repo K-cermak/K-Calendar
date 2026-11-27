@@ -165,6 +165,18 @@
       "emailReminders": "Send reminders by e-mail too",
       "emailRemindersHint": "To {email}, in addition to notifications."
     },
+    "workingHours": {
+      "title": "Working hours",
+      "show": "Show working hours in the calendar",
+      "showHint": "Time outside them is shaded in the week and day views.",
+      "off": "Not working",
+      "from": "{day}, from",
+      "to": "{day}, until",
+      "remove": "Remove this time on {day}",
+      "add": "Add time",
+      "invalid": "Each time has to end after it starts, and the times of one day must not overlap.",
+      "save": "Save working hours"
+    },
     "security": {
       "title": "Security"
     },

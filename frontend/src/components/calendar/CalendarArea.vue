@@ -255,6 +255,7 @@ defineExpose({ newEvent })
     :week-start="me.week_start"
     :time-format="me.time_format"
     :show-tags="me.show_event_tags"
+    :working-hours="me.working_hours_enabled ? me.working_hours : null"
     :read-only="readOnly"
     @select="onSelect"
     @date-click="onDateClick"

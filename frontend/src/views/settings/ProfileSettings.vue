@@ -10,6 +10,7 @@ import { VIEWS } from '@/router'
 import { useToastStore } from '@/stores/toast'
 import ThemeSwitch from '@/components/ThemeSwitch.vue'
 import TimezoneSelect from '@/components/TimezoneSelect.vue'
+import WorkingHoursSettings from './WorkingHoursSettings.vue'
 import UiCheckbox from '@/components/ui/UiCheckbox.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiField from '@/components/ui/UiField.vue'
@@ -164,4 +165,5 @@ function selected(event: Event): string {
       <ThemeSwitch :model-value="me.theme" @update:model-value="(theme) => update({ theme })" />
     </div>
   </section>
+  <WorkingHoursSettings />
 </template>

@@ -120,6 +120,8 @@ def to_me(user: User) -> Me:
             "default_view": user.default_view,
             "theme": user.theme,
             "show_event_tags": user.show_event_tags,
+            "working_hours_enabled": user.working_hours_enabled,
+            "working_hours": user.working_hours,
             "email_reminders_enabled": user.email_reminders_enabled,
             "has_password": user.password_hash is not None,
             "totp_enabled": user.totp_enabled_at_utc is not None,
@@ -146,6 +148,10 @@ def update_profile(db: Session, user: User, update: ProfileUpdate) -> User:
         user.theme = update.theme
     if update.show_event_tags is not None:
         user.show_event_tags = update.show_event_tags
+    if update.working_hours_enabled is not None:
+        user.working_hours_enabled = update.working_hours_enabled
+    if update.working_hours is not None:
+        user.working_hours = update.working_hours.model_dump()
     if update.email_reminders_enabled is not None:
         user.email_reminders_enabled = update.email_reminders_enabled
     if zone_changed:

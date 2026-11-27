@@ -1,10 +1,19 @@
 from datetime import datetime
+from typing import Any
 
-from sqlalchemy import ForeignKey, String, UniqueConstraint
+from sqlalchemy import JSON, ForeignKey, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db import Base
 from app.models.types import UtcDateTime
+
+WEEKDAYS = ("monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday")
+
+
+def default_working_hours() -> dict[str, Any]:
+    """Nine to five on weekdays: what the switch shows before the user sets their own hours."""
+    weekend = ("saturday", "sunday")
+    return {day: [] if day in weekend else [{"start": "09:00", "end": "17:00"}] for day in WEEKDAYS}
 
 
 class User(Base):
@@ -24,6 +33,8 @@ class User(Base):
     default_view: Mapped[str] = mapped_column(String(8), default="auto")
     theme: Mapped[str] = mapped_column(String(8), default="system")
     show_event_tags: Mapped[bool] = mapped_column(default=True)
+    working_hours_enabled: Mapped[bool] = mapped_column(default=False)
+    working_hours: Mapped[dict[str, Any]] = mapped_column(JSON, default=default_working_hours)
     email_reminders_enabled: Mapped[bool] = mapped_column(default=False)
     totp_secret_encrypted: Mapped[str | None]
     totp_enabled_at_utc: Mapped[datetime | None] = mapped_column(UtcDateTime)

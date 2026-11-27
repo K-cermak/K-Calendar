@@ -20,6 +20,7 @@ The people who will use it:
 - Reminders delivered by Web Push and by e-mail
 - Views: month, week, day, agenda
 - Drag and drop to move and resize, quick create by clicking or dragging on the grid, search
+- Working hours per day, with breaks, shaded in the week and day views
 - ICS: import a file, export a calendar, a secret read-only feed URL per calendar, and read-only subscriptions to external ICS URLs
 - PWA: installable, and already-loaded data stays readable offline
 - English UI built on i18n so that other languages can be added by dropping in a file
@@ -127,7 +128,7 @@ docs/
 
 Integer primary keys. Every timestamp column whose name ends in `_utc` holds UTC. All tables that hold user data carry `user_id` directly or reach it through one foreign key, and deleting a user cascades to everything they own.
 
-**users**: `email` (unique, stored lowercased), `display_name`, `password_hash` (null for accounts that only use OIDC), `is_admin`, `is_active`, `timezone` (IANA name), `locale`, `week_start` (monday or sunday), `time_format` (12 or 24), `default_view`, `theme` (system, light, dark), `show_event_tags` (default true), `email_reminders_enabled` (default false), `totp_secret_encrypted`, `totp_enabled_at_utc`, `totp_last_step`, `oidc_issuer`, `oidc_subject` (unique together).
+**users**: `email` (unique, stored lowercased), `display_name`, `password_hash` (null for accounts that only use OIDC), `is_admin`, `is_active`, `timezone` (IANA name), `locale`, `week_start` (monday or sunday), `time_format` (12 or 24), `default_view`, `theme` (system, light, dark), `show_event_tags` (default true), `working_hours_enabled` (default false), `working_hours` (section 7), `email_reminders_enabled` (default false), `totp_secret_encrypted`, `totp_enabled_at_utc`, `totp_last_step`, `oidc_issuer`, `oidc_subject` (unique together).
 
 **recovery_codes**: `user_id`, `code_hash`, `used_at_utc`.
 
@@ -306,6 +307,13 @@ Tags are a second, lighter way to group events across calendars ("travel", "kids
 Event fields: title, calendar, start and end, all-day, time zone, repeat, reminders, location, description, colour, tags. Location is plain text with a link that opens the system's maps app. The description is plain text; make URLs in it clickable by building links from text, never by injecting HTML. An empty title is saved as "(No title)" via i18n at display time.
 
 Events in subscription calendars are read-only everywhere: no drag, no edit form, a small indicator in the detail view. Enforce it in the service layer as well as in the UI.
+
+### Working hours
+
+Added by the owner. A user can set the hours they work, and the week and day views then shade the time outside them lightly, so the working day stands out without hiding anything: events, quick create and dragging work the same on either side. The month view and the agenda do not show them.
+
+- Each day of the week has its own list of intervals, start and end as wall-clock times in the user's zone; several intervals leave room for breaks, and a day without intervals is off. At most six per day; the end is exclusive, so back-to-back intervals are allowed, but an interval must end after it starts and the intervals of a day must not overlap (422 otherwise). A night shift past midnight is two intervals on two days.
+- They live on the user (`working_hours`, JSON keyed by weekday, and `working_hours_enabled`, default false) and are edited in the profile settings. They start as 09:00 to 17:00 on weekdays, shown only once the user turns them on; turning them off keeps the hours.
 
 ## 8. Reminders and notifications
 

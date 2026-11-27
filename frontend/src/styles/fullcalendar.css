@@ -140,6 +140,11 @@
     background: var(--accent);
   }
 
+  /* Outside working hours: a faint wash, lighter than a hover, so events on it read as usual. */
+  .cal-fc-off-hours {
+    background: color-mix(in srgb, var(--ink) 3.5%, transparent);
+  }
+
   .cal-fc-highlight {
     background: color-mix(in srgb, var(--accent) 10%, transparent);
   }

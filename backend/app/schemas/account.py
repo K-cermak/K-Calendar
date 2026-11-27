@@ -1,7 +1,8 @@
 from datetime import datetime
-from typing import Literal
+from itertools import pairwise
+from typing import Annotated, Literal, Self
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 from app.schemas.admin import CAPTCHA_TOKEN_MAX
 
@@ -26,6 +27,44 @@ class SetupRequest(BaseModel):
 
 CaptchaToken = Field(default=None, max_length=CAPTCHA_TOKEN_MAX)
 
+TimeOfDay = Annotated[str, Field(pattern=r"^([01]\d|2[0-3]):[0-5]\d$", examples=["09:00"])]
+
+
+class WorkingInterval(BaseModel):
+    start: TimeOfDay
+    end: TimeOfDay
+
+
+# A few intervals leave room for breaks; more would only be a mistake.
+WorkingDay = Annotated[list[WorkingInterval], Field(max_length=6)]
+
+
+class WorkingHours(BaseModel):
+    """When the user works, as wall-clock times in their zone; a day without intervals is off."""
+
+    monday: WorkingDay = []
+    tuesday: WorkingDay = []
+    wednesday: WorkingDay = []
+    thursday: WorkingDay = []
+    friday: WorkingDay = []
+    saturday: WorkingDay = []
+    sunday: WorkingDay = []
+
+    @model_validator(mode="after")
+    def _ordered(self) -> Self:
+        for day in type(self).model_fields:
+            intervals = sorted(getattr(self, day), key=lambda i: i.start)
+            for interval in intervals:
+                if interval.end <= interval.start:
+                    raise ValueError(f"{day}: {interval.start}-{interval.end} ends before it starts")
+            for before, after in pairwise(intervals):
+                if after.start < before.end:
+                    raise ValueError(
+                        f"{day}: {before.start}-{before.end} and {after.start}-{after.end} overlap"
+                    )
+            setattr(self, day, intervals)
+        return self
+
 
 class RegisterRequest(SetupRequest):
     captcha_token: str | None = CaptchaToken
@@ -49,6 +88,8 @@ class Me(BaseModel):
     default_view: DefaultView
     theme: Theme
     show_event_tags: bool
+    working_hours_enabled: bool
+    working_hours: WorkingHours
     email_reminders_enabled: bool
     has_password: bool
     totp_enabled: bool
@@ -64,6 +105,8 @@ class ProfileUpdate(BaseModel):
     default_view: DefaultView | None = None
     theme: Theme | None = None
     show_event_tags: bool | None = None
+    working_hours_enabled: bool | None = None
+    working_hours: WorkingHours | None = None
     email_reminders_enabled: bool | None = None
 
 

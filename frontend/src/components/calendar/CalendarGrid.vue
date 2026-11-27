@@ -13,8 +13,9 @@ import type {
   EventInput,
 } from '@fullcalendar/vue3'
 import '@fullcalendar/vue3/skeleton.css'
-import type { Occurrence } from '@/api/client'
+import type { Occurrence, WorkingHours } from '@/api/client'
 import { PHONE_WEEK_DAYS, type PlainDateTime, type WeekStart } from '@/dates'
+import { toBusinessHours } from '@/workingHours'
 import EventBlock from './EventBlock.vue'
 import type { GridChange, GridSpan } from './types'
 import { calendarTheme } from './theme'
@@ -29,6 +30,7 @@ const props = defineProps<{
   weekStart: WeekStart
   timeFormat: '12' | '24'
   showTags: boolean
+  workingHours: WorkingHours | null
   readOnly: boolean
 }>()
 
@@ -95,6 +97,9 @@ const options = computed<CalendarOptions>(() => ({
   firstDay: props.weekStart === 'monday' ? 1 : 0,
   now: () => (props.now ? props.now.toString() : new Date()),
   nowIndicator: true,
+  // Only the time grid: the month view would shade whole days off, which reads as unavailable.
+  businessHours:
+    props.workingHours && props.view !== 'month' ? toBusinessHours(props.workingHours) : false,
   scrollTime: scrollTime(props.now?.hour ?? 9),
   views: { timeGridThreeDay: { type: 'timeGrid', duration: { days: PHONE_WEEK_DAYS } } },
   editable: !props.readOnly,

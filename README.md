@@ -31,6 +31,7 @@ A small, self-hosted personal calendar: month, week, day and agenda views, repea
 - Events with a time zone, all-day events over several days, location, description and an own colour.
 - Repeating events, from "every weekday" to "the last Friday of every month", changed as "this event", "this and following events" or "all events".
 - Drag to move and resize, drag over empty time to create, search that ignores case and accents.
+- Working hours for each day, with breaks, lightly shaded in the week and day views.
 - Reminders by Web Push and by e-mail, delivered once even across restarts.
 - Import an `.ics` file, export a calendar, a secret feed address per calendar for other apps, and read-only subscriptions to calendars on the internet, such as public holidays.
 - Installable app; what was loaded stays readable offline.

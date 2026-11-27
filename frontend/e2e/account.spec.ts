@@ -1,5 +1,5 @@
 import { createHmac } from 'node:crypto'
-import { admin, expect, test } from './helpers'
+import { MONDAY, admin, expect, openGrid, test } from './helpers'
 import { createEvent } from './api'
 
 /** RFC 6238 TOTP for a base32 secret, as an authenticator app computes it. */
@@ -177,4 +177,36 @@ test('tag markers on events can be turned off in the profile', async ({ page }) 
   await page.goto('/agenda')
   await expect(row).toBeVisible()
   await expect(row.locator('.cal-tag-marker')).toHaveCount(0)
+})
+
+test('working hours with a break shade the rest of the day in the grid', async ({
+  page,
+  isMobile,
+}) => {
+  await openGrid(page, isMobile, MONDAY)
+  await expect(page.locator('.cal-fc-off-hours')).toHaveCount(0)
+
+  await page.goto('/settings/profile')
+  const section = page.getByTestId('working-hours')
+  await section.getByTestId('working-hours-enabled').click()
+  const monday = section.getByTestId('working-monday')
+  await monday.getByLabel('Monday, until').fill('12:00')
+  await monday.getByRole('button', { name: 'Add time' }).click()
+  await monday.getByLabel('Monday, from').nth(1).fill('11:00')
+  await monday.getByLabel('Monday, until').nth(1).fill('17:00')
+  await expect(section.getByText('must not overlap')).toBeVisible()
+  await expect(section.getByTestId('working-hours-save')).toBeDisabled()
+  await monday.getByLabel('Monday, from').nth(1).fill('13:00')
+  await section.getByTestId('working-hours-save').click()
+  await expect(section.getByTestId('working-hours-save')).toBeDisabled()
+
+  const me = (await (await page.request.get('/api/v1/me')).json()) as {
+    working_hours: { monday: { start: string; end: string }[] }
+  }
+  expect(me.working_hours.monday).toEqual([
+    { start: '09:00', end: '12:00' },
+    { start: '13:00', end: '17:00' },
+  ])
+  await openGrid(page, isMobile, MONDAY)
+  await expect(page.locator('.cal-fc-off-hours').first()).toBeAttached()
 })

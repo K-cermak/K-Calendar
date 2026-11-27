@@ -1634,6 +1634,9 @@ export interface components {
             theme: "system" | "light" | "dark";
             /** Show Event Tags */
             show_event_tags: boolean;
+            /** Working Hours Enabled */
+            working_hours_enabled: boolean;
+            working_hours: components["schemas"]["WorkingHours"];
             /** Email Reminders Enabled */
             email_reminders_enabled: boolean;
             /** Has Password */
@@ -1767,6 +1770,9 @@ export interface components {
             theme?: ("system" | "light" | "dark") | null;
             /** Show Event Tags */
             show_event_tags?: boolean | null;
+            /** Working Hours Enabled */
+            working_hours_enabled?: boolean | null;
+            working_hours?: components["schemas"]["WorkingHours"] | null;
             /** Email Reminders Enabled */
             email_reminders_enabled?: boolean | null;
         };
@@ -2063,6 +2069,60 @@ export interface components {
             enabled: boolean;
             /** Recovery Codes Left */
             recovery_codes_left: number;
+        };
+        /**
+         * WorkingHours
+         * @description When the user works, as wall-clock times in their zone; a day without intervals is off.
+         */
+        WorkingHours: {
+            /**
+             * Monday
+             * @default []
+             */
+            monday: components["schemas"]["WorkingInterval"][];
+            /**
+             * Tuesday
+             * @default []
+             */
+            tuesday: components["schemas"]["WorkingInterval"][];
+            /**
+             * Wednesday
+             * @default []
+             */
+            wednesday: components["schemas"]["WorkingInterval"][];
+            /**
+             * Thursday
+             * @default []
+             */
+            thursday: components["schemas"]["WorkingInterval"][];
+            /**
+             * Friday
+             * @default []
+             */
+            friday: components["schemas"]["WorkingInterval"][];
+            /**
+             * Saturday
+             * @default []
+             */
+            saturday: components["schemas"]["WorkingInterval"][];
+            /**
+             * Sunday
+             * @default []
+             */
+            sunday: components["schemas"]["WorkingInterval"][];
+        };
+        /** WorkingInterval */
+        WorkingInterval: {
+            /**
+             * Start
+             * @example 09:00
+             */
+            start: string;
+            /**
+             * End
+             * @example 09:00
+             */
+            end: string;
         };
     };
     responses: never;

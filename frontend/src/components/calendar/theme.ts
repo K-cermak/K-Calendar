@@ -64,6 +64,7 @@ export const calendarTheme = {
     popoverClass: 'cal-fc-popover',
     popoverCloseClass: 'cal-fc-popover__close',
     highlightClass: 'cal-fc-highlight',
+    nonBusinessHoursClass: 'cal-fc-off-hours',
     fillerClass: 'cal-fc-filler',
     tableHeaderClass: 'cal-fc-table-header',
     navLinkClass: 'cal-fc-nav-link',

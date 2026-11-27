@@ -143,3 +143,44 @@ def test_subscribing_a_private_endpoint_is_refused(admin: TestClient) -> None:
     )
     # The default test settings do not allow private addresses.
     assert response.json()["code"] == "invalid_endpoint"
+
+
+def test_working_hours_start_off_with_nine_to_five_on_weekdays(admin: TestClient) -> None:
+    me = admin.get("/api/v1/me").json()
+    assert me["working_hours_enabled"] is False
+    assert me["working_hours"]["monday"] == [{"start": "09:00", "end": "17:00"}]
+    assert me["working_hours"]["sunday"] == []
+
+
+def test_working_hours_keep_breaks_in_order(admin: TestClient) -> None:
+    hours = {
+        "monday": [{"start": "13:00", "end": "17:00"}, {"start": "08:00", "end": "12:00"}],
+        "saturday": [{"start": "10:00", "end": "12:00"}],
+    }
+    response = admin.patch("/api/v1/me", json={"working_hours_enabled": True, "working_hours": hours})
+    assert response.status_code == 200
+    me = admin.get("/api/v1/me").json()
+    assert me["working_hours_enabled"] is True
+    assert me["working_hours"]["monday"] == [
+        {"start": "08:00", "end": "12:00"},
+        {"start": "13:00", "end": "17:00"},
+    ]
+    assert me["working_hours"]["saturday"] == [{"start": "10:00", "end": "12:00"}]
+    assert me["working_hours"]["tuesday"] == []
+
+    # Turning them off keeps the hours for the next time.
+    admin.patch("/api/v1/me", json={"working_hours_enabled": False})
+    assert admin.get("/api/v1/me").json()["working_hours"]["saturday"] == [{"start": "10:00", "end": "12:00"}]
+
+
+def test_working_hours_refuse_overlaps_and_backward_intervals(admin: TestClient) -> None:
+    def patch(intervals: list[dict[str, str]]) -> int:
+        return admin.patch("/api/v1/me", json={"working_hours": {"monday": intervals}}).status_code
+
+    assert patch([{"start": "09:00", "end": "12:00"}, {"start": "11:00", "end": "15:00"}]) == 422
+    assert patch([{"start": "12:00", "end": "09:00"}]) == 422
+    assert patch([{"start": "09:00", "end": "09:00"}]) == 422
+    assert patch([{"start": "9:00", "end": "12:00"}]) == 422
+    assert patch([{"start": "09:00", "end": "24:00"}]) == 422
+    # Back to back is fine: the end is exclusive.
+    assert patch([{"start": "09:00", "end": "12:00"}, {"start": "12:00", "end": "15:00"}]) == 200
