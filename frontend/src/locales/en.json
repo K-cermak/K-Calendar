@@ -423,7 +423,7 @@
   "tags": {
     "empty": "Tags you add to events appear here.",
     "actions": "Actions for {name}",
-    "edit": "Rename and recolour",
+    "edit": "Edit",
     "editTitle": "Edit tag",
     "name": "Name",
     "color": "Colour",

@@ -299,7 +299,7 @@ The sidebar on desktop, a drawer on mobile, lists calendars with a visibility to
 Tags are a second, lighter way to group events across calendars ("travel", "kids", "deadline"). Each tag has a name and a colour from the same palette as calendars.
 
 - In the event editor the tag field autocompletes existing tags and creates a new one when the user types an unknown name. A new tag gets the palette colour least used among the user's tags, so the first few tags come out distinct without the user choosing anything.
-- The sidebar lists tags with their colour. Clicking one filters the calendar to events carrying it; several selected tags show events carrying any of them. A menu on each tag offers rename, change colour and delete. Deleting a tag removes it from its events and leaves the events alone.
+- The sidebar lists tags with their colour. Clicking one filters the calendar to events carrying it; several selected tags show events carrying any of them. A menu on each tag offers edit (name and colour) and delete. Deleting a tag removes it from its events and leaves the events alone.
 - A tag's colour never changes the colour of an event. An event is drawn in its own colour if it has one, otherwise in its calendar's colour. Tags appear as small colour markers on the event in the week, day and agenda views (at most three, then "+N"), and as labelled chips in the event detail and in search results. The month view is too dense for them and shows none.
 - In ICS, tags map to CATEGORIES, which carries only names. Imported names that match an existing tag reuse it; new ones are created with an automatic colour.
 
