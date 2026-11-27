@@ -214,7 +214,7 @@ curl -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
      https://calendar.example.com/api/v1/events
 ```
 
-Times without an offset are wall-clock times in the event's zone, which defaults to the zone in your profile. The full reference is at `/api/docs` on your instance.
+Times without an offset are wall-clock times in the event's zone, which defaults to the zone in your profile. The full reference is at `/api/v1/docs` on your instance.
 
 ## Adding a translation
 

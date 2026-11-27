@@ -286,7 +286,7 @@ A user creates named tokens in settings, choosing a scope and an optional expiry
 - `write` additionally allows creating, changing and deleting calendar data.
 - No token can reach account, security or admin endpoints: password, TOTP, sessions, tokens, OIDC linking, user management. Those need a real login.
 
-Settings shows each token's scope, expiry and last use, and can revoke it. The interactive API documentation is served at `/api/docs`.
+Settings shows each token's scope, expiry and last use, and can revoke it. The interactive API documentation is served at `/api/v1/docs`, linked from the API tokens settings.
 
 ## 7. Calendars, events and tags
 

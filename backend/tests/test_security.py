@@ -48,7 +48,7 @@ def test_security_headers(client: TestClient) -> None:
 
 
 def test_api_docs_page_loads(client: TestClient) -> None:
-    response = client.get("/api/docs")
+    response = client.get("/api/v1/docs")
     assert response.status_code == 200
     assert "cdn.jsdelivr.net" in response.headers["content-security-policy"]
 

@@ -53,7 +53,7 @@ def create_app(settings: Settings | None = None, static_dir: Path | None = None)
         title=get_branding().name,
         version=VERSION,
         lifespan=lifespan,
-        docs_url="/api/docs",
+        docs_url=f"{API_PREFIX}/docs",
         redoc_url=None,
         openapi_url=f"{API_PREFIX}/openapi.json",
         responses={"default": {"model": ErrorResponse}},
@@ -65,7 +65,7 @@ def create_app(settings: Settings | None = None, static_dir: Path | None = None)
     app.state.oidc = OidcClient(settings) if settings.oidc_enabled else None
     install_error_handlers(app)
     install_log_redaction()
-    app.add_middleware(SecurityMiddleware, base_url=settings.base_url, docs_path="/api/docs")
+    app.add_middleware(SecurityMiddleware, base_url=settings.base_url, docs_path=f"{API_PREFIX}/docs")
     for router in (
         public.router,
         auth.router,
