@@ -27,8 +27,15 @@ test('an admin sets the sign-in length under Limits', async ({ page, isMobile })
   await days.fill('180')
   await save.click()
   await expect(days).toHaveValue('180')
-  const settings = (await (await page.request.get('/api/v1/admin/settings')).json()) as {
-    session_days: number
-  }
-  expect(settings.session_days).toBe(180)
+  // The field shows the value at once; the server has it only when the request is done.
+  await expect
+    .poll(
+      async () =>
+        (
+          (await (await page.request.get('/api/v1/admin/settings')).json()) as {
+            session_days: number
+          }
+        ).session_days,
+    )
+    .toBe(180)
 })

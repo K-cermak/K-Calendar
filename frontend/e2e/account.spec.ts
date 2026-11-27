@@ -174,6 +174,10 @@ test('tag markers on events can be turned off in the profile', async ({ page }) 
   await page.goto('/settings/profile')
   await page.getByTestId('show-event-tags').click()
   await expect(page.getByTestId('show-event-tags')).toHaveAttribute('data-state', 'unchecked')
+  // The switch flips before the server has it, and the agenda below loads the profile afresh.
+  await expect
+    .poll(async () => (await (await page.request.get('/api/v1/me')).json()).show_event_tags)
+    .toBe(false)
   await page.goto('/agenda')
   await expect(row).toBeVisible()
   await expect(row.locator('.cal-tag-marker')).toHaveCount(0)
@@ -200,13 +204,20 @@ test('working hours with a break shade the rest of the day in the grid', async (
   await section.getByTestId('working-hours-save').click()
   await expect(section.getByTestId('working-hours-save')).toBeDisabled()
 
-  const me = (await (await page.request.get('/api/v1/me')).json()) as {
-    working_hours: { monday: { start: string; end: string }[] }
-  }
-  expect(me.working_hours.monday).toEqual([
-    { start: '09:00', end: '12:00' },
-    { start: '13:00', end: '17:00' },
-  ])
+  // The button turns off as soon as the change is sent; the server may not have it yet.
+  await expect
+    .poll(
+      async () =>
+        (
+          (await (await page.request.get('/api/v1/me')).json()) as {
+            working_hours: { monday: { start: string; end: string }[] }
+          }
+        ).working_hours.monday,
+    )
+    .toEqual([
+      { start: '09:00', end: '12:00' },
+      { start: '13:00', end: '17:00' },
+    ])
   await openGrid(page, isMobile, MONDAY)
   await expect(page.locator('.cal-fc-off-hours').first()).toBeAttached()
 })

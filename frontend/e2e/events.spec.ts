@@ -133,7 +133,11 @@ test('closing the editor with changes asks to save, cancel or discard', async ({
 
   await openEditor()
   await editor.getByLabel('Title').fill('Dentist at 8')
-  await page.mouse.click(5, 400)
+  // The corner of the dimmed page, which neither the dialog nor the phone's sheet covers.
+  await page
+    .locator('.ui-overlay')
+    .last()
+    .click({ position: { x: 8, y: 8 } })
   await expect(prompt.getByRole('button', { name: 'Save' })).toBeFocused()
   await page.keyboard.press('Enter')
   await chooseScope(page, 'This event')

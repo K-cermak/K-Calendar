@@ -115,6 +115,10 @@ test('the administration and sign-in pages pass an accessibility check', async (
     })
     await page.goto('/admin')
     await expect(page.getByTestId('users')).toBeVisible()
+    // Its Save button is disabled until the settings load; axe must not catch it turning on.
+    await expect(
+      page.getByTestId('instance-limits').getByRole('button', { name: 'Save' }),
+    ).toBeEnabled()
     await expectAccessible(page, `admin, ${colorScheme}`)
   }
 })
