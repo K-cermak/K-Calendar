@@ -12,6 +12,7 @@ const props = defineProps<{
   now: PlainDateTime | null
   locale: string
   timeFormat: '12' | '24'
+  showTags: boolean
   mirror?: boolean
 }>()
 const { t } = useI18n()
@@ -22,12 +23,12 @@ const past = computed(
     !!props.now &&
     props.occurrence.end <= props.now.toString().slice(0, props.occurrence.end.length),
 )
+// The month view is too dense for markers (SPEC 7), and the user may turn them off everywhere.
+const withMarkers = computed(() => props.showTags && props.view !== 'month')
 const markers = computed(() =>
-  props.view === 'month' ? [] : props.occurrence.tags.slice(0, MAX_MARKERS),
+  withMarkers.value ? props.occurrence.tags.slice(0, MAX_MARKERS) : [],
 )
-const extra = computed(() =>
-  props.view === 'month' ? 0 : props.occurrence.tags.length - MAX_MARKERS,
-)
+const extra = computed(() => (withMarkers.value ? props.occurrence.tags.length - MAX_MARKERS : 0))
 const title = computed(() => props.occurrence.title || t('event.noTitle'))
 // Formatted here from the wall-clock values: the grid leaves the time out of short events.
 const timeText = computed(() => {

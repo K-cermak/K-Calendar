@@ -14,6 +14,7 @@ const props = defineProps<{
   tz: string
   locale: string
   timeFormat: '12' | '24'
+  showTags: boolean
   filter: (o: Occurrence) => boolean
 }>()
 const emit = defineEmits<{ open: [occurrence: Occurrence, el: HTMLElement] }>()
@@ -103,6 +104,7 @@ function dayLabel(day: string): string {
         :items="group.items"
         :locale="locale"
         :time-format="timeFormat"
+        :show-tags="showTags"
         class="flex-1"
         @open="(o, el) => emit('open', o, el)"
       />

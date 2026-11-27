@@ -160,6 +160,8 @@
       "defaultView": "Default view",
       "defaultViewHint": "Automatic is week on a large screen and agenda on a phone.",
       "auto": "Automatic",
+      "showEventTags": "Show tags on events",
+      "showEventTagsHint": "Coloured squares in the week, day and agenda views. The event details always list the tags.",
       "emailReminders": "Send reminders by e-mail too",
       "emailRemindersHint": "To {email}, in addition to notifications."
     },

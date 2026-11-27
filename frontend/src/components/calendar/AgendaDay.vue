@@ -4,7 +4,12 @@ import { formatTime, parseDateTime } from '@/dates'
 import { colorVar } from '@/palette'
 
 /** One day's events as rows: colour, time in mono, title, tag markers (SPEC 11). */
-const props = defineProps<{ items: Occurrence[]; locale: string; timeFormat: '12' | '24' }>()
+const props = defineProps<{
+  items: Occurrence[]
+  locale: string
+  timeFormat: '12' | '24'
+  showTags: boolean
+}>()
 const emit = defineEmits<{ open: [occurrence: Occurrence, el: HTMLElement] }>()
 
 const MAX_TAGS = 3
@@ -34,7 +39,11 @@ function timeLabel(o: Occurrence): string {
           {{ item.all_day ? $t('event.allDay') : timeLabel(item) }}
         </span>
         <span class="min-w-0 flex-1 truncate">{{ item.title || $t('event.noTitle') }}</span>
-        <span v-if="item.tags.length" class="mt-1.5 flex shrink-0 gap-1" aria-hidden="true">
+        <span
+          v-if="showTags && item.tags.length"
+          class="mt-1.5 flex shrink-0 gap-1"
+          aria-hidden="true"
+        >
           <span
             v-for="tag in item.tags.slice(0, MAX_TAGS)"
             :key="tag.id"

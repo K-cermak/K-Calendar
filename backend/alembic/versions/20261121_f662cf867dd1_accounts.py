@@ -39,6 +39,7 @@ def upgrade() -> None:
         sa.Column("time_format", sa.String(length=2), nullable=False),
         sa.Column("default_view", sa.String(length=8), nullable=False),
         sa.Column("theme", sa.String(length=8), nullable=False),
+        sa.Column("show_event_tags", sa.Boolean(), nullable=False),
         sa.Column("email_reminders_enabled", sa.Boolean(), nullable=False),
         sa.Column("totp_secret_encrypted", sa.String(), nullable=True),
         sa.Column("totp_enabled_at_utc", sa.DateTime(), nullable=True),

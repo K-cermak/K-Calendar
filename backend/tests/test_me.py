@@ -16,6 +16,7 @@ def test_profile_update(admin: TestClient) -> None:
             "time_format": "12",
             "default_view": "month",
             "theme": "dark",
+            "show_event_tags": False,
         },
     )
     assert response.status_code == 200
@@ -27,7 +28,7 @@ def test_profile_update(admin: TestClient) -> None:
         "week_start": "sunday",
         "time_format": "12",
     }
-    assert (me["default_view"], me["theme"]) == ("month", "dark")
+    assert (me["default_view"], me["theme"], me["show_event_tags"]) == ("month", "dark", False)
 
 
 def test_profile_rejects_unknown_values(admin: TestClient) -> None:

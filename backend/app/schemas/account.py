@@ -48,6 +48,7 @@ class Me(BaseModel):
     time_format: TimeFormat
     default_view: DefaultView
     theme: Theme
+    show_event_tags: bool
     email_reminders_enabled: bool
     has_password: bool
     totp_enabled: bool
@@ -62,6 +63,7 @@ class ProfileUpdate(BaseModel):
     time_format: TimeFormat | None = None
     default_view: DefaultView | None = None
     theme: Theme | None = None
+    show_event_tags: bool | None = None
     email_reminders_enabled: bool | None = None
 
 

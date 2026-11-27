@@ -133,6 +133,18 @@ function selected(event: Event): string {
         </option>
       </select>
     </UiField>
+    <label class="flex cursor-pointer items-start gap-3">
+      <UiCheckbox
+        :model-value="me.show_event_tags"
+        class="mt-0.5"
+        data-testid="show-event-tags"
+        @update:model-value="update({ show_event_tags: $event === true })"
+      />
+      <span class="flex flex-col">
+        <span>{{ $t('settings.profile.showEventTags') }}</span>
+        <span class="text-label text-muted">{{ $t('settings.profile.showEventTagsHint') }}</span>
+      </span>
+    </label>
     <label v-if="config?.email_enabled" class="flex cursor-pointer items-start gap-3">
       <UiCheckbox
         :model-value="me.email_reminders_enabled"

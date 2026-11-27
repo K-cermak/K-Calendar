@@ -1632,6 +1632,8 @@ export interface components {
              * @enum {string}
              */
             theme: "system" | "light" | "dark";
+            /** Show Event Tags */
+            show_event_tags: boolean;
             /** Email Reminders Enabled */
             email_reminders_enabled: boolean;
             /** Has Password */
@@ -1763,6 +1765,8 @@ export interface components {
             default_view?: ("auto" | "month" | "week" | "day" | "agenda") | null;
             /** Theme */
             theme?: ("system" | "light" | "dark") | null;
+            /** Show Event Tags */
+            show_event_tags?: boolean | null;
             /** Email Reminders Enabled */
             email_reminders_enabled?: boolean | null;
         };

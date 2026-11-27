@@ -127,7 +127,7 @@ docs/
 
 Integer primary keys. Every timestamp column whose name ends in `_utc` holds UTC. All tables that hold user data carry `user_id` directly or reach it through one foreign key, and deleting a user cascades to everything they own.
 
-**users**: `email` (unique, stored lowercased), `display_name`, `password_hash` (null for accounts that only use OIDC), `is_admin`, `is_active`, `timezone` (IANA name), `locale`, `week_start` (monday or sunday), `time_format` (12 or 24), `default_view`, `theme` (system, light, dark), `email_reminders_enabled` (default false), `totp_secret_encrypted`, `totp_enabled_at_utc`, `totp_last_step`, `oidc_issuer`, `oidc_subject` (unique together).
+**users**: `email` (unique, stored lowercased), `display_name`, `password_hash` (null for accounts that only use OIDC), `is_admin`, `is_active`, `timezone` (IANA name), `locale`, `week_start` (monday or sunday), `time_format` (12 or 24), `default_view`, `theme` (system, light, dark), `show_event_tags` (default true), `email_reminders_enabled` (default false), `totp_secret_encrypted`, `totp_enabled_at_utc`, `totp_last_step`, `oidc_issuer`, `oidc_subject` (unique together).
 
 **recovery_codes**: `user_id`, `code_hash`, `used_at_utc`.
 
@@ -300,7 +300,7 @@ Tags are a second, lighter way to group events across calendars ("travel", "kids
 
 - In the event editor the tag field autocompletes existing tags and creates a new one when the user types an unknown name. A new tag gets the palette colour least used among the user's tags, so the first few tags come out distinct without the user choosing anything.
 - The sidebar lists tags with their colour. Clicking one filters the calendar to events carrying it; several selected tags show events carrying any of them. A menu on each tag offers edit (name and colour) and delete. Deleting a tag removes it from its events and leaves the events alone.
-- A tag's colour never changes the colour of an event. An event is drawn in its own colour if it has one, otherwise in its calendar's colour. Tags appear as small colour markers on the event in the week, day and agenda views (at most three, then "+N"), and as labelled chips in the event detail and in search results. The month view is too dense for them and shows none.
+- A tag's colour never changes the colour of an event. An event is drawn in its own colour if it has one, otherwise in its calendar's colour. Tags appear as small colour markers on the event in the week, day and agenda views (at most three, then "+N"), and as labelled chips in the event detail and in search results. The month view is too dense for them and shows none. A switch in the profile, saved on the account like the theme, turns the markers off everywhere; the chips in the event detail and search results stay.
 - In ICS, tags map to CATEGORIES, which carries only names. Imported names that match an existing tag reuse it; new ones are created with an automatic colour.
 
 Event fields: title, calendar, start and end, all-day, time zone, repeat, reminders, location, description, colour, tags. Location is plain text with a link that opens the system's maps app. The description is plain text; make URLs in it clickable by building links from text, never by injecting HTML. An empty title is saved as "(No title)" via i18n at display time.

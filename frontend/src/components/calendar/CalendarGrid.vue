@@ -28,6 +28,7 @@ const props = defineProps<{
   locale: string
   weekStart: WeekStart
   timeFormat: '12' | '24'
+  showTags: boolean
   readOnly: boolean
 }>()
 
@@ -185,6 +186,7 @@ defineExpose({ unselect: () => calendar.value?.getApi().unselect() })
         :view="view"
         :locale="locale"
         :time-format="timeFormat"
+        :show-tags="showTags"
         :now="now"
         :mirror="arg.isMirror"
       />

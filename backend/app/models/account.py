@@ -23,6 +23,7 @@ class User(Base):
     time_format: Mapped[str] = mapped_column(String(2), default="24")
     default_view: Mapped[str] = mapped_column(String(8), default="auto")
     theme: Mapped[str] = mapped_column(String(8), default="system")
+    show_event_tags: Mapped[bool] = mapped_column(default=True)
     email_reminders_enabled: Mapped[bool] = mapped_column(default=False)
     totp_secret_encrypted: Mapped[str | None]
     totp_enabled_at_utc: Mapped[datetime | None] = mapped_column(UtcDateTime)

@@ -1,5 +1,6 @@
 import { createHmac } from 'node:crypto'
 import { admin, expect, test } from './helpers'
+import { createEvent } from './api'
 
 /** RFC 6238 TOTP for a base32 secret, as an authenticator app computes it. */
 function totp(secret: string, at = Date.now()): string {
@@ -156,4 +157,24 @@ test('a time zone is found by typing any part of its name', async ({ page }) => 
   await expect
     .poll(async () => (await (await page.request.get('/api/v1/me')).json()).timezone)
     .toBe('America/New_York')
+})
+
+test('tag markers on events can be turned off in the profile', async ({ page }) => {
+  const tomorrow = new Date(Date.now() + 86_400_000).toISOString().slice(0, 10)
+  const event = await createEvent(page, {
+    title: 'Flight',
+    start: `${tomorrow}T09:00:00`,
+    end: `${tomorrow}T10:00:00`,
+    tags: ['travel'],
+  })
+  const row = page.getByTestId(`agenda-${event.id}`)
+  await page.goto('/agenda')
+  await expect(row.locator('.cal-tag-marker')).toHaveCount(1)
+
+  await page.goto('/settings/profile')
+  await page.getByTestId('show-event-tags').click()
+  await expect(page.getByTestId('show-event-tags')).toHaveAttribute('data-state', 'unchecked')
+  await page.goto('/agenda')
+  await expect(row).toBeVisible()
+  await expect(row.locator('.cal-tag-marker')).toHaveCount(0)
 })
