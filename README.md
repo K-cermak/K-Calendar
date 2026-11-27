@@ -161,7 +161,7 @@ server {
 }
 ```
 
-The example Compose file publishes the port on `127.0.0.1` only, so the calendar is reachable from outside only through the proxy. If the proxy runs in Docker too, point it at the container by its service name (`calendar:8000`) and remove the `ports` section. Either way, `APP_TRUSTED_PROXIES` must cover the address the proxy connects from, so that sign-in throttling and the session list see people's real addresses.
+The example Compose file publishes the port on `127.0.0.1` only, so the calendar is reachable from outside only through the proxy. If the proxy runs in Docker too, point it at the container by its service name (`k-calendar:8000`) and remove the `ports` section. Either way, `APP_TRUSTED_PROXIES` must cover the address the proxy connects from, so that sign-in throttling and the session list see people's real addresses.
 
 ## Backup and restore
 
@@ -182,7 +182,7 @@ Once a night the server deletes expired sign-ins, used or expired invite links a
 For a locked-out administrator, or when no one else can help. The commands run inside the container, where the `APP_*` variables are already set, and change the database directly; the running app picks the change up at once.
 
 ```sh
-docker compose exec calendar python -m app.cli <command> [e-mail]
+docker compose exec k-calendar python -m app.cli <command> [e-mail]
 ```
 
 With plain Docker, use `docker exec <container> python -m app.cli …` instead.

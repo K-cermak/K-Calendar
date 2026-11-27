@@ -1,7 +1,7 @@
 # Example deployment. Put a reverse proxy with HTTPS in front of it: the app needs HTTPS for
 # installing it as an app, for push notifications and for secure cookies (localhost is the exception).
 services:
-  calendar:
+  k-calendar:
     image: ghcr.io/k-cermak/k-calendar:latest
     # To run your own build instead: comment out image above and uncomment build.
     # build: .
