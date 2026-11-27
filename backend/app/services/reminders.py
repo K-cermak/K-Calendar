@@ -16,7 +16,7 @@ from sqlalchemy.orm import Session
 from app.config import Settings
 from app.errors import InvalidInputError
 from app.models import Calendar, Event, NotificationLog, PushSubscription, Reminder, User
-from app.services import clock, recurrence
+from app.services import clock, recurrence, smtp
 
 logger = logging.getLogger(__name__)
 
@@ -202,7 +202,7 @@ def channels(db: Session, settings: Settings, user: User) -> list[str]:
     has_device = db.scalar(select(PushSubscription.id).where(PushSubscription.user_id == user.id).limit(1))
     if has_device is not None:
         result.append("push")
-    if user.email_reminders_enabled and settings.smtp_enabled:
+    if user.email_reminders_enabled and smtp.enabled(db):
         result.append("email")
     return result
 

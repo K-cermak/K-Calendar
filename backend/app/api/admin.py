@@ -14,8 +14,10 @@ from app.schemas.admin import (
     InstanceStatus,
     InviteCreate,
     PendingInvite,
+    SmtpSettings,
+    SmtpUpdate,
 )
-from app.services import admin, captcha, instance, invites
+from app.services import admin, captcha, instance, invites, smtp
 from app.services.notify import email
 from app.services.reminders import DeliveryError
 
@@ -91,12 +93,23 @@ def update_captcha(
     return captcha.update(db, verifier, body, client_ip(request))
 
 
+@router.get("/smtp")
+def get_smtp(_auth: AdminAuth, db: DbSession) -> SmtpSettings:
+    return smtp.admin_view(db)
+
+
+@router.put("/smtp")
+def update_smtp(body: SmtpUpdate, _auth: AdminAuth, db: DbSession, settings: AppSettings) -> SmtpSettings:
+    """The mail server for reminders, invites and password resets; the password is never returned."""
+    return smtp.update(db, settings, body)
+
+
 @router.post("/test-email", status_code=status.HTTP_204_NO_CONTENT)
-def send_test_email(auth: AdminAuth, settings: AppSettings) -> None:
-    """Sends a test message to the admin's own address, to check the SMTP settings."""
-    if not settings.smtp_enabled:
+def send_test_email(auth: AdminAuth, db: DbSession, settings: AppSettings) -> None:
+    """Sends a test message to the admin's own address, to check the saved SMTP settings."""
+    if not smtp.enabled(db):
         raise AppError(409, "email_disabled", "E-mail is not configured")
     try:
-        email.send_test(settings, auth.user.locale, auth.user.email)
+        email.send_test(db, settings, auth.user.locale, auth.user.email)
     except DeliveryError as exc:
         raise AppError(502, "email_failed", str(exc)) from None

@@ -53,7 +53,7 @@ You need Docker with Compose, a domain name pointing at the machine, and a rever
    mkdir data && sudo chown 1000:1000 data
    ```
 
-2. In `docker-compose.yml`, set `APP_BASE_URL` to the address people will use, such as `https://calendar.example.com`. It must match exactly: the server uses it for links and to refuse requests from other sites. Fill in the SMTP lines if you want reminders and links by e-mail.
+2. In `docker-compose.yml`, set `APP_BASE_URL` to the address people will use, such as `https://calendar.example.com`. It must match exactly: the server uses it for links and to refuse requests from other sites.
 3. Start it:
 
    ```sh
@@ -63,7 +63,9 @@ You need Docker with Compose, a domain name pointing at the machine, and a rever
 
 4. Set up HTTPS as below, open the address in a browser and create the first account, which becomes the administrator.
 
-To add people, open **Administration** from the account menu and create an invite link. With SMTP set up, the link can go out by e-mail; otherwise pass it on yourself.
+To add people, open **Administration** from the account menu and create an invite link, which you pass on yourself.
+
+To send reminders, invite links and password reset links by e-mail, enter your mail server under **E-mail** in the administration and send yourself a test e-mail there. The password is stored encrypted and never shown again; leave its field empty to keep it.
 
 On a phone, open the address and use **Add to Home Screen** (Safari: Share → Add to Home Screen; Chrome: the install prompt or the menu). On iPhones, push notifications work only for the app on the home screen.
 
@@ -85,17 +87,13 @@ All settings are environment variables. Only `APP_BASE_URL` is required. The ser
 | `APP_DATA_DIR` | `/data` | Where the database and the generated secret key live |
 | `APP_SECRET_KEY` | generated | At least 32 characters. If unset, one is generated on first start and kept in `APP_DATA_DIR/secret.key`. Changing it makes two-step verification secrets unreadable |
 | `APP_TRUSTED_PROXIES` | | Comma-separated addresses or networks of reverse proxies whose `X-Forwarded-*` headers are believed |
-| `APP_SMTP_HOST`, `APP_SMTP_PORT` | | Mail server. E-mail is on when the host and `APP_SMTP_FROM` are set |
-| `APP_SMTP_USER`, `APP_SMTP_PASSWORD` | | Sign-in at the mail server, if it needs one |
-| `APP_SMTP_FROM` | | Sender address |
-| `APP_SMTP_SECURITY` | `starttls` | `starttls`, `ssl` or `none` |
 | `APP_OIDC_DISCOVERY_URL` | | The provider's `.well-known/openid-configuration` URL |
 | `APP_OIDC_CLIENT_ID`, `APP_OIDC_CLIENT_SECRET` | | Single sign-on is on when all three OIDC variables are set |
 | `APP_OIDC_PROVIDER_NAME` | `SSO` | Label of the sign-in button |
 | `APP_OIDC_AUTO_PROVISION` | `false` | Create accounts for people the provider knows but the app does not |
 | `APP_PASSWORD_LOGIN_ENABLED` | `true` | `false` allows sign-in only through OIDC, which must then be configured |
 | `APP_VAPID_PUBLIC_KEY`, `APP_VAPID_PRIVATE_KEY` | generated | Keys for push notifications, generated on first start and kept in the database. Set both only to bring keys from elsewhere; changing them stops push on every device until it is turned on again |
-| `APP_VAPID_CONTACT` | from `APP_SMTP_FROM` or `APP_BASE_URL` | Contact address sent to push services, as `mailto:` or `https:` |
+| `APP_VAPID_CONTACT` | the e-mail sender address, or `APP_BASE_URL` | Contact address sent to push services, as `mailto:` or `https:` |
 | `APP_ALLOW_PRIVATE_SUBSCRIPTION_URLS` | `false` | Allow subscribing to calendars on private networks, such as another server at home |
 | `APP_LOG_LEVEL` | `info` | `debug`, `info`, `warning`, `error` or `critical` |
 

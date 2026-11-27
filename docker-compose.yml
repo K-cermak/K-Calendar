@@ -18,14 +18,6 @@ services:
       APP_TRUSTED_PROXIES: "172.16.0.0/12"
       # APP_LOG_LEVEL: info
 
-      # E-mail for reminders, invites and password reset.
-      # APP_SMTP_HOST: smtp.example.com
-      # APP_SMTP_PORT: "587"
-      # APP_SMTP_USER: calendar@example.com
-      # APP_SMTP_PASSWORD: change-me
-      # APP_SMTP_FROM: calendar@example.com
-      # APP_SMTP_SECURITY: starttls
-
       # Single sign-on through any OIDC provider (Authentik, Keycloak, ...).
       # APP_OIDC_DISCOVERY_URL: https://id.example.com/application/o/calendar/.well-known/openid-configuration
       # APP_OIDC_CLIENT_ID: calendar

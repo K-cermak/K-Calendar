@@ -6,7 +6,7 @@ from app.config import Settings
 from app.models import Setting
 from app.schemas.admin import InstanceSettings, InstanceSettingsUpdate, InstanceStatus
 from app.schemas.public import PublicConfig
-from app.services import accounts, captcha, limits
+from app.services import accounts, captcha, limits, smtp
 from app.services.notify import push
 from app.version import VERSION
 
@@ -31,7 +31,7 @@ def public_config(settings: Settings, db: Session) -> PublicConfig:
         password_login_enabled=settings.password_login_enabled,
         oidc_enabled=settings.oidc_enabled,
         oidc_provider_name=settings.oidc_provider_name,
-        email_enabled=settings.smtp_enabled,
+        email_enabled=smtp.enabled(db),
         vapid_public_key=push.public_key(db, settings),
         captcha=captcha.public(db),
     )
@@ -56,7 +56,7 @@ def status(settings: Settings, db: Session) -> InstanceStatus:
     return InstanceStatus(
         version=VERSION,
         user_count=accounts.user_count(db),
-        smtp_configured=settings.smtp_enabled,
+        smtp_configured=smtp.enabled(db),
         oidc_configured=settings.oidc_enabled,
         push_configured=push.public_key(db, settings) is not None,
         password_login_enabled=settings.password_login_enabled,

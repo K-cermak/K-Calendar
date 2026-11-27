@@ -1,6 +1,7 @@
 """E-mail through the standard library's smtplib (SPEC 8): reminders, invites, password reset.
 
-Every message has a plain-text and a simple HTML part. Without SMTP settings none of it is offered.
+Every message has a plain-text and a simple HTML part. Until an admin sets up the mail server in the
+administration none of it is offered.
 """
 
 import html
@@ -14,39 +15,39 @@ from sqlalchemy.orm import Session
 from app.branding import get_branding
 from app.config import Settings
 from app.i18n import t
+from app.services import smtp
 from app.services.notify import messages
 from app.services.reminders import Delivery, DeliveryError
 
 TIMEOUT_S = 20
 
 
-def send(settings: Settings, to: str, subject: str, text: str, html_body: str) -> None:
+def send(db: Session, settings: Settings, to: str, subject: str, text: str, html_body: str) -> None:
     """Sends one message. Raises DeliveryError for anything the SMTP server or network refuses."""
-    if not settings.smtp_enabled or settings.smtp_host is None or settings.smtp_from is None:
+    config = smtp.load(db, settings)
+    if not config.enabled:
         raise DeliveryError("E-mail is not configured")
     message = EmailMessage()
-    message["From"] = settings.smtp_from
+    message["From"] = config.from_address
     message["To"] = to
     message["Subject"] = subject
     message["Date"] = formatdate(localtime=False)
-    message["Message-ID"] = make_msgid(domain=settings.smtp_from.rpartition("@")[2] or None)
+    message["Message-ID"] = make_msgid(domain=config.from_address.rpartition("@")[2] or None)
     message.set_content(text)
     message.add_alternative(html_body, subtype="html")
-    port = settings.smtp_port or (
-        465 if settings.smtp_security == "ssl" else 587 if settings.smtp_security == "starttls" else 25
-    )
+    port = config.resolved_port
     try:
-        if settings.smtp_security == "ssl":
+        if config.security == "ssl":
             server: smtplib.SMTP = smtplib.SMTP_SSL(
-                settings.smtp_host, port, timeout=TIMEOUT_S, context=ssl.create_default_context()
+                config.host, port, timeout=TIMEOUT_S, context=ssl.create_default_context()
             )
         else:
-            server = smtplib.SMTP(settings.smtp_host, port, timeout=TIMEOUT_S)
+            server = smtplib.SMTP(config.host, port, timeout=TIMEOUT_S)
         with server:
-            if settings.smtp_security == "starttls":
+            if config.security == "starttls":
                 server.starttls(context=ssl.create_default_context())
-            if settings.smtp_user:
-                server.login(settings.smtp_user, settings.smtp_password or "")
+            if config.username:
+                server.login(config.username, config.password)
             server.send_message(message)
     except (OSError, smtplib.SMTPException) as exc:
         raise DeliveryError(f"The e-mail could not be sent: {exc}") from None
@@ -71,7 +72,7 @@ def _signature(locale: str, settings: Settings) -> str:
     return t(locale, "email.signature", app=get_branding().name, base_url=settings.base_url)
 
 
-def send_reminder(_db: Session, settings: Settings, delivery: Delivery) -> None:
+def send_reminder(db: Session, settings: Settings, delivery: Delivery) -> None:
     user, event = delivery.user, delivery.shown
     app = get_branding().name
     title = messages.title(user, event)
@@ -89,6 +90,7 @@ def send_reminder(_db: Session, settings: Settings, delivery: Delivery) -> None:
         + "\n".join(footer)
     )
     send(
+        db,
         settings,
         user.email,
         t(user.locale, "email.reminder.subject", title=title),
@@ -97,13 +99,14 @@ def send_reminder(_db: Session, settings: Settings, delivery: Delivery) -> None:
     )
 
 
-def send_link(settings: Settings, locale: str, to: str, kind: str, link: str) -> None:
+def send_link(db: Session, settings: Settings, locale: str, to: str, kind: str, link: str) -> None:
     """An invite or a password reset link."""
     app = get_branding().name
     intro = t(locale, f"email.{kind}.text", app=app)
     button = t(locale, f"email.{kind}.button")
     signature = _signature(locale, settings)
     send(
+        db,
         settings,
         to,
         t(locale, f"email.{kind}.subject", app=app),
@@ -112,7 +115,7 @@ def send_link(settings: Settings, locale: str, to: str, kind: str, link: str) ->
     )
 
 
-def send_test(settings: Settings, locale: str, to: str) -> None:
+def send_test(db: Session, settings: Settings, locale: str, to: str) -> None:
     app = get_branding().name
     text = t(locale, "email.test.text", app=app)
-    send(settings, to, t(locale, "email.test.subject", app=app), text, _html([text]))
+    send(db, settings, to, t(locale, "email.test.subject", app=app), text, _html([text]))

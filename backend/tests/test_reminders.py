@@ -36,16 +36,6 @@ class Outbox:
         return {"push": self.sender("push"), "email": self.sender("email")}
 
 
-@pytest.fixture
-def settings(tmp_path: Any) -> Settings:
-    return Settings(
-        base_url="http://testserver",
-        data_dir=tmp_path / "data",
-        smtp_host="mail.example.com",
-        smtp_from="calendar@example.com",
-    )
-
-
 @pytest.fixture(autouse=True)
 def public_push_endpoints(monkeypatch: pytest.MonkeyPatch) -> None:
     """The made-up push hosts in these tests do not resolve; the address check has its own tests."""
@@ -79,8 +69,22 @@ def run(app: FastAPI, settings: Settings, outbox: Outbox) -> Callable[[], None]:
     return tick
 
 
+MAIL_SERVER = {
+    "host": "mail.example.com",
+    "username": "calendar",
+    "password": "mail-password",
+    "from_address": "calendar@example.com",
+}
+
+
 @pytest.fixture
-def channels(admin: TestClient) -> Iterator[TestClient]:
+def mail_server(admin: TestClient) -> None:
+    """E-mail set up in the administration, as an admin does."""
+    assert admin.put("/api/v1/admin/smtp", json=MAIL_SERVER).status_code == 200
+
+
+@pytest.fixture
+def channels(admin: TestClient, mail_server: None) -> Iterator[TestClient]:
     """The admin with a phone subscribed for push and e-mail reminders switched on."""
     admin.post(
         "/api/v1/me/push-subscriptions",
@@ -424,9 +428,11 @@ def test_push_payload(
 
 class FakeSmtp:
     messages: ClassVar[list[Any]] = []
+    connections: ClassVar[list[tuple[str, int, str | None]]] = []
 
     def __init__(self, host: str, port: int, timeout: float) -> None:
         self.host, self.port = host, port
+        FakeSmtp.connections.append((host, port, None))
 
     def __enter__(self) -> FakeSmtp:
         return self
@@ -438,17 +444,18 @@ class FakeSmtp:
         pass
 
     def login(self, user: str, password: str) -> None:
-        pass
+        FakeSmtp.connections[-1] = (self.host, self.port, f"{user}:{password}")
 
     def send_message(self, message: Any) -> None:
         FakeSmtp.messages.append(message)
 
 
 @pytest.fixture
-def smtp(monkeypatch: pytest.MonkeyPatch) -> type[FakeSmtp]:
+def smtp(monkeypatch: pytest.MonkeyPatch, mail_server: None) -> type[FakeSmtp]:
     from app.services.notify import email
 
     FakeSmtp.messages = []
+    FakeSmtp.connections = []
     monkeypatch.setattr(email.smtplib, "SMTP", FakeSmtp)
     return FakeSmtp
 
@@ -491,18 +498,20 @@ def test_invite_and_reset_emails(
     assert len(smtp.messages) == count
     assert admin.post("/api/v1/admin/test-email").status_code == 204
     assert smtp.messages[-1]["Subject"] == f"{get_branding().name}: test e-mail"
+    assert smtp.messages[-1]["From"] == "calendar@example.com"
+    # The saved password reaches the mail server, though the administration never shows it.
+    assert smtp.connections[-1] == ("mail.example.com", 587, "calendar:mail-password")
 
 
-def test_reset_request_without_smtp(
-    admin: TestClient, monkeypatch: pytest.MonkeyPatch, settings: Settings
-) -> None:
-    monkeypatch.setattr(Settings, "smtp_enabled", property(lambda _self: False))
+def test_reset_request_without_smtp(admin: TestClient) -> None:
     response = admin.post("/api/v1/auth/password-reset/request", json={"email": "admin@example.com"})
     assert response.json()["code"] == "email_disabled"
     assert admin.post("/api/v1/admin/test-email").json()["code"] == "email_disabled"
 
 
-def test_failed_smtp_is_reported_to_the_admin(admin: TestClient, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_failed_smtp_is_reported_to_the_admin(
+    admin: TestClient, monkeypatch: pytest.MonkeyPatch, mail_server: None
+) -> None:
     from app.services.notify import email
 
     def refuse(*_args: object, **_kwargs: object) -> None:

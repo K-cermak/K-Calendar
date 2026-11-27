@@ -713,6 +713,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/smtp": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Smtp */
+        get: operations["get_smtp"];
+        /**
+         * Update Smtp
+         * @description The mail server for reminders, invites and password resets; the password is never returned.
+         */
+        put: operations["update_smtp"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/test-email": {
         parameters: {
             query?: never;
@@ -724,7 +745,7 @@ export interface paths {
         put?: never;
         /**
          * Send Test Email
-         * @description Sends a test message to the admin's own address, to check the SMTP settings.
+         * @description Sends a test message to the admin's own address, to check the saved SMTP settings.
          */
         post: operations["send_test_email"];
         delete?: never;
@@ -1948,6 +1969,65 @@ export interface components {
              * @description The browser's zone, if known
              */
             timezone?: string | null;
+        };
+        /** SmtpSettings */
+        SmtpSettings: {
+            /** Host */
+            host: string;
+            /**
+             * Port
+             * @description Empty uses the usual port for the security: 587, 465 or 25
+             */
+            port: number | null;
+            /** Username */
+            username: string;
+            /** From Address */
+            from_address: string;
+            /**
+             * Security
+             * @enum {string}
+             */
+            security: "starttls" | "ssl" | "none";
+            /**
+             * Password Set
+             * @description The password itself is never sent back
+             */
+            password_set: boolean;
+        };
+        /**
+         * SmtpUpdate
+         * @description An empty host and sender turn e-mail off.
+         */
+        SmtpUpdate: {
+            /**
+             * Host
+             * @default
+             */
+            host: string;
+            /** Port */
+            port?: number | null;
+            /**
+             * Username
+             * @default
+             */
+            username: string;
+            /**
+             * Password
+             * @description Empty keeps the stored password; no user name drops it
+             * @default
+             */
+            password: string;
+            /**
+             * From Address
+             * @default
+             */
+            from_address: string;
+            /**
+             * Security
+             * @default starttls
+             * @enum {string}
+             */
+            security: "starttls" | "ssl" | "none";
         };
         /** SubscriptionCreate */
         SubscriptionCreate: {
@@ -3538,6 +3618,68 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CaptchaSettings"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_smtp: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SmtpSettings"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    update_smtp: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SmtpUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SmtpSettings"];
                 };
             };
             /** @description Default Response */

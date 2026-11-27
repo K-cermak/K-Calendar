@@ -169,7 +169,7 @@ Integer primary keys. Every timestamp column whose name ends in `_utc` holds UTC
 
 **notification_log**: `reminder_id`, `occurrence_start`, `channel`, `status`, `error`, `attempts`, `sent_at_utc`. Unique on the first three columns.
 
-**settings**: key and value. Holds instance settings an admin can change at runtime (`registration_enabled`, `session_days`, and `captcha`: JSON with the provider, where it applies, the site key and the secret key) and generated secrets (VAPID keys); a missing key means the default.
+**settings**: key and value. Holds instance settings an admin can change at runtime (`registration_enabled`, `session_days`, `smtp`: JSON with the mail server, port, security, user name, sender address and the password encrypted with a key derived from the secret key, and `captcha`: JSON with the provider, where it applies, the site key and the secret key) and generated secrets (VAPID keys); a missing key means the default.
 
 **events_fts**: an FTS5 virtual table over title, description, location and tag names. See section 9.
 
@@ -225,7 +225,7 @@ The display zone is the one in the user's profile. If the device's zone differs 
 
 When the database has no users, the app shows a setup screen that creates the admin. When `APP_PASSWORD_LOGIN_ENABLED` is false, the setup screen offers the OIDC button in place of the password form, and the first user to sign in through it becomes the admin, regardless of `APP_OIDC_AUTO_PROVISION`. After that, accounts come from three places: an invite link created by an admin (sent by e-mail when SMTP is configured, otherwise shown for copying), self-registration if an admin has switched it on, or OIDC auto-provisioning if configured.
 
-The admin area lists users and can invite, deactivate or reactivate, delete, grant or revoke admin rights, produce a password reset link, and reset a user's TOTP. Admins do not create accounts by hand or set other users' passwords. It also sets whether registration is open, the captcha and the instance limits from section 14, and shows instance status: version, whether SMTP, OIDC and push are configured, and a button to send a test e-mail. An admin cannot see other users' calendars.
+The admin area lists users and can invite, deactivate or reactivate, delete, grant or revoke admin rights, produce a password reset link, and reset a user's TOTP. Admins do not create accounts by hand or set other users' passwords. It also sets whether registration is open, the mail server (section 8), the captcha and the instance limits from section 14, and shows instance status: version, whether SMTP, OIDC and push are configured, and a button to send a test e-mail. An admin cannot see other users' calendars.
 
 There can be several admins. Two guards, enforced on the server and reflected in the UI by disabled controls:
 
@@ -346,6 +346,8 @@ On iPhone and iPad, Web Push only works after the user has added the app to the 
 ### E-mail
 
 Standard library `smtplib` called from the threadpool, with plain-text and simple HTML parts. Three kinds of mail: reminder, invite, password reset. If SMTP is not configured, every feature depending on it disappears from the UI rather than failing on use.
+
+An admin sets the mail server in the administration, not through the environment (moved there by the owner before the first release): server, security (`starttls`, `ssl` or `none`), port (empty means 587, 465 or 25 to match), user name, password and sender address, kept in `settings`. E-mail is on when the server and the sender are both filled in, and clearing both turns it off; one without the other is refused (`smtp_incomplete`). The password is stored encrypted with a key derived from the secret key and never sent back: the form shows only that one is saved, an empty password field keeps it, and clearing the user name drops it. If the secret key changes, the password cannot be read any more and the admin enters it again. The test e-mail button sends with the saved settings.
 
 Texts for push and e-mail are rendered on the server in the recipient's locale and zone, from `backend/app/locales`.
 
@@ -493,13 +495,12 @@ Everything is configured by environment variables with the neutral prefix `APP_`
 | `APP_DATA_DIR` | `/data` | Database and generated secrets. |
 | `APP_SECRET_KEY` | generated | If unset, generated on first start and saved in `APP_DATA_DIR`. |
 | `APP_TRUSTED_PROXIES` | none | Addresses whose `X-Forwarded-*` headers are believed. |
-| `APP_SMTP_HOST`, `APP_SMTP_PORT`, `APP_SMTP_USER`, `APP_SMTP_PASSWORD`, `APP_SMTP_FROM`, `APP_SMTP_SECURITY` | unset | E-mail. `APP_SMTP_SECURITY` is `starttls`, `ssl` or `none`. |
 | `APP_OIDC_DISCOVERY_URL`, `APP_OIDC_CLIENT_ID`, `APP_OIDC_CLIENT_SECRET` | unset | Setting these enables OIDC. |
 | `APP_OIDC_PROVIDER_NAME` | `SSO` | Label on the login button. |
 | `APP_OIDC_AUTO_PROVISION` | `false` | Create accounts for unknown OIDC users. |
 | `APP_PASSWORD_LOGIN_ENABLED` | `true` | Set `false` to allow only OIDC. Refused at startup unless OIDC is configured. |
 | `APP_VAPID_PUBLIC_KEY`, `APP_VAPID_PRIVATE_KEY` | generated | |
-| `APP_VAPID_CONTACT` | derived from `APP_SMTP_FROM` or `APP_BASE_URL` | Contact address sent to push services. |
+| `APP_VAPID_CONTACT` | derived from the e-mail sender address or `APP_BASE_URL` | Contact address sent to push services. |
 | `APP_ALLOW_PRIVATE_SUBSCRIPTION_URLS` | `false` | |
 | `APP_LOG_LEVEL` | `info` | |
 
@@ -526,7 +527,7 @@ One limit is not an environment variable but an instance setting an admin change
 
 **Startup.** Run migrations, generate any missing secrets, then start uvicorn with one worker.
 
-**Compose.** `docker-compose.yml` in the repository is a working example with the volume and the common variables, with SMTP and OIDC shown commented out. The README adds a short example of putting it behind Caddy for HTTPS.
+**Compose.** `docker-compose.yml` in the repository is a working example with the volume and the common variables, with OIDC shown commented out. The README adds a short example of putting it behind Caddy for HTTPS.
 
 **Backups and cleanup.** The app does not make backups itself. Backup is stopping the container and copying the data directory; restore is the same in reverse, and the README explains both. Once a night the background loop deletes expired sessions, used or expired invites, and old `notification_log` rows.
 

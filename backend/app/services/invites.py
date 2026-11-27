@@ -16,7 +16,7 @@ from app.errors import (
 )
 from app.models import Invite, User
 from app.schemas.admin import CreatedLink, PendingInvite
-from app.services import accounts, clock, instance
+from app.services import accounts, clock, instance, smtp
 from app.services.auth import credentials
 from app.services.auth.throttle import LoginThrottle
 from app.services.notify import email
@@ -67,10 +67,10 @@ def create_invite(db: Session, settings: Settings, admin: User, address: str | N
     if normalized and accounts.get_by_email(db, normalized):
         raise ConflictError("email_taken", "An account with this e-mail address already exists")
     link = _create(db, settings, purpose="invite", created_by=admin, email=normalized)
-    if normalized and settings.smtp_enabled:
+    if normalized and smtp.enabled(db):
         # The link is shown either way, so a mail server that refuses is not an error here.
         try:
-            email.send_link(settings, admin.locale, normalized, "invite", link.url)
+            email.send_link(db, settings, admin.locale, normalized, "invite", link.url)
             link.emailed = True
         except DeliveryError as exc:
             logger.warning("Invite e-mail could not be sent: %s", exc)
@@ -78,7 +78,7 @@ def create_invite(db: Session, settings: Settings, admin: User, address: str | N
 
 
 def request_reset(db: Session, settings: Settings, throttle: LoginThrottle, *, email: str, ip: str) -> None:
-    if not settings.smtp_enabled:
+    if not smtp.enabled(db):
         raise ForbiddenError("email_disabled", "Ask your administrator for a reset link")
     retry_after = throttle.retry_after(f"reset:{ip}", ip)
     if retry_after:
@@ -90,14 +90,14 @@ def request_reset(db: Session, settings: Settings, throttle: LoginThrottle, *, e
         return
     link = create_reset_link(db, settings, None, user.id)
     try:
-        _send_reset(settings, user, link.url)
+        _send_reset(db, settings, user, link.url)
     except DeliveryError as exc:
         # The answer must look the same either way; the admin finds the failure in the log.
         logger.warning("Password reset e-mail could not be sent: %s", exc)
 
 
-def _send_reset(settings: Settings, user: User, url: str) -> None:
-    email.send_link(settings, user.locale, user.email, "reset", url)
+def _send_reset(db: Session, settings: Settings, user: User, url: str) -> None:
+    email.send_link(db, settings, user.locale, user.email, "reset", url)
 
 
 def create_reset_link(db: Session, settings: Settings, admin: User | None, user_id: int) -> CreatedLink:

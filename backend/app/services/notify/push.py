@@ -14,7 +14,7 @@ from sqlalchemy.orm import Session
 
 from app.config import Settings
 from app.models import PushSubscription, Setting
-from app.services import clock
+from app.services import clock, smtp
 from app.services.notify import devices, messages
 from app.services.reminders import Delivery, DeliveryError
 
@@ -60,12 +60,12 @@ def _private_key(db: Session, settings: Settings) -> str:
     return row.value
 
 
-def contact(settings: Settings) -> str:
+def contact(db: Session, settings: Settings) -> str:
     """Who push services can reach about this instance. They accept only mailto: and https: URIs."""
     if settings.vapid_contact:
         return settings.vapid_contact
-    if settings.smtp_from:
-        return f"mailto:{settings.smtp_from}"
+    if sender := smtp.sender(db):
+        return f"mailto:{sender}"
     if settings.base_url.startswith("https://"):
         return settings.base_url
     host = urlsplit(settings.base_url).hostname or "localhost"
@@ -92,7 +92,7 @@ def send_payload(db: Session, settings: Settings, user_id: int, payload: dict[st
                 },
                 data=data,
                 vapid_private_key=private,
-                vapid_claims={"sub": contact(settings)},
+                vapid_claims={"sub": contact(db, settings)},
                 ttl=TTL_S,
                 timeout=15,
             )

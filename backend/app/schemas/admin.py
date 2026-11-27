@@ -77,6 +77,31 @@ class CaptchaUpdate(BaseModel):
     )
 
 
+SmtpSecurity = Literal["starttls", "ssl", "none"]
+
+
+class SmtpSettings(BaseModel):
+    host: str
+    port: int | None = Field(description="Empty uses the usual port for the security: 587, 465 or 25")
+    username: str
+    from_address: str
+    security: SmtpSecurity
+    password_set: bool = Field(description="The password itself is never sent back")
+
+
+class SmtpUpdate(BaseModel):
+    """An empty host and sender turn e-mail off."""
+
+    host: str = Field(default="", max_length=255)
+    port: int | None = Field(default=None, ge=1, le=65535)
+    username: str = Field(default="", max_length=320)
+    password: str = Field(
+        default="", max_length=1024, description="Empty keeps the stored password; no user name drops it"
+    )
+    from_address: str = Field(default="", max_length=320)
+    security: SmtpSecurity = "starttls"
+
+
 class InstanceStatus(BaseModel):
     version: str
     user_count: int

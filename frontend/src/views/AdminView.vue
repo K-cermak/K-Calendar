@@ -54,7 +54,8 @@ const loadError = computed(
     users.error.value ??
     invites.error.value ??
     instanceSettings.error.value ??
-    captchaSettings.error.value,
+    captchaSettings.error.value ??
+    smtpSettings.error.value,
 )
 
 const inviteEmail = ref('')
@@ -235,6 +236,80 @@ async function saveLimits(): Promise<void> {
   const ok = await limitsSave.run(async () => {
     const saved = await call(() => api.PATCH('/api/v1/admin/settings', { body }))
     queryClient.setQueryData(['admin', 'settings'], saved)
+  })
+  if (ok) toast.show(i18n.t('common.saved'))
+}
+
+type SmtpSettings = components['schemas']['SmtpSettings']
+type SmtpSecurity = SmtpSettings['security']
+const SMTP_PORTS: Record<SmtpSecurity, number> = { starttls: 587, ssl: 465, none: 25 }
+const smtpSettings = useQuery({
+  queryKey: ['admin', 'smtp'],
+  queryFn: () => call(() => api.GET('/api/v1/admin/smtp')),
+})
+const smtpForm = ref<{
+  host: string
+  port: string
+  username: string
+  password: string
+  fromAddress: string
+  security: SmtpSecurity
+}>({ host: '', port: '', username: '', password: '', fromAddress: '', security: 'starttls' })
+const smtpPortError = ref<string | undefined>()
+const smtpSave = useSubmit()
+const smtpSecurities = computed(() =>
+  (Object.keys(SMTP_PORTS) as SmtpSecurity[]).map((value) => ({
+    value,
+    label: i18n.t(`admin.smtp.securities.${value}`),
+  })),
+)
+
+// The password never comes back from the server, so the field always starts empty.
+function showSmtp(s: SmtpSettings): void {
+  smtpForm.value = {
+    host: s.host,
+    port: s.port === null ? '' : String(s.port),
+    username: s.username,
+    password: '',
+    fromAddress: s.from_address,
+    security: s.security,
+  }
+}
+watch(
+  () => smtpSettings.data.value,
+  (s) => {
+    if (s) showSmtp(s)
+  },
+  { immediate: true },
+)
+
+async function saveSmtp(): Promise<void> {
+  const form = smtpForm.value
+  const portText = form.port.trim()
+  const port = portText ? Number(portText) : null
+  smtpPortError.value =
+    port !== null && (!Number.isInteger(port) || port < 1 || port > 65535)
+      ? i18n.t('admin.limits.range', { min: 1, max: 65535 })
+      : undefined
+  if (smtpPortError.value) return
+  testMailSent.value = false
+  const ok = await smtpSave.run(async () => {
+    const saved = await call(() =>
+      api.PUT('/api/v1/admin/smtp', {
+        body: {
+          host: form.host,
+          port,
+          username: form.username,
+          password: form.password,
+          from_address: form.fromAddress,
+          security: form.security,
+        },
+      }),
+    )
+    queryClient.setQueryData(['admin', 'smtp'], saved)
+    await status.refetch()
+    // Whether e-mail is on decides what the sign-in page and the profile offer.
+    await queryClient.invalidateQueries({ queryKey: ['config'] })
   })
   if (ok) toast.show(i18n.t('common.saved'))
 }
@@ -600,6 +675,103 @@ async function deleteUser(user: AdminUser): Promise<void> {
       </form>
     </section>
 
+    <section class="flex flex-col gap-3">
+      <h2 class="ui-section-title">{{ $t('admin.smtp.title') }}</h2>
+      <p class="text-muted">{{ $t('admin.smtp.intro') }}</p>
+      <form
+        class="flex flex-col gap-4 sm:w-96"
+        novalidate
+        data-testid="smtp-settings"
+        @submit.prevent="saveSmtp"
+      >
+        <UiField :label="$t('admin.smtp.host')" for="smtp-host" :hint="$t('admin.smtp.hostHint')">
+          <UiInput
+            id="smtp-host"
+            v-model="smtpForm.host"
+            placeholder="smtp.example.com"
+            autocomplete="off"
+            spellcheck="false"
+          />
+        </UiField>
+        <div class="flex flex-col gap-2">
+          <span class="ui-label">{{ $t('admin.smtp.security') }}</span>
+          <UiSegmented
+            v-model="smtpForm.security"
+            :options="smtpSecurities"
+            :label="$t('admin.smtp.security')"
+          />
+        </div>
+        <UiField
+          :label="$t('admin.smtp.port')"
+          for="smtp-port"
+          :hint="$t('admin.smtp.portHint')"
+          :error="smtpPortError"
+        >
+          <UiInput
+            id="smtp-port"
+            v-model="smtpForm.port"
+            class="w-32! font-mono"
+            inputmode="numeric"
+            :placeholder="String(SMTP_PORTS[smtpForm.security])"
+            :invalid="!!smtpPortError"
+          />
+        </UiField>
+        <UiField :label="$t('admin.smtp.username')" for="smtp-username">
+          <UiInput
+            id="smtp-username"
+            v-model="smtpForm.username"
+            autocomplete="off"
+            spellcheck="false"
+          />
+        </UiField>
+        <UiField
+          :label="$t('admin.smtp.password')"
+          for="smtp-password"
+          :hint="smtpSettings.data.value?.password_set ? $t('admin.smtp.passwordKept') : undefined"
+        >
+          <UiInput
+            id="smtp-password"
+            v-model="smtpForm.password"
+            type="password"
+            autocomplete="new-password"
+          />
+        </UiField>
+        <UiField :label="$t('admin.smtp.from')" for="smtp-from">
+          <UiInput
+            id="smtp-from"
+            v-model="smtpForm.fromAddress"
+            type="email"
+            placeholder="calendar@example.com"
+            autocomplete="off"
+            spellcheck="false"
+          />
+        </UiField>
+        <UiNotice v-if="smtpSave.error.value" tone="error">{{ smtpSave.error.value }}</UiNotice>
+        <UiButton
+          type="submit"
+          class="self-start"
+          :loading="smtpSave.pending.value"
+          :disabled="!smtpSettings.data.value"
+        >
+          {{ $t('common.save') }}
+        </UiButton>
+      </form>
+      <div v-if="status.data.value?.smtp_configured" class="flex flex-col gap-2">
+        <UiButton
+          class="self-start"
+          :loading="testMail.pending.value"
+          data-testid="test-mail"
+          @click="sendTestMail"
+        >
+          {{ $t('admin.status.testMail') }}
+        </UiButton>
+        <UiNotice v-if="testMailSent" tone="success">
+          {{ $t('admin.status.testMailSent', { email: me?.email }) }}
+        </UiNotice>
+        <UiNotice v-if="testMail.error.value" tone="error">{{ testMail.error.value }}</UiNotice>
+      </div>
+    </section>
+
     <section v-if="status.data.value" class="flex flex-col gap-3" data-testid="instance-status">
       <h2 class="ui-section-title">{{ $t('admin.status.title') }}</h2>
       <dl class="grid grid-cols-[auto_1fr] gap-x-6 gap-y-1.5">
@@ -626,20 +798,6 @@ async function deleteUser(user: AdminUser): Promise<void> {
           }}
         </dd>
       </dl>
-      <div v-if="status.data.value.smtp_configured" class="flex flex-col gap-2">
-        <UiButton
-          class="self-start"
-          :loading="testMail.pending.value"
-          data-testid="test-mail"
-          @click="sendTestMail"
-        >
-          {{ $t('admin.status.testMail') }}
-        </UiButton>
-        <UiNotice v-if="testMailSent" tone="success">
-          {{ $t('admin.status.testMailSent', { email: me?.email }) }}
-        </UiNotice>
-        <UiNotice v-if="testMail.error.value" tone="error">{{ testMail.error.value }}</UiNotice>
-      </div>
     </section>
   </main>
 </template>

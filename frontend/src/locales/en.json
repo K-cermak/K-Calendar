@@ -68,6 +68,8 @@
     "cross_origin": "The request was refused: the app is open at a different address than the one it is set up for. Open it at its configured address.",
     "display_name_required": "Enter a display name.",
     "email_disabled": "E-mail is not set up on this server.",
+    "smtp_incomplete": "Fill in both the mail server and the sender address, or neither.",
+    "smtp_host_invalid": "Enter the mail server's name without spaces.",
     "email_failed": "The e-mail could not be sent. Check the SMTP settings.",
     "email_taken": "An account with this e-mail address already exists.",
     "file_too_large": "The file is larger than 10 MB.",
@@ -348,6 +350,24 @@
         "label": "Sign people out after inactivity (days)",
         "hint": "How long people stay signed in without opening the app. Each visit resets it."
       }
+    },
+    "smtp": {
+      "title": "E-mail",
+      "intro": "The mail server for reminders, invite links and password resets. Without one, the app sends no e-mail.",
+      "host": "Mail server",
+      "hostHint": "Leave it and the sender address empty to turn e-mail off.",
+      "security": "Security",
+      "securities": {
+        "starttls": "STARTTLS",
+        "ssl": "SSL/TLS",
+        "none": "None"
+      },
+      "port": "Port",
+      "portHint": "Empty uses the usual port for the security.",
+      "username": "User name",
+      "password": "Password",
+      "passwordKept": "A password is saved. Leave this empty to keep it.",
+      "from": "Sender address"
     },
     "status": {
       "title": "Instance",

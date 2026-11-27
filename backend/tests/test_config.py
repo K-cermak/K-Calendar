@@ -18,7 +18,6 @@ def test_base_url_is_the_only_required_variable(monkeypatch: pytest.MonkeyPatch)
         load_settings()
     monkeypatch.setenv("APP_BASE_URL", BASE)
     settings = load_settings()
-    assert not settings.smtp_enabled
     assert not settings.oidc_enabled
 
 
@@ -59,24 +58,6 @@ def test_partial_oidc_names_what_is_missing(monkeypatch: pytest.MonkeyPatch) -> 
         load_settings()
 
 
-def test_smtp_host_needs_a_sender(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("APP_BASE_URL", BASE)
-    monkeypatch.setenv("APP_SMTP_HOST", "mail.example.com")
-    with pytest.raises(ConfigError, match="APP_SMTP_FROM is required"):
-        load_settings()
-    monkeypatch.setenv("APP_SMTP_FROM", "calendar@example.com")
-    assert load_settings().smtp_enabled
-
-
-def test_smtp_security_is_one_of_three(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("APP_BASE_URL", BASE)
-    monkeypatch.setenv("APP_SMTP_SECURITY", "tls")
-    with pytest.raises(ConfigError, match="APP_SMTP_SECURITY"):
-        load_settings()
-    monkeypatch.setenv("APP_SMTP_SECURITY", "SSL")
-    assert load_settings().smtp_security == "ssl"
-
-
 def test_vapid_keys_go_together(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("APP_BASE_URL", BASE)
     monkeypatch.setenv("APP_VAPID_PUBLIC_KEY", "abc")
@@ -99,9 +80,9 @@ def test_trusted_proxies_must_be_addresses(monkeypatch: pytest.MonkeyPatch) -> N
 
 def test_every_problem_is_listed(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("APP_BASE_URL", BASE)
-    monkeypatch.setenv("APP_SMTP_PORT", "ten")
+    monkeypatch.setenv("APP_OIDC_AUTO_PROVISION", "sometimes")
     monkeypatch.setenv("APP_LOG_LEVEL", "loud")
-    with pytest.raises(ConfigError, match=r"(?s)APP_SMTP_PORT: .*integer.*APP_LOG_LEVEL: "):
+    with pytest.raises(ConfigError, match=r"(?s)APP_OIDC_AUTO_PROVISION: .*boolean.*APP_LOG_LEVEL: "):
         load_settings()
 
 

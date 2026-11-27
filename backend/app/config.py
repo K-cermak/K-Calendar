@@ -34,13 +34,6 @@ class Settings(BaseSettings):
     secret_key: str | None = None
     trusted_proxies: Annotated[list[str], NoDecode] = []
 
-    smtp_host: str | None = None
-    smtp_port: int | None = None
-    smtp_user: str | None = None
-    smtp_password: str | None = None
-    smtp_from: str | None = None
-    smtp_security: Literal["starttls", "ssl", "none"] = "starttls"
-
     oidc_discovery_url: str | None = None
     oidc_client_id: str | None = None
     oidc_client_secret: str | None = None
@@ -101,25 +94,10 @@ class Settings(BaseSettings):
                 ) from None
         return value
 
-    @field_validator("log_level", "smtp_security", mode="before")
+    @field_validator("log_level", mode="before")
     @classmethod
     def _lower(cls, value: object) -> object:
         return value.lower() if isinstance(value, str) else value
-
-    @field_validator("smtp_port")
-    @classmethod
-    def _check_port(cls, value: int | None) -> int | None:
-        if value is not None and not 0 < value < 65536:
-            raise ValueError("must be a TCP port between 1 and 65535")
-        return value
-
-    @model_validator(mode="after")
-    def _check_smtp_complete(self) -> Settings:
-        if self.smtp_host and not self.smtp_from:
-            raise ValueError("APP_SMTP_HOST is set, so APP_SMTP_FROM is required as the sender address")
-        if self.smtp_from and not self.smtp_host:
-            raise ValueError("APP_SMTP_FROM is set, so APP_SMTP_HOST is required")
-        return self
 
     @model_validator(mode="after")
     def _check_oidc_complete(self) -> Settings:
@@ -151,10 +129,6 @@ class Settings(BaseSettings):
     @property
     def oidc_enabled(self) -> bool:
         return bool(self.oidc_discovery_url and self.oidc_client_id and self.oidc_client_secret)
-
-    @property
-    def smtp_enabled(self) -> bool:
-        return bool(self.smtp_host and self.smtp_from)
 
     @property
     def secure_cookies(self) -> bool:
