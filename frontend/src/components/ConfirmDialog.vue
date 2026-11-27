@@ -19,8 +19,9 @@ const confirm = useConfirmStore()
     @update:open="(open) => !open && confirm.answer(false)"
   >
     <AlertDialogPortal>
-      <AlertDialogOverlay class="ui-overlay" />
-      <AlertDialogContent v-if="confirm.request" class="ui-dialog">
+      <!-- Above the editor's sheet (z 50), which a dialog asked from it has to cover. -->
+      <AlertDialogOverlay class="ui-overlay z-60" />
+      <AlertDialogContent v-if="confirm.request" class="ui-dialog z-60">
         <AlertDialogTitle class="ui-dialog__title">
           {{ confirm.request.title }}
         </AlertDialogTitle>

@@ -123,6 +123,13 @@ test('closing the editor with changes asks to save, cancel or discard', async ({
   await openEditor()
   await editor.getByLabel('Title').fill('Dentist at 8')
   await page.keyboard.press('Escape')
+  // The question dims the editor behind it, so the editor does not get the pointer there.
+  const field = (await editor.getByLabel('Title').boundingBox())!
+  const reachesEditor = await page.evaluate(
+    ([x, y]) => !!document.elementFromPoint(x, y)?.closest('[data-testid="event-editor"]'),
+    [field.x + 4, field.y + 4],
+  )
+  expect(reachesEditor).toBe(false)
   await prompt.getByRole('button', { name: 'Cancel' }).click()
   await expect(editor.getByLabel('Title')).toHaveValue('Dentist at 8')
 

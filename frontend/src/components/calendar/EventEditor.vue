@@ -319,9 +319,10 @@ async function save(): Promise<void> {
 
   <AlertDialogRoot :open="askingToSave" @update:open="(value) => (askingToSave = value)">
     <AlertDialogPortal>
-      <AlertDialogOverlay class="ui-overlay" />
+      <!-- Above the editor's sheet (z 50), which a dialog asked from it has to cover. -->
+      <AlertDialogOverlay class="ui-overlay z-60" />
       <AlertDialogContent
-        class="ui-dialog"
+        class="ui-dialog z-60"
         data-testid="unsaved-dialog"
         @open-auto-focus="focusSave"
       >

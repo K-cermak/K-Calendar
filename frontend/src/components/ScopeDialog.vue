@@ -27,8 +27,9 @@ watch(
     @update:open="(open) => !open && store.answer(null)"
   >
     <AlertDialogPortal>
-      <AlertDialogOverlay class="ui-overlay" />
-      <AlertDialogContent v-if="store.request" class="ui-dialog" data-testid="scope-dialog">
+      <!-- Above the editor's sheet (z 50), which a dialog asked from it has to cover. -->
+      <AlertDialogOverlay class="ui-overlay z-60" />
+      <AlertDialogContent v-if="store.request" class="ui-dialog z-60" data-testid="scope-dialog">
         <AlertDialogTitle class="ui-dialog__title">
           {{ $t(`scope.${store.request.action}Title`) }}
         </AlertDialogTitle>
