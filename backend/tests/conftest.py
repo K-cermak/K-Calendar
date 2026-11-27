@@ -34,7 +34,12 @@ def app(settings: Settings, static_dir: Path) -> FastAPI:
 
 
 @pytest.fixture
-def client(app: FastAPI) -> Iterator[TestClient]:
+def client(app: FastAPI, request: pytest.FixtureRequest) -> Iterator[TestClient]:
+    # A test that freezes time must do so before anyone signs in: a session started in real time
+    # would expire relative to today's date rather than the frozen one, whatever the argument order.
+    for frozen in ("clock", "fake_clock"):
+        if frozen in request.fixturenames:
+            request.getfixturevalue(frozen)
     with TestClient(app) as test_client:
         yield test_client
 
