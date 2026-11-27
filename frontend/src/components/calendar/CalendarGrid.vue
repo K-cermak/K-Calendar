@@ -13,7 +13,7 @@ import type {
   EventInput,
 } from '@fullcalendar/vue3'
 import '@fullcalendar/vue3/skeleton.css'
-import type { Occurrence, WorkingHours } from '@/api/client'
+import type { Occurrence, WorkingHours, EventTagStyle } from '@/api/client'
 import { PHONE_WEEK_DAYS, type PlainDateTime, type WeekStart } from '@/dates'
 import { toBusinessHours } from '@/workingHours'
 import EventBlock from './EventBlock.vue'
@@ -29,7 +29,7 @@ const props = defineProps<{
   locale: string
   weekStart: WeekStart
   timeFormat: '12' | '24'
-  showTags: boolean
+  tagStyle: EventTagStyle
   workingHours: WorkingHours | null
   readOnly: boolean
 }>()
@@ -194,7 +194,7 @@ defineExpose({ unselect: () => calendar.value?.getApi().unselect() })
         :view="view"
         :locale="locale"
         :time-format="timeFormat"
-        :show-tags="showTags"
+        :tag-style="tagStyle"
         :now="now"
         :mirror="arg.isMirror"
       />

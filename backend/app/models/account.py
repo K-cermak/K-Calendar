@@ -32,7 +32,7 @@ class User(Base):
     time_format: Mapped[str] = mapped_column(String(2), default="24")
     default_view: Mapped[str] = mapped_column(String(8), default="auto")
     theme: Mapped[str] = mapped_column(String(8), default="system")
-    show_event_tags: Mapped[bool] = mapped_column(default=True)
+    event_tags: Mapped[str] = mapped_column(String(8), default="markers")
     working_hours_enabled: Mapped[bool] = mapped_column(default=False)
     working_hours: Mapped[dict[str, Any]] = mapped_column(JSON, default=default_working_hours)
     email_reminders_enabled: Mapped[bool] = mapped_column(default=False)

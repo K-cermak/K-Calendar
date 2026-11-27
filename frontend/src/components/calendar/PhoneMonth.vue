@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { Occurrence } from '@/api/client'
+import type { Occurrence, EventTagStyle } from '@/api/client'
 import { formatDate, type PlainDate, type WeekStart } from '@/dates'
 import { groupByDay } from './groupByDay'
 import AgendaDay from './AgendaDay.vue'
@@ -14,7 +14,7 @@ const props = defineProps<{
   weekStart: WeekStart
   locale: string
   timeFormat: '12' | '24'
-  showTags: boolean
+  tagStyle: EventTagStyle
 }>()
 const emit = defineEmits<{ select: [day: PlainDate]; open: [o: Occurrence, el: HTMLElement] }>()
 
@@ -49,7 +49,7 @@ const selectedItems = computed(
       :items="selectedItems"
       :locale="locale"
       :time-format="timeFormat"
-      :show-tags="showTags"
+      :tag-style="tagStyle"
       class="px-2 pb-24"
       @open="(o, el) => emit('open', o, el)"
     />

@@ -159,7 +159,7 @@ test('a time zone is found by typing any part of its name', async ({ page }) => 
     .toBe('America/New_York')
 })
 
-test('tag markers on events can be turned off in the profile', async ({ page }) => {
+test('tags on events show as squares, as names or not at all', async ({ page }) => {
   const tomorrow = new Date(Date.now() + 86_400_000).toISOString().slice(0, 10)
   const event = await createEvent(page, {
     title: 'Flight',
@@ -167,20 +167,29 @@ test('tag markers on events can be turned off in the profile', async ({ page }) 
     end: `${tomorrow}T10:00:00`,
     tags: ['travel'],
   })
-  const row = page.getByTestId(`agenda-${event.id}`)
+  const tags = page.getByTestId(`agenda-${event.id}`).getByTestId('event-tags')
   await page.goto('/agenda')
-  await expect(row.locator('.cal-tag-marker')).toHaveCount(1)
+  await expect(tags.locator('.cal-tag-marker')).toHaveCount(1)
+  await expect(tags).not.toContainText('travel')
 
-  await page.goto('/settings/profile')
-  await page.getByTestId('show-event-tags').click()
-  await expect(page.getByTestId('show-event-tags')).toHaveAttribute('data-state', 'unchecked')
-  // The switch flips before the server has it, and the agenda below loads the profile afresh.
-  await expect
-    .poll(async () => (await (await page.request.get('/api/v1/me')).json()).show_event_tags)
-    .toBe(false)
-  await page.goto('/agenda')
-  await expect(row).toBeVisible()
-  await expect(row.locator('.cal-tag-marker')).toHaveCount(0)
+  for (const [label, value] of [
+    ['Names', 'names'],
+    ['Off', 'hidden'],
+  ] as const) {
+    await page.goto('/settings/profile')
+    await page
+      .getByRole('radiogroup', { name: 'Tags on events' })
+      .getByRole('radio', { name: label })
+      .click()
+    // The choice shows before the server has it, and the agenda below loads the profile afresh.
+    await expect
+      .poll(async () => (await (await page.request.get('/api/v1/me')).json()).event_tags)
+      .toBe(value)
+    await page.goto('/agenda')
+    await expect(page.getByTestId(`agenda-${event.id}`)).toBeVisible()
+    if (value === 'names') await expect(tags).toContainText('travel')
+    else await expect(tags).toHaveCount(0)
+  }
 })
 
 test('working hours with a break shade the rest of the day in the grid', async ({

@@ -1,18 +1,17 @@
 <script setup lang="ts">
-import type { Occurrence } from '@/api/client'
+import type { EventTagStyle, Occurrence } from '@/api/client'
 import { formatTime, parseDateTime } from '@/dates'
 import { colorVar } from '@/palette'
+import EventTags from './EventTags.vue'
 
 /** One day's events as rows: colour, time in mono, title, tag markers (SPEC 11). */
 const props = defineProps<{
   items: Occurrence[]
   locale: string
   timeFormat: '12' | '24'
-  showTags: boolean
+  tagStyle: EventTagStyle
 }>()
 const emit = defineEmits<{ open: [occurrence: Occurrence, el: HTMLElement] }>()
-
-const MAX_TAGS = 3
 
 function timeLabel(o: Occurrence): string {
   const format = (v: string) => formatTime(parseDateTime(v), props.locale, props.timeFormat)
@@ -38,22 +37,17 @@ function timeLabel(o: Occurrence): string {
         <span class="ui-numeric w-28 shrink-0 font-mono text-label text-muted">
           {{ item.all_day ? $t('event.allDay') : timeLabel(item) }}
         </span>
-        <span class="min-w-0 flex-1 truncate">{{ item.title || $t('event.noTitle') }}</span>
-        <span
-          v-if="showTags && item.tags.length"
-          class="mt-1.5 flex shrink-0 gap-1"
-          aria-hidden="true"
-        >
-          <span
-            v-for="tag in item.tags.slice(0, MAX_TAGS)"
-            :key="tag.id"
-            class="cal-tag-marker"
-            :style="{ '--tag-color': colorVar(tag.color) }"
-          />
-          <span v-if="item.tags.length > MAX_TAGS" class="font-mono text-meta text-muted">
-            +{{ item.tags.length - MAX_TAGS }}
-          </span>
+        <span class="flex min-w-0 flex-1 flex-col">
+          <span class="truncate">{{ item.title || $t('event.noTitle') }}</span>
+          <!-- Names go under the title: beside it they would squeeze it out on a phone. -->
+          <EventTags v-if="tagStyle === 'names'" :tags="item.tags" mode="names" class="mt-0.5" />
         </span>
+        <EventTags
+          v-if="tagStyle === 'markers'"
+          :tags="item.tags"
+          mode="markers"
+          class="mt-1.5 shrink-0 pointer-coarse:mt-0"
+        />
       </button>
     </li>
   </ul>

@@ -119,7 +119,7 @@ def to_me(user: User) -> Me:
             "time_format": user.time_format,
             "default_view": user.default_view,
             "theme": user.theme,
-            "show_event_tags": user.show_event_tags,
+            "event_tags": user.event_tags,
             "working_hours_enabled": user.working_hours_enabled,
             "working_hours": user.working_hours,
             "email_reminders_enabled": user.email_reminders_enabled,
@@ -146,8 +146,8 @@ def update_profile(db: Session, user: User, update: ProfileUpdate) -> User:
         user.default_view = update.default_view
     if update.theme is not None:
         user.theme = update.theme
-    if update.show_event_tags is not None:
-        user.show_event_tags = update.show_event_tags
+    if update.event_tags is not None:
+        user.event_tags = update.event_tags
     if update.working_hours_enabled is not None:
         user.working_hours_enabled = update.working_hours_enabled
     if update.working_hours is not None:

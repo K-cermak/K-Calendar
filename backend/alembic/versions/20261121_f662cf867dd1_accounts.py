@@ -39,7 +39,7 @@ def upgrade() -> None:
         sa.Column("time_format", sa.String(length=2), nullable=False),
         sa.Column("default_view", sa.String(length=8), nullable=False),
         sa.Column("theme", sa.String(length=8), nullable=False),
-        sa.Column("show_event_tags", sa.Boolean(), nullable=False),
+        sa.Column("event_tags", sa.String(length=8), nullable=False),
         sa.Column("working_hours_enabled", sa.Boolean(), nullable=False),
         sa.Column("working_hours", sa.JSON(), nullable=False),
         sa.Column("email_reminders_enabled", sa.Boolean(), nullable=False),

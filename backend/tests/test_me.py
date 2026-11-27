@@ -16,7 +16,7 @@ def test_profile_update(admin: TestClient) -> None:
             "time_format": "12",
             "default_view": "month",
             "theme": "dark",
-            "show_event_tags": False,
+            "event_tags": "names",
         },
     )
     assert response.status_code == 200
@@ -28,7 +28,7 @@ def test_profile_update(admin: TestClient) -> None:
         "week_start": "sunday",
         "time_format": "12",
     }
-    assert (me["default_view"], me["theme"], me["show_event_tags"]) == ("month", "dark", False)
+    assert (me["default_view"], me["theme"], me["event_tags"]) == ("month", "dark", "names")
 
 
 def test_profile_rejects_unknown_values(admin: TestClient) -> None:
@@ -36,6 +36,7 @@ def test_profile_rejects_unknown_values(admin: TestClient) -> None:
     assert admin.patch("/api/v1/me", json={"locale": "<script>"}).status_code == 422
     assert admin.patch("/api/v1/me", json={"week_start": "friday"}).status_code == 422
     assert admin.patch("/api/v1/me", json={"default_view": "year"}).status_code == 422
+    assert admin.patch("/api/v1/me", json={"event_tags": "labels"}).status_code == 422
     zone = admin.patch("/api/v1/me", json={"timezone": "Europe/Atlantis"})
     assert zone.status_code == 422
     assert zone.json()["code"] == "invalid_timezone"

@@ -1632,8 +1632,11 @@ export interface components {
              * @enum {string}
              */
             theme: "system" | "light" | "dark";
-            /** Show Event Tags */
-            show_event_tags: boolean;
+            /**
+             * Event Tags
+             * @enum {string}
+             */
+            event_tags: "hidden" | "markers" | "names";
             /** Working Hours Enabled */
             working_hours_enabled: boolean;
             working_hours: components["schemas"]["WorkingHours"];
@@ -1768,8 +1771,8 @@ export interface components {
             default_view?: ("auto" | "month" | "week" | "day" | "agenda") | null;
             /** Theme */
             theme?: ("system" | "light" | "dark") | null;
-            /** Show Event Tags */
-            show_event_tags?: boolean | null;
+            /** Event Tags */
+            event_tags?: ("hidden" | "markers" | "names") | null;
             /** Working Hours Enabled */
             working_hours_enabled?: boolean | null;
             working_hours?: components["schemas"]["WorkingHours"] | null;

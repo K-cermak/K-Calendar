@@ -180,6 +180,18 @@
     background: var(--tag-color);
   }
 
+  /* A tag named on an event: the square and the name, without the chip's border, to stay light. */
+  .cal-tag-name {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+    max-width: 100%;
+    color: var(--muted);
+    font-size: var(--size-meta);
+    line-height: 16px;
+  }
+
   .cal-tag {
     display: inline-flex;
     align-items: center;

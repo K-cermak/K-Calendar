@@ -11,6 +11,8 @@ Theme = Literal["system", "light", "dark"]
 DefaultView = Literal["auto", "month", "week", "day", "agenda"]
 WeekStart = Literal["monday", "sunday"]
 TimeFormat = Literal["12", "24"]
+# How tags show on events in the week, day and agenda views: not at all, as colour squares, or named.
+EventTags = Literal["hidden", "markers", "names"]
 
 EMAIL = Field(max_length=320)
 PASSWORD = Field(max_length=1024)
@@ -87,7 +89,7 @@ class Me(BaseModel):
     time_format: TimeFormat
     default_view: DefaultView
     theme: Theme
-    show_event_tags: bool
+    event_tags: EventTags
     working_hours_enabled: bool
     working_hours: WorkingHours
     email_reminders_enabled: bool
@@ -104,7 +106,7 @@ class ProfileUpdate(BaseModel):
     time_format: TimeFormat | None = None
     default_view: DefaultView | None = None
     theme: Theme | None = None
-    show_event_tags: bool | None = None
+    event_tags: EventTags | None = None
     working_hours_enabled: bool | None = None
     working_hours: WorkingHours | None = None
     email_reminders_enabled: bool | None = None

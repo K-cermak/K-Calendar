@@ -43,6 +43,12 @@ const timeFormats = computed(() =>
     label: t(`settings.profile.hours${value}`),
   })),
 )
+const eventTagStyles = computed(() =>
+  (['hidden', 'markers', 'names'] as const).map((value) => ({
+    value,
+    label: t(`settings.profile.eventTags_${value}`),
+  })),
+)
 const defaultViews = computed(() => [
   { value: 'auto' as const, label: t('settings.profile.auto') },
   ...VIEWS.map((value) => ({ value, label: t(`views.${value}`) })),
@@ -134,18 +140,17 @@ function selected(event: Event): string {
         </option>
       </select>
     </UiField>
-    <label class="flex cursor-pointer items-start gap-3">
-      <UiCheckbox
-        :model-value="me.show_event_tags"
-        class="mt-0.5"
-        data-testid="show-event-tags"
-        @update:model-value="update({ show_event_tags: $event === true })"
+    <div class="flex flex-col gap-2">
+      <span class="ui-label">{{ $t('settings.profile.eventTags') }}</span>
+      <UiSegmented
+        :model-value="me.event_tags"
+        :options="eventTagStyles"
+        :label="$t('settings.profile.eventTags')"
+        data-testid="event-tags-style"
+        @update:model-value="(event_tags) => update({ event_tags })"
       />
-      <span class="flex flex-col">
-        <span>{{ $t('settings.profile.showEventTags') }}</span>
-        <span class="text-label text-muted">{{ $t('settings.profile.showEventTagsHint') }}</span>
-      </span>
-    </label>
+      <span class="text-label text-muted">{{ $t('settings.profile.eventTagsHint') }}</span>
+    </div>
     <label v-if="config?.email_enabled" class="flex cursor-pointer items-start gap-3">
       <UiCheckbox
         :model-value="me.email_reminders_enabled"

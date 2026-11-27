@@ -42,7 +42,7 @@ def test_setup_creates_the_first_admin_and_signs_in(client: TestClient) -> None:
         "auto",
         "system",
     )
-    assert me["show_event_tags"] is True
+    assert me["event_tags"] == "markers"
     assert client.get("/api/v1/me").json()["id"] == me["id"]
 
 

@@ -254,7 +254,7 @@ defineExpose({ newEvent })
     :locale="me.locale"
     :week-start="me.week_start"
     :time-format="me.time_format"
-    :show-tags="me.show_event_tags"
+    :tag-style="me.event_tags"
     :working-hours="me.working_hours_enabled ? me.working_hours : null"
     :read-only="readOnly"
     @select="onSelect"
@@ -270,7 +270,7 @@ defineExpose({ newEvent })
     :week-start="me.week_start"
     :locale="me.locale"
     :time-format="me.time_format"
-    :show-tags="me.show_event_tags"
+    :tag-style="me.event_tags"
     @select="emit('select', $event)"
     @open="openDetail"
   />
@@ -281,7 +281,7 @@ defineExpose({ newEvent })
     :tz="me.timezone"
     :locale="me.locale"
     :time-format="me.time_format"
-    :show-tags="me.show_event_tags"
+    :tag-style="me.event_tags"
     :filter="filter"
     @open="openDetail"
   />

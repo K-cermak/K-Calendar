@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useInfiniteQuery } from '@tanstack/vue-query'
-import { api, call, type Occurrence } from '@/api/client'
+import { api, call, type EventTagStyle, type Occurrence } from '@/api/client'
 import { formatDate, parseDate, type PlainDate } from '@/dates'
 import UiSpinner from '@/components/ui/UiSpinner.vue'
 import AgendaDay from './AgendaDay.vue'
@@ -14,7 +14,7 @@ const props = defineProps<{
   tz: string
   locale: string
   timeFormat: '12' | '24'
-  showTags: boolean
+  tagStyle: EventTagStyle
   filter: (o: Occurrence) => boolean
 }>()
 const emit = defineEmits<{ open: [occurrence: Occurrence, el: HTMLElement] }>()
@@ -104,7 +104,7 @@ function dayLabel(day: string): string {
         :items="group.items"
         :locale="locale"
         :time-format="timeFormat"
-        :show-tags="showTags"
+        :tag-style="tagStyle"
         class="flex-1"
         @open="(o, el) => emit('open', o, el)"
       />
