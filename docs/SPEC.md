@@ -232,6 +232,8 @@ There can be several admins. Two guards, enforced on the server and reflected in
 
 Deactivating a user or revoking admin rights takes effect immediately: deactivating deletes the user's sessions and their API tokens stop working, and admin checks read the current flag on every request. A deactivated account cannot log in by password or through OIDC, and its API tokens are refused.
 
+Any user can delete their own account in the security settings (`DELETE /api/v1/me`, not reachable with an API token). It is confirmed with the password, or, for an account that signs in only through OIDC, by typing its e-mail address. It removes all the user's data like an admin's delete, and the app forgets the cached data and goes to the login page. The last active admin cannot delete their account. (Added by the owner before 0.1.0, as in K-Notes.)
+
 Password reset goes by e-mail when SMTP is configured. Without SMTP, the login page says to ask the administrator, who can generate a link. For a locked-out admin: `docker exec <container> python -m app.cli reset-password <email>`. The CLI can also disable TOTP for a user (`disable-totp`) and promote a user to admin (`make-admin`).
 
 ### Passwords and sessions
@@ -454,7 +456,7 @@ The main resources, as a guide to the shape rather than a complete list:
 | --- | --- |
 | Public | `GET /config` (app name, version, whether first-run setup is still needed, which login methods are enabled, whether registration is open, VAPID public key), `GET /health` |
 | Auth | `POST /auth/setup`, `/auth/login`, `/auth/login/totp`, `/auth/logout`, `/auth/register`, `/auth/password-reset/*`, `GET /auth/oidc/login`, `GET /auth/oidc/callback` |
-| Account | `GET` and `PATCH /me`, `/me/password`, `/me/totp/*`, `/me/sessions`, `/me/tokens`, `/me/oidc`, `/me/push-subscriptions` |
+| Account | `GET`, `PATCH` and `DELETE /me`, `/me/password`, `/me/totp/*`, `/me/sessions`, `/me/tokens`, `/me/oidc`, `/me/push-subscriptions` |
 | Calendars | CRUD on `/calendars`, `/calendars/{id}/feed`, `/calendars/{id}/export`, `/calendars/{id}/import`, `/calendars/{id}/refresh` |
 | Events | `GET /occurrences`, `POST /events`, `GET`, `PATCH` and `DELETE /events/{id}` with `scope` and `occurrence` parameters for series |
 | Tags | `GET` and `POST /tags`, `PATCH` and `DELETE /tags/{id}` |

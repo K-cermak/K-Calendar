@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { api, call } from '@/api/client'
 import type { components } from '@/api/schema'
 import { useSubmit } from '@/composables/useSubmit'
 import { useQuery, useQueryClient } from '@tanstack/vue-query'
-import { meQuery, useConfig, useMe } from '@/api/session'
+import { deleteAccount as deleteOwnAccount, meQuery, useConfig, useMe } from '@/api/session'
+import { useConfirmStore } from '@/stores/confirm'
 import { relativeTime } from '@/format'
 import OidcButton from '@/components/OidcButton.vue'
 import QrCode from '@/components/QrCode.vue'
@@ -19,6 +20,8 @@ type Schemas = components['schemas']
 
 const i18n = useI18n()
 const route = useRoute()
+const router = useRouter()
+const confirm = useConfirmStore()
 const me = useMe()
 const config = useConfig()
 const queryClient = useQueryClient()
@@ -166,6 +169,36 @@ function device(agent: string | null): string {
 }
 
 onMounted(loadTotp)
+
+// Deleting the account, confirmed by the password, or by the e-mail address for an account that
+// signs in only through single sign-on (SPEC 6).
+const deleting = ref(false)
+const deleteConfirmation = ref('')
+const removal = useSubmit({
+  wrong_password: 'errors.wrong_password',
+  last_admin: 'settings.deleteAccount.lastAdmin',
+})
+
+async function deleteAccount(): Promise<void> {
+  const sure = await confirm.ask({
+    title: i18n.t('settings.deleteAccount.confirmTitle'),
+    message: i18n.t('settings.deleteAccount.confirmMessage'),
+    confirmLabel: i18n.t('settings.deleteAccount.submit'),
+    danger: true,
+  })
+  if (!sure) return
+  const value = deleteConfirmation.value
+  const ok = await removal.run(() =>
+    deleteOwnAccount(user.value?.has_password ? { password: value } : { email: value }),
+  )
+  if (ok) await router.replace('/login')
+}
+
+function cancelDelete(): void {
+  deleting.value = false
+  deleteConfirmation.value = ''
+  removal.error.value = null
+}
 </script>
 
 <template>
@@ -376,5 +409,38 @@ onMounted(loadTotp)
     <UiNotice v-if="sessionAction.error.value" tone="error">{{
       sessionAction.error.value
     }}</UiNotice>
+  </section>
+
+  <section class="flex flex-col gap-4" data-testid="delete-account">
+    <h2 class="ui-section-title">{{ $t('settings.deleteAccount.title') }}</h2>
+    <p class="text-muted">{{ $t('settings.deleteAccount.intro') }}</p>
+    <form v-if="deleting" class="flex flex-col gap-3" novalidate @submit.prevent="deleteAccount">
+      <UiField
+        :label="$t(user?.has_password ? 'account.password' : 'settings.deleteAccount.email')"
+        for="delete-confirmation"
+      >
+        <UiInput
+          id="delete-confirmation"
+          v-model="deleteConfirmation"
+          :type="user?.has_password ? 'password' : 'email'"
+          :autocomplete="user?.has_password ? 'current-password' : 'off'"
+        />
+      </UiField>
+      <UiNotice v-if="removal.error.value" tone="error">{{ removal.error.value }}</UiNotice>
+      <div class="flex gap-2">
+        <UiButton
+          type="submit"
+          variant="danger"
+          :loading="removal.pending.value"
+          :disabled="!deleteConfirmation"
+        >
+          {{ $t('settings.deleteAccount.submit') }}
+        </UiButton>
+        <UiButton variant="ghost" @click="cancelDelete">{{ $t('common.cancel') }}</UiButton>
+      </div>
+    </form>
+    <UiButton v-else variant="danger" class="self-start" @click="deleting = true">
+      {{ $t('settings.deleteAccount.submit') }}
+    </UiButton>
   </section>
 </template>

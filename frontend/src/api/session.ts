@@ -1,6 +1,6 @@
 import { queryOptions, useQuery } from '@tanstack/vue-query'
 import { computed } from 'vue'
-import { api, call, isFailure, type Me, type PublicConfig } from './client'
+import { api, call, isFailure, type AccountDelete, type Me, type PublicConfig } from './client'
 import { queryClient } from './queryClient'
 import { clearPersonalCaches, rememberUser } from '@/pwa'
 
@@ -55,6 +55,13 @@ export async function signOut(): Promise<void> {
     // An already invalid session is as good as signed out.
     if (!isFailure(e) || e.status !== 401) throw e
   })
+  forgetEverything()
+  queryClient.setQueryData(meQuery.queryKey, null)
+}
+
+/** Deletes the account on the server, then forgets everything of it in this browser. */
+export async function deleteAccount(confirmation: AccountDelete): Promise<void> {
+  await call(() => api.DELETE('/api/v1/me', { body: confirmation }))
   forgetEverything()
   queryClient.setQueryData(meQuery.queryKey, null)
 }

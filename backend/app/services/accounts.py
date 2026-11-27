@@ -12,7 +12,7 @@ from app.errors import (
 )
 from app.models import User
 from app.schemas.account import Me, ProfileUpdate
-from app.services import calendars, clock, reminders, zones
+from app.services import admin, calendars, clock, reminders, zones
 from app.services.auth import credentials, sessions
 from app.services.auth.throttle import LoginThrottle
 
@@ -165,3 +165,20 @@ def set_password(db: Session, user: User, password: str) -> None:
     check_password(password)
     user.password_hash = credentials.hash_password(password)
     sessions.revoke_all(db, user.id)
+
+
+def delete_account(db: Session, user: User, *, password: str | None, email: str | None) -> None:
+    """Deletes the user's own account with all their data (SPEC 6, First run and accounts).
+
+    Confirmed by the password, or by the e-mail address for an account that signs in only through
+    single sign-on. The last active admin cannot leave.
+    """
+    if user.password_hash is not None:
+        if not credentials.verify_password(user.password_hash, password or ""):
+            raise InvalidInputError("wrong_password", "The current password is not correct")
+    elif (email or "").strip().lower() != user.email:
+        raise InvalidInputError("wrong_email", "The e-mail address does not match this account")
+    admin.ensure_admin_remains(db, user)
+    # Sessions, tokens, calendars, events and reminders go with the user through ON DELETE CASCADE.
+    db.delete(user)
+    db.commit()

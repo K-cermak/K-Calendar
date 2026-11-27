@@ -1,10 +1,11 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Query, Request, status
+from fastapi import APIRouter, Query, Request, Response, status
 
-from app.api.deps import AppSettings, CurrentAuth
+from app.api.deps import AppSettings, CurrentAuth, clear_session_cookie
 from app.db import DbSession
 from app.schemas.account import (
+    AccountDelete,
     ApiTokenCreate,
     ApiTokenInfo,
     Clock,
@@ -31,6 +32,15 @@ router = APIRouter(prefix="/me", tags=["account"])
 @router.get("")
 def get_me(auth: CurrentAuth) -> Me:
     return accounts.to_me(auth.user)
+
+
+@router.delete("", status_code=status.HTTP_204_NO_CONTENT)
+def delete_me(
+    body: AccountDelete, auth: CurrentAuth, db: DbSession, settings: AppSettings, response: Response
+) -> None:
+    """Deletes the account with all its calendars and events. The last active admin cannot."""
+    accounts.delete_account(db, auth.user, password=body.password, email=body.email)
+    clear_session_cookie(response, settings)
 
 
 @router.get("/clock")

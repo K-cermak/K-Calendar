@@ -59,6 +59,13 @@ class ProfileUpdate(BaseModel):
     email_reminders_enabled: bool | None = None
 
 
+class AccountDelete(BaseModel):
+    """The password, or for an account without one, its e-mail address."""
+
+    password: str | None = Field(default=None, max_length=1024)
+    email: str | None = Field(default=None, max_length=320)
+
+
 class PasswordChange(BaseModel):
     current_password: str = PASSWORD
     new_password: str = PASSWORD

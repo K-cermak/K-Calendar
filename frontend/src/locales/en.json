@@ -121,7 +121,8 @@
     "unknown": "Something went wrong. Please try again.",
     "unsupported_rrule": "This repetition is not supported.",
     "validation_error": "Some of the values are not valid.",
-    "wrong_password": "The current password is not correct."
+    "wrong_password": "The current password is not correct.",
+    "wrong_email": "The e-mail address does not match this account."
   },
   "shell": {
     "openMenu": "Open menu",
@@ -236,6 +237,15 @@
       "revoke": "Revoke",
       "revokeTitle": "Revoke “{name}”?",
       "revokeMessage": "Scripts using this token stop working at once."
+    },
+    "deleteAccount": {
+      "title": "Delete account",
+      "intro": "Deletes your account with all your calendars, events, tags and reminders. Calendars you subscribe to elsewhere through a feed address stop updating. This cannot be undone.",
+      "email": "Your e-mail address",
+      "submit": "Delete account",
+      "confirmTitle": "Delete your account?",
+      "confirmMessage": "All your calendars, events, tags and reminders will be deleted forever.",
+      "lastAdmin": "You are the only administrator. Make someone else an administrator first."
     }
   },
   "admin": {
