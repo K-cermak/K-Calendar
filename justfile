@@ -40,7 +40,7 @@ fmt:
     cd backend && uv run ruff format . && uv run ruff check --fix .
     cd frontend && pnpm format
 
-# Render the PWA icons in frontend/public from frontend/public/icon.svg
+# Render the PWA icons in frontend/public and the e-mail logo from frontend/public/icon.svg
 icons:
     cd frontend && node scripts/icons.ts
 

@@ -41,24 +41,32 @@
     "signature": "Sent by {app} at {base_url}",
     "reminder": {
       "subject": "Reminder: {title}",
-      "text": "{title}\n{when}",
-      "location": "Location: {location}",
-      "open": "Open in {app}: {link}",
+      "eyebrow": "Reminder",
+      "when": "When",
+      "where": "Where",
+      "button": "Open in {app}",
       "settings": "You get these e-mails because e-mail reminders are on in your settings."
     },
     "invite": {
       "subject": "You are invited to {app}",
-      "text": "You have been invited to {app}. Create your account with this link. It works once and expires in 7 days:",
+      "eyebrow": "Invitation",
+      "title": "You are invited to {app}",
+      "text": "Create your account with the link below. It works once and expires in 7 days.",
       "button": "Create your account"
     },
     "reset": {
       "subject": "Reset your {app} password",
-      "text": "Set a new password with this link. It works once and expires in 24 hours. If you did not ask for this, ignore this e-mail.",
+      "eyebrow": "Password reset",
+      "title": "Set a new password",
+      "text": "Set a new password with the link below. It works once and expires in 24 hours. If you did not ask for this, ignore this e-mail.",
       "button": "Set a new password"
     },
     "test": {
       "subject": "{app}: test e-mail",
-      "text": "E-mail from {app} works."
-    }
+      "eyebrow": "Test e-mail",
+      "title": "E-mail works",
+      "text": "This message was sent from the administration of {app}, so the mail server settings are right."
+    },
+    "fallback": "If the button does not work, open this address:"
   }
 }

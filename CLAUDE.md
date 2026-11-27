@@ -83,7 +83,7 @@ just e2e              # Playwright against an already built image (used by CI)
 just api-types        # regenerate frontend/src/api/schema.d.ts from the OpenAPI schema
 just api-types-check  # fail if the generated API types are out of date (runs in CI)
 just docker           # build the production image locally
-just icons            # render the PWA icons in frontend/public from icon.svg
+just icons            # render the PWA icons in frontend/public and the e-mail logo from icon.svg
 just screenshots      # render the README and website screenshots into Images/ from the built image
 ```
 

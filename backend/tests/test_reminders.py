@@ -475,6 +475,11 @@ def test_reminder_email(
     html = message.get_body(preferencelist=("html",)).get_content()
     assert "Mon 23 Nov, 09:00" in text
     assert "Dentist &lt;3" in html and "<3" not in html.replace("&lt;3", "")
+    assert "Open in" in text and "/event/" in text
+    # The logo travels inside the message; nothing is fetched from the network when it is read.
+    logo = next(part for part in message.walk() if part.get_content_type() == "image/png")
+    assert f'src="cid:{logo["Content-ID"][1:-1]}"' in html
+    assert 'src="http' not in html
 
 
 def test_invite_and_reset_emails(
