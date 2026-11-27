@@ -1,8 +1,18 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" fill="#171717"/>
-  <g fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="square" stroke-linejoin="miter">
-    <rect x="14" y="17" width="36" height="33"/>
-    <path d="M14 26h36M23 12v8M41 12v8"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -17.5 122.5 122.5">
+  <rect x="0" y="13.69" width="76.25" height="73.82" fill="#cacaca"/>
+  <g fill="#fff">
+    <rect x="11.49" y="26.61" width="53.27" height="4.72"/>
+    <rect x="11.49" y="37.39" width="53.27" height="4.72"/>
+    <rect x="11.49" y="48.2" width="53.27" height="4.72"/>
+    <rect x="11.49" y="58.99" width="53.27" height="4.72"/>
+    <rect x="11.49" y="69.89" width="53.27" height="4.72"/>
   </g>
-  <rect x="35" y="35" width="8" height="8" fill="#1f6fd6"/>
+  <rect x="46.22" y="0" width="76.25" height="73.82" fill="#ffd063"/>
+  <g fill="#fff">
+    <rect x="57.71" y="12.91" width="53.27" height="4.72"/>
+    <rect x="57.71" y="23.7" width="53.27" height="4.72"/>
+    <rect x="57.71" y="34.5" width="53.27" height="4.72"/>
+    <rect x="57.71" y="45.3" width="53.27" height="4.72"/>
+    <rect x="57.71" y="56.19" width="53.27" height="4.72"/>
+  </g>
 </svg>
