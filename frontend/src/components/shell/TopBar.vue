@@ -3,6 +3,8 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ChevronLeft, ChevronRight, Menu, PanelLeft } from '@lucide/vue'
 import { VIEWS, type CalendarView } from '@/router'
+import branding from '@branding'
+import AppLogo from '@/components/AppLogo.vue'
 import AccountMenu from './AccountMenu.vue'
 import SearchField from './SearchField.vue'
 import UiButton from '@/components/ui/UiButton.vue'
@@ -32,6 +34,17 @@ const viewOptions = computed(() => VIEWS.map((value) => ({ value, label: t(`view
       <Menu v-if="compact" />
       <PanelLeft v-else />
     </button>
+    <!-- As wide as the sidebar below it, so Today starts where the calendar does. Left out on
+         narrower screens, where the range title needs the room. -->
+    <RouterLink
+      v-if="!compact"
+      to="/"
+      class="hidden w-[188px] shrink-0 items-center gap-2.5 pr-4 lg:flex"
+      data-testid="app-logo"
+    >
+      <AppLogo />
+      <span class="truncate text-[17px] font-semibold tracking-[-0.02em]">{{ branding.name }}</span>
+    </RouterLink>
     <template v-if="!compact">
       <UiButton size="sm" class="ml-1" @click="emit('today')">{{ $t('shell.today') }}</UiButton>
       <div class="flex">

@@ -9,6 +9,7 @@ import {
 } from 'reka-ui'
 import { X } from '@lucide/vue'
 import branding from '@branding'
+import AppLogo from '@/components/AppLogo.vue'
 
 const open = defineModel<boolean>('open', { required: true })
 </script>
@@ -22,7 +23,8 @@ const open = defineModel<boolean>('open', { required: true })
         data-testid="drawer"
       >
         <div class="flex h-14 shrink-0 items-center justify-between border-b border-line pr-2 pl-4">
-          <DialogTitle class="text-base font-semibold tracking-[-0.02em]">
+          <DialogTitle class="flex items-center gap-3 text-[17px] font-semibold tracking-[-0.02em]">
+            <AppLogo />
             {{ branding.name }}
           </DialogTitle>
           <DialogDescription class="sr-only">{{ $t('shell.drawerDescription') }}</DialogDescription>

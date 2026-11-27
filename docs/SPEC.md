@@ -24,6 +24,8 @@ The people who will use it:
 - English UI built on i18n so that other languages can be added by dropping in a file
 - Light and dark theme
 
+The app's name lives only in `branding.json` at the repository root (app name, short name, description, theme colour); the backend, the frontend and the web manifest all read it from there. The icon is the mark from the owner's logo, kept in `frontend/public/icon.svg` as the favicon, the source of the PWA icons and the logo in the top bar and the phone drawer; the app shows it next to the name rather than using the wordmark, so a rename needs no new artwork in the app, and as a picture it is exempt from the colour rules of section 11. The source artwork and the wordmark versions are kept outside the repository and published on a CDN for the README and the website.
+
 ### Out of scope
 
 Do not build these, and do not add hooks or abstractions in anticipation of them:
@@ -358,7 +360,7 @@ Routes: `/setup`, `/login`, `/invite/:token`, `/reset/:token`, the calendar at `
 
 Design for a phone first, then widen.
 
-**Desktop** (wide viewport): a collapsible sidebar with a mini month for navigation, the calendar list and tag filters; a top bar with today, previous and next, the current range as a title, the view switcher and search. Default view is week.
+**Desktop** (wide viewport): a collapsible sidebar with a mini month for navigation, the calendar list and tag filters; a top bar with the app icon and name (on screens at least 1024 px wide, where there is room), today, previous and next, the current range as a title, the view switcher and search. Default view is week.
 
 **Phone** (narrow viewport): no sidebar, a drawer in its place. A compact top bar. A floating button creates an event. Swiping left or right moves to the previous or next range. Default view is agenda.
 
