@@ -48,7 +48,7 @@ You need Docker with Compose, a domain name pointing at the machine, and a rever
 1. Get the example Compose file and create the data directory. The container runs as user 1000, so that user has to own it:
 
    ```sh
-   mkdir calendar && cd calendar
+   mkdir k-calendar && cd k-calendar
    curl -fsSLO https://raw.githubusercontent.com/K-cermak/K-Calendar/main/docker-compose.yml
    mkdir data && sudo chown 1000:1000 data
    ```
