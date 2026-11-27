@@ -110,6 +110,7 @@ function more(): void {
               {{ $t('event.moreOptions') }}
             </button>
             <span class="flex-1" />
+            <UiButton size="sm" @click="open = false">{{ $t('common.cancel') }}</UiButton>
             <UiButton type="submit" variant="primary" size="sm" :loading="pending">
               {{ $t('common.save') }}
             </UiButton>

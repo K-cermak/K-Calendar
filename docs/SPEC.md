@@ -386,7 +386,7 @@ The time grid scrolls to the current time on load and shows a line for now. All-
 
 ### Interactions
 
-- **Quick create**: clicking an empty slot, or dragging across a range, opens a small popover with a title field, the time already filled in, and a calendar selector. Enter saves. A "more options" link opens the full editor with what was typed so far. On a phone, tapping a slot or the floating button opens the full editor as a bottom sheet.
+- **Quick create**: clicking an empty slot, or dragging across a range, opens a small popover with a title field, the time already filled in, and a calendar selector. Enter or Save saves it, Cancel closes it. A "more options" link opens the full editor with what was typed so far. On a phone, tapping a slot or the floating button opens the full editor as a bottom sheet.
 - **Event detail**: clicking an event opens a popover (bottom sheet on a phone) with its details and edit and delete actions.
 - **Drag and drop**: move between times and days, resize from the bottom edge, drag between the all-day strip and the grid. On touch devices a long press starts the drag, so that scrolling still works.
 - **Search**: a field in the top bar (an icon that expands on a phone) with results in a dropdown as the user types.
