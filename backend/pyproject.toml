@@ -1,6 +1,6 @@
 [project]
 name = "calendar-backend"
-version = "0.1.0"
+version = "0.2.0"
 description = "Backend of the self-hosted calendar app"
 license = "MIT"
 requires-python = ">=3.15,<3.16"
