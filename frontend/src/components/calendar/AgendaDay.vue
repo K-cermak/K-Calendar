@@ -25,12 +25,13 @@ function timeLabel(o: Occurrence): string {
     <li v-for="item in items" :key="item.id">
       <button
         type="button"
-        class="flex w-full cursor-pointer items-start gap-3 px-2 py-1.5 text-left hover:bg-hover-tint pointer-coarse:min-h-11 pointer-coarse:items-center"
+        class="flex w-full cursor-pointer items-baseline gap-3 px-2 py-1.5 text-left hover:bg-hover-tint pointer-coarse:py-3"
         :data-testid="`agenda-${item.id}`"
         @click="emit('open', item, $event.currentTarget as HTMLElement)"
       >
+        <!-- Text of two sizes lines up on its baseline; the bar stands on it and dips a little. -->
         <span
-          class="mt-1 h-3.5 w-0.5 shrink-0 pointer-coarse:mt-0"
+          class="relative top-0.5 h-3.5 w-0.5 shrink-0"
           :style="{ background: colorVar(item.color) }"
           aria-hidden="true"
         />
@@ -46,7 +47,7 @@ function timeLabel(o: Occurrence): string {
           v-if="tagStyle === 'markers'"
           :tags="item.tags"
           mode="markers"
-          class="mt-1.5 shrink-0 pointer-coarse:mt-0"
+          class="shrink-0"
         />
       </button>
     </li>

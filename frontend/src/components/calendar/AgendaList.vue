@@ -92,10 +92,11 @@ function dayLabel(day: string): string {
     <section
       v-for="group in groups"
       :key="group.day"
-      class="flex border-b border-line px-4 py-3 sm:px-6"
+      class="flex items-baseline border-b border-line px-4 py-3 sm:px-6"
     >
+      <!-- On the baseline of the first event, whatever the sizes of the two texts. -->
       <h2
-        class="ui-numeric w-24 shrink-0 pt-1 font-mono text-label text-muted sm:w-32"
+        class="ui-numeric w-24 shrink-0 font-mono text-label text-muted sm:w-32"
         :class="today && group.day === today.toString() && 'text-accent!'"
       >
         {{ dayLabel(group.day) }}
