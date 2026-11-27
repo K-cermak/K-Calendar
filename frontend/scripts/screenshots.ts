@@ -1,11 +1,11 @@
-// Renders the README screenshots in docs/screenshots from a fresh instance filled with a sample week.
+// Renders the README and website screenshots in Images from a fresh instance filled with a sample week.
 // Run with `just screenshots`, which starts that instance; the base URL is the first argument.
 import { mkdirSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { chromium, devices, request, type APIRequestContext, type Browser } from '@playwright/test'
 
 const base = process.argv[2] ?? 'http://127.0.0.1:18200'
-const outDir = fileURLToPath(new URL('../../docs/screenshots/', import.meta.url))
+const outDir = fileURLToPath(new URL('../../Images/', import.meta.url))
 mkdirSync(outDir, { recursive: true })
 
 const zone = 'Europe/Prague'
@@ -146,10 +146,18 @@ async function fill(api: APIRequestContext): Promise<void> {
 async function shoot(
   browser: Browser,
   file: string,
-  options: { theme: 'light' | 'dark'; phone?: boolean; path: string; open?: string },
+  options: {
+    theme: 'light' | 'dark'
+    phone?: boolean
+    path: string
+    open?: string
+    // 2 for the website, which wants sharp pictures on high-density screens.
+    scale?: number
+  },
 ): Promise<void> {
   const context = await browser.newContext({
     ...(options.phone ? devices['Pixel 7'] : { viewport: { width: 1440, height: 900 } }),
+    ...(options.scale ? { deviceScaleFactor: options.scale } : {}),
     baseURL: base,
     colorScheme: options.theme,
     timezoneId: zone,
@@ -171,7 +179,7 @@ async function shoot(
   await page.waitForTimeout(600)
   await page.screenshot({ path: outDir + file })
   await context.close()
-  console.log(`docs/screenshots/${file}`)
+  console.log(`Wrote Images/${file}`)
 }
 
 const api = await request.newContext({ baseURL: base })
@@ -179,12 +187,15 @@ await fill(api)
 await api.dispose()
 
 const browser = await chromium.launch()
-await shoot(browser, 'week-light.png', { theme: 'light', path: `/week/${day(0)}` })
-await shoot(browser, 'week-dark.png', { theme: 'dark', path: `/week/${day(0)}` })
-await shoot(browser, 'event.png', {
-  theme: 'light',
-  path: `/week/${day(0)}`,
-  open: 'Dentist',
-})
-await shoot(browser, 'phone.png', { theme: 'light', phone: true, path: `/agenda/${day(0)}` })
+const week = `/week/${day(0)}`
+const agenda = `/agenda/${day(0)}`
+await shoot(browser, 'github-week-light.png', { theme: 'light', path: week })
+await shoot(browser, 'github-week-dark.png', { theme: 'dark', path: week })
+await shoot(browser, 'github-event.png', { theme: 'light', path: week, open: 'Dentist' })
+await shoot(browser, 'github-phone.png', { theme: 'light', phone: true, path: agenda })
+for (const theme of ['light', 'dark'] as const) {
+  await shoot(browser, `web-week-${theme}.png`, { theme, path: week, scale: 2 })
+  await shoot(browser, `web-event-${theme}.png`, { theme, path: week, open: 'Dentist', scale: 2 })
+  await shoot(browser, `web-phone-${theme}.png`, { theme, phone: true, path: agenda })
+}
 await browser.close()
