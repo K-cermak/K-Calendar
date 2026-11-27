@@ -2,7 +2,12 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <!-- resizes-content: on Android the keyboard shrinks the layout, so a sheet's buttons stay visible.
+         maximum-scale=1: the app does not zoom like a page (src/zoom.ts). -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content, maximum-scale=1"
+    />
     <meta name="description" content="%BRANDING_DESCRIPTION%" />
     <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff" />
     <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0a0a0a" />

@@ -55,6 +55,13 @@
   --shadow-float: var(--float);
 }
 
+/* No double-tap zoom: the app does not zoom like a page (src/zoom.ts). */
+@layer base {
+  html {
+    touch-action: manipulation;
+  }
+}
+
 /* Touch devices keep :hover after a tap, so hover styles only apply to a real pointer. */
 @custom-variant hover {
   @media (hover: hover) and (pointer: fine) {

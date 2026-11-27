@@ -16,6 +16,8 @@ async function expectAccessible(page: Page, where: string): Promise<void> {
   )
   const { violations } = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
+    // The app does not zoom like a page, by the owner's decision (SPEC 11, Zoom).
+    .disableRules(['meta-viewport'])
     // SPEC 11 sets hour labels and day numbers in the faint colour, which in the light theme is
     // below 4.5:1. Left out until the spec decides between that look and the contrast.
     .exclude('.cal-fc-slot-header__inner')

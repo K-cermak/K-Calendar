@@ -378,6 +378,7 @@ The time grid scrolls to the current time on load and shows a line for now. All-
 - **Drag and drop**: move between times and days, resize from the bottom edge, drag between the all-day strip and the grid. On touch devices a long press starts the drag, so that scrolling still works.
 - **Search**: a field in the top bar (an icon that expands on a phone) with results in a dropdown as the user types.
 - **Undo**: after a delete or a move, a toast offers undo for a few seconds.
+- **Zoom**: the app does not zoom like a web page: no pinch or double-tap zoom, and no zoom when a field gets focus on iOS (the viewport's `maximum-scale=1`, plus cancelled pinch gestures on iOS, which ignores it). On Android the on-screen keyboard shrinks the layout (`interactive-widget=resizes-content`), so the buttons of a sheet stay in view. Decided by the owner, as in K-Notes; because of it the axe rule `meta-viewport` is switched off in the accessibility test.
 
 ### Visual design
 
