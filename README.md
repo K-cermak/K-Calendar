@@ -170,4 +170,4 @@ The app's name lives only in `branding.json`. How it is built and why is describ
 
 ## License
 
-MIT, see [LICENSE](LICENSE).
+MIT, see [LICENSE.md](LICENSE.md).
