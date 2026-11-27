@@ -41,6 +41,9 @@ export default defineConfig({
       injectRegister: false,
       injectManifest: {
         globPatterns: ['**/*.{js,css,html,woff2,png,svg}'],
+        // The captcha frame's Content-Security-Policy depends on its query, so it always comes from
+        // the server rather than from a cached copy.
+        globIgnores: ['captcha.html'],
       },
       manifest: {
         name: branding.name,
@@ -65,6 +68,14 @@ export default defineConfig({
       },
     }),
   ],
+  build: {
+    rollupOptions: {
+      input: {
+        main: fileURLToPath(new URL('./index.html', import.meta.url)),
+        captcha: fileURLToPath(new URL('./captcha.html', import.meta.url)),
+      },
+    },
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),

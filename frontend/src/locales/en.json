@@ -293,6 +293,35 @@
       "label": "Allow anyone to create an account",
       "hint": "When off, people can only join through an invite link."
     },
+    "captcha": {
+      "title": "Captcha",
+      "description": "Ask people who sign in or create an account to prove they are not a bot. Single sign-on is not affected.",
+      "provider": "Captcha",
+      "providers": {
+        "none": "Off",
+        "recaptcha": "Google reCAPTCHA v2",
+        "turnstile": "Cloudflare Turnstile",
+        "hcaptcha": "hCaptcha",
+        "altcha": "ALTCHA (runs on this server)"
+      },
+      "hints": {
+        "none": "Anyone can try to sign in or register without a check.",
+        "recaptcha": "Use a v2 “I’m not a robot” checkbox key. Google sees the address and browser of everyone who opens the form.",
+        "turnstile": "Cloudflare sees the address and browser of everyone who opens the form.",
+        "hcaptcha": "hCaptcha sees the address and browser of everyone who opens the form.",
+        "altcha": "A short calculation in the browser, checked by this server. Needs no keys and tells no third party."
+      },
+      "placement": "Ask on",
+      "placements": {
+        "login": "Sign-in",
+        "registration": "Registration",
+        "both": "Both"
+      },
+      "siteKey": "Site key",
+      "secretKey": "Secret key",
+      "secretKeyKept": "A secret key is saved. Leave this empty to keep it.",
+      "test": "Solve the captcha to confirm the keys work"
+    },
     "limits": {
       "title": "Limits",
       "range": "Enter a whole number from {min} to {max}.",
@@ -550,5 +579,10 @@
   "oidc": {
     "signIn": "Sign in with {provider}",
     "link": "Link {provider}"
+  },
+  "captcha": {
+    "title": "Captcha",
+    "failed": "The captcha could not be loaded.",
+    "retry": "Try again"
   }
 }

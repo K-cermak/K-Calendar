@@ -3,16 +3,19 @@ import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { api, call } from '@/api/client'
 import { signedIn } from '@/api/session'
+import { useCaptcha } from '@/composables/useCaptcha'
 import { useSubmit } from '@/composables/useSubmit'
 import { deviceTimeZone } from '@/device'
 import AccountForm from '@/components/AccountForm.vue'
 import AuthLayout from '@/components/AuthLayout.vue'
+import CaptchaFrame from '@/components/CaptchaFrame.vue'
 import UiNotice from '@/components/ui/UiNotice.vue'
 
 const route = useRoute()
 const router = useRouter()
 const check = useSubmit()
-const { pending, error, attempt } = useSubmit()
+const { pending, error, failure, attempt } = useSubmit()
+const { config: captcha, token: captchaToken, afterFailure } = useCaptcha('registration')
 
 const token = String(route.params.token)
 const checked = ref(false)
@@ -38,11 +41,15 @@ async function submit(): Promise<void> {
           display_name: displayName.value,
           password: password.value,
           timezone: deviceTimeZone(),
+          captcha_token: captchaToken.value,
         },
       }),
     ),
   )
-  if (!me) return
+  if (!me) {
+    await afterFailure(failure.value)
+    return
+  }
   signedIn(me)
   await router.replace('/')
 }
@@ -64,6 +71,14 @@ async function submit(): Promise<void> {
       :pending="pending"
       :error="error"
       @submit="submit"
-    />
+    >
+      <CaptchaFrame
+        v-if="captcha"
+        ref="captchaFrame"
+        v-model="captchaToken"
+        :provider="captcha.provider"
+        :site-key="captcha.site_key"
+      />
+    </AccountForm>
   </AuthLayout>
 </template>

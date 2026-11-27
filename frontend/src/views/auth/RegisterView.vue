@@ -3,13 +3,16 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { api, call } from '@/api/client'
 import { signedIn } from '@/api/session'
+import { useCaptcha } from '@/composables/useCaptcha'
 import { useSubmit } from '@/composables/useSubmit'
 import { deviceTimeZone } from '@/device'
 import AccountForm from '@/components/AccountForm.vue'
 import AuthLayout from '@/components/AuthLayout.vue'
+import CaptchaFrame from '@/components/CaptchaFrame.vue'
 
 const router = useRouter()
-const { pending, error, attempt } = useSubmit()
+const { pending, error, failure, attempt } = useSubmit()
+const { config: captcha, token: captchaToken, afterFailure } = useCaptcha('registration')
 
 const email = ref('')
 const displayName = ref('')
@@ -24,11 +27,15 @@ async function submit(): Promise<void> {
           display_name: displayName.value,
           password: password.value,
           timezone: deviceTimeZone(),
+          captcha_token: captchaToken.value,
         },
       }),
     ),
   )
-  if (!me) return
+  if (!me) {
+    await afterFailure(failure.value)
+    return
+  }
   signedIn(me)
   await router.replace('/')
 }
@@ -44,7 +51,15 @@ async function submit(): Promise<void> {
       :pending="pending"
       :error="error"
       @submit="submit"
-    />
+    >
+      <CaptchaFrame
+        v-if="captcha"
+        ref="captchaFrame"
+        v-model="captchaToken"
+        :provider="captcha.provider"
+        :site-key="captcha.site_key"
+      />
+    </AccountForm>
     <p class="text-muted">
       {{ $t('register.haveAccount') }}
       <RouterLink to="/login" class="font-medium text-accent">{{ $t('login.submit') }}</RouterLink>

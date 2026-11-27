@@ -17,15 +17,22 @@ export default defineConfig({
     { name: 'setup', testMatch: /setup\.spec\.ts/, use: { ...devices['Desktop Chrome'] } },
     {
       name: 'desktop',
-      testIgnore: /setup\.spec\.ts/,
+      testIgnore: /(setup|captcha)\.spec\.ts/,
       dependencies: ['setup'],
       use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 860 } },
     },
     {
       name: 'phone',
-      testIgnore: /setup\.spec\.ts/,
+      testIgnore: /(setup|captcha)\.spec\.ts/,
       dependencies: ['setup'],
       use: { ...devices['Pixel 7'] },
+    },
+    // Turns on a captcha for the whole instance, so it waits until the other tests are done.
+    {
+      name: 'captcha',
+      testMatch: /captcha\.spec\.ts/,
+      dependencies: ['desktop', 'phone'],
+      use: { ...devices['Desktop Chrome'] },
     },
   ],
 })
