@@ -94,3 +94,49 @@ test('dragging an event moves it to another day and time', async ({ page, isMobi
   }
   expect(moved.start).toBe(`${WEDNESDAY}T14:00:00`)
 })
+
+test('closing the editor with changes asks to save, cancel or discard', async ({
+  page,
+  isMobile,
+}) => {
+  await createEvent(page, {
+    title: 'Dentist',
+    start: `${MONDAY}T08:00:00`,
+    end: `${MONDAY}T09:00:00`,
+    tags: ['health'],
+    rrule: 'FREQ=WEEKLY',
+  })
+  await openGrid(page, isMobile, MONDAY)
+  const editor = page.getByTestId('event-editor')
+  const prompt = page.getByTestId('unsaved-dialog')
+  const openEditor = async () => {
+    await eventBlock(page, 'Dentist').click()
+    await page.getByTestId('detail-edit').click()
+    await expect(editor).toBeVisible()
+  }
+
+  // Unchanged, it closes without a question, though the fields were filled from a repeating event.
+  await openEditor()
+  await page.keyboard.press('Escape')
+  await expect(editor).toHaveCount(0)
+
+  await openEditor()
+  await editor.getByLabel('Title').fill('Dentist at 8')
+  await page.keyboard.press('Escape')
+  await prompt.getByRole('button', { name: 'Cancel' }).click()
+  await expect(editor.getByLabel('Title')).toHaveValue('Dentist at 8')
+
+  await page.getByRole('button', { name: 'Close' }).click()
+  await prompt.getByRole('button', { name: 'Discard' }).click()
+  await expect(editor).toHaveCount(0)
+  await expect(eventBlock(page, 'Dentist')).toBeVisible()
+
+  await openEditor()
+  await editor.getByLabel('Title').fill('Dentist at 8')
+  await page.mouse.click(5, 400)
+  await expect(prompt.getByRole('button', { name: 'Save' })).toBeFocused()
+  await page.keyboard.press('Enter')
+  await chooseScope(page, 'This event')
+  await expect(editor).toHaveCount(0)
+  await expect(eventBlock(page, 'Dentist at 8')).toBeVisible()
+})

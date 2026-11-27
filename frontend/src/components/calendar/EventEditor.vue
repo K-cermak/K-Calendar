@@ -1,7 +1,15 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useQuery } from '@tanstack/vue-query'
+import {
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogOverlay,
+  AlertDialogPortal,
+  AlertDialogRoot,
+  AlertDialogTitle,
+} from 'reka-ui'
 import { calendarsQuery, eventApi } from '@/api/calendar'
 import type { EventDetail } from '@/api/client'
 import { useMe } from '@/api/session'
@@ -36,6 +44,9 @@ const scopes = useScopeStore()
 const draft = ref<Draft | null>(null)
 const moreOptions = ref(false)
 const attempted = ref(false)
+// The draft as opened, to tell whether closing would lose anything.
+const initial = ref('')
+const askingToSave = ref(false)
 // A new key per opening resets the repeat field to the event being edited.
 const session = ref(0)
 
@@ -51,11 +62,45 @@ watch(
     moreOptions.value =
       !!draft.value.color || (!draft.value.all_day && draft.value.timezone !== me.value?.timezone)
     attempted.value = false
+    askingToSave.value = false
     error.value = null
     session.value += 1
+    // After the fields have mounted, in case one of them tidies the value it was given.
+    void nextTick(() => (initial.value = JSON.stringify(draft.value)))
   },
   { immediate: true },
 )
+
+const changed = computed(() => !!draft.value && JSON.stringify(draft.value) !== initial.value)
+
+/**
+ * Esc, a click beside the editor and its close button ask before changes are lost; they are as
+ * easily made by accident as on purpose. The Cancel button means discard and closes at once.
+ */
+function requestClose(value: boolean): void {
+  if (value || pending.value) return
+  if (changed.value) askingToSave.value = true
+  else open.value = false
+}
+
+function discard(): void {
+  askingToSave.value = false
+  open.value = false
+}
+
+// Enter then saves; the first button, which the dialog would focus, throws the changes away.
+function focusSave(event: Event): void {
+  const button = (event.target as HTMLElement | null)?.querySelector<HTMLElement>('[data-save]')
+  if (!button) return
+  event.preventDefault()
+  button.focus()
+}
+
+// Save keeps the editor open when the event is invalid or the scope question is cancelled.
+async function saveFromPrompt(): Promise<void> {
+  askingToSave.value = false
+  await save()
+}
 
 // Until the user picks reminders, a new event shows the default of the calendar it goes into.
 const reminders = computed<number[]>({
@@ -120,7 +165,11 @@ async function save(): Promise<void> {
 </script>
 
 <template>
-  <UiSheet v-model:open="open" :title="t(editing ? 'event.editTitle' : 'event.newTitle')">
+  <UiSheet
+    :open="open"
+    :title="t(editing ? 'event.editTitle' : 'event.newTitle')"
+    @update:open="requestClose"
+  >
     <form
       v-if="draft"
       class="flex flex-col gap-4 pt-1"
@@ -267,4 +316,29 @@ async function save(): Promise<void> {
       </div>
     </form>
   </UiSheet>
+
+  <AlertDialogRoot :open="askingToSave" @update:open="(value) => (askingToSave = value)">
+    <AlertDialogPortal>
+      <AlertDialogOverlay class="ui-overlay" />
+      <AlertDialogContent
+        class="ui-dialog"
+        data-testid="unsaved-dialog"
+        @open-auto-focus="focusSave"
+      >
+        <AlertDialogTitle class="ui-dialog__title">{{ $t('event.unsavedTitle') }}</AlertDialogTitle>
+        <AlertDialogDescription class="text-muted">
+          {{ $t('event.unsavedMessage') }}
+        </AlertDialogDescription>
+        <!-- Plain buttons: Reka's Action and Cancel close the dialog before the click handler runs. -->
+        <div class="ui-dialog__actions">
+          <UiButton variant="danger" @click="discard">{{ $t('event.discard') }}</UiButton>
+          <span class="flex-1" />
+          <UiButton @click="askingToSave = false">{{ $t('common.cancel') }}</UiButton>
+          <UiButton variant="primary" data-save @click="saveFromPrompt">{{
+            $t('common.save')
+          }}</UiButton>
+        </div>
+      </AlertDialogContent>
+    </AlertDialogPortal>
+  </AlertDialogRoot>
 </template>
