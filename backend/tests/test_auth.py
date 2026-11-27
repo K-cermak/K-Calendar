@@ -5,6 +5,7 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from sqlalchemy import select
 
+from app.branding import get_branding
 from app.db import Database
 from app.models import AuthSession
 from tests.conftest import ADMIN, PASSWORD, Clock, setup_admin
@@ -13,7 +14,7 @@ from tests.conftest import ADMIN, PASSWORD, Clock, setup_admin
 def test_config_before_and_after_setup(client: TestClient) -> None:
     config = client.get("/api/v1/config").json()
     assert config == {
-        "app_name": "Calendar",
+        "app_name": get_branding().name,
         "version": config["version"],
         "setup_required": True,
         "registration_open": False,

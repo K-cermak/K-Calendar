@@ -1,8 +1,8 @@
-# Calendar
+# K-Calendar
 
 A simple, self-hosted personal calendar. Web app, installable on phones as a PWA, shipped as one Docker image, released as open source under MIT. Several people can have accounts on one instance, but nobody shares anything with anybody: every calendar belongs to exactly one user.
 
-"Calendar" is a working name. It lives only in `branding.json`; never hard-code it anywhere else.
+"K-Calendar" is a working name. It lives only in `branding.json`; never hard-code it anywhere else.
 
 ## Read these first
 

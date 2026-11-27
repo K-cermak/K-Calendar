@@ -1,6 +1,6 @@
 {
-  "name": "Calendar",
-  "short_name": "Calendar",
+  "name": "K-Calendar",
+  "short_name": "K-Calendar",
   "description": "A self-hosted personal calendar",
   "theme_color": "#171717"
 }

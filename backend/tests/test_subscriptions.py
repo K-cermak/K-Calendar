@@ -11,6 +11,7 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from app import scheduler
+from app.branding import get_branding
 from app.config import Settings
 from app.db import Database
 from app.services import subscriptions
@@ -100,7 +101,7 @@ def test_subscribing_fetches_at_once_and_is_read_only(admin: TestClient, feed: t
     )
     assert refused.json()["code"] == "read_only_calendar"
     assert admin.delete(f"/api/v1/events/{event_id}").json()["code"] == "read_only_calendar"
-    assert state.requests[0]["user-agent"].startswith("Calendar/")
+    assert state.requests[0]["user-agent"].startswith(f"{get_branding().name}/")
 
 
 def test_refresh_sends_conditional_headers_and_keeps_events_on_304(

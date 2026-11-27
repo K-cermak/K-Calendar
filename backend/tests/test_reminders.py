@@ -9,6 +9,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import select
 
 from app import scheduler
+from app.branding import get_branding
 from app.config import Settings
 from app.db import Database
 from app.models import NotificationLog, Reminder
@@ -489,7 +490,7 @@ def test_invite_and_reset_emails(
     assert unknown.status_code == 204
     assert len(smtp.messages) == count
     assert admin.post("/api/v1/admin/test-email").status_code == 204
-    assert smtp.messages[-1]["Subject"] == "Calendar: test e-mail"
+    assert smtp.messages[-1]["Subject"] == f"{get_branding().name}: test e-mail"
 
 
 def test_reset_request_without_smtp(
