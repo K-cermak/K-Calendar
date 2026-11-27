@@ -135,6 +135,19 @@ def test_expired_session_is_refused(admin: TestClient, clock: Clock) -> None:
     assert admin.get("/api/v1/me").status_code == 401
 
 
+def test_session_length_is_set_by_an_admin(
+    admin: TestClient, new_client: Callable[[], TestClient], clock: Clock
+) -> None:
+    assert admin.patch("/api/v1/admin/settings", json={"session_days": 2}).status_code == 200
+    browser = new_client()
+    response = browser.post(
+        "/api/v1/auth/login", json={"email": ADMIN["email"], "password": ADMIN["password"]}
+    )
+    assert f"max-age={2 * 24 * 3600}" in response.headers["set-cookie"].lower()
+    clock.advance(timedelta(days=3))
+    assert browser.get("/api/v1/me").status_code == 401
+
+
 def test_session_slides_forward_on_use(admin: TestClient, clock: Clock) -> None:
     clock.advance(timedelta(days=100))
     response = admin.get("/api/v1/me")

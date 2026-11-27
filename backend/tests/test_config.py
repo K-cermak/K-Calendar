@@ -20,7 +20,6 @@ def test_base_url_is_the_only_required_variable(monkeypatch: pytest.MonkeyPatch)
     settings = load_settings()
     assert not settings.smtp_enabled
     assert not settings.oidc_enabled
-    assert settings.session_days == 180
 
 
 def test_base_url_must_be_absolute(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -98,18 +97,11 @@ def test_trusted_proxies_must_be_addresses(monkeypatch: pytest.MonkeyPatch) -> N
         load_settings()
 
 
-def test_session_days_must_be_positive(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("APP_BASE_URL", BASE)
-    monkeypatch.setenv("APP_SESSION_DAYS", "0")
-    with pytest.raises(ConfigError, match="APP_SESSION_DAYS: must be at least 1"):
-        load_settings()
-
-
 def test_every_problem_is_listed(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("APP_BASE_URL", BASE)
-    monkeypatch.setenv("APP_SESSION_DAYS", "ten")
+    monkeypatch.setenv("APP_SMTP_PORT", "ten")
     monkeypatch.setenv("APP_LOG_LEVEL", "loud")
-    with pytest.raises(ConfigError, match=r"(?s)APP_SESSION_DAYS: .*integer.*APP_LOG_LEVEL: "):
+    with pytest.raises(ConfigError, match=r"(?s)APP_SMTP_PORT: .*integer.*APP_LOG_LEVEL: "):
         load_settings()
 
 

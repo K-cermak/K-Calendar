@@ -1423,11 +1423,18 @@ export interface components {
         InstanceSettings: {
             /** Registration Enabled */
             registration_enabled: boolean;
+            /**
+             * Session Days
+             * @description Days without use before a sign-in ends
+             */
+            session_days: number;
         };
         /** InstanceSettingsUpdate */
         InstanceSettingsUpdate: {
             /** Registration Enabled */
             registration_enabled?: boolean | null;
+            /** Session Days */
+            session_days?: number | null;
         };
         /** InstanceStatus */
         InstanceStatus: {

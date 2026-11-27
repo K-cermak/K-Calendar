@@ -32,7 +32,6 @@ class Settings(BaseSettings):
     base_url: str
     data_dir: Path = Path("/data")
     secret_key: str | None = None
-    session_days: int = 180
     trusted_proxies: Annotated[list[str], NoDecode] = []
 
     smtp_host: str | None = None
@@ -106,13 +105,6 @@ class Settings(BaseSettings):
     @classmethod
     def _lower(cls, value: object) -> object:
         return value.lower() if isinstance(value, str) else value
-
-    @field_validator("session_days")
-    @classmethod
-    def _positive(cls, value: int) -> int:
-        if value < 1:
-            raise ValueError("must be at least 1")
-        return value
 
     @field_validator("smtp_port")
     @classmethod

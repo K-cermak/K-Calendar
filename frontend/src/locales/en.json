@@ -278,6 +278,14 @@
       "label": "Allow anyone to create an account",
       "hint": "When off, people can only join through an invite link."
     },
+    "limits": {
+      "title": "Limits",
+      "range": "Enter a whole number from {min} to {max}.",
+      "session_days": {
+        "label": "Sign people out after inactivity (days)",
+        "hint": "How long people stay signed in without opening the app. Each visit resets it."
+      }
+    },
     "status": {
       "title": "Instance",
       "version": "Version",

@@ -16,7 +16,6 @@ services:
       APP_BASE_URL: https://calendar.example.com
       # The proxy reaches the container from the Docker network, so its address is in this range.
       APP_TRUSTED_PROXIES: "172.16.0.0/12"
-      # APP_SESSION_DAYS: "180"
       # APP_LOG_LEVEL: info
 
       # E-mail for reminders, invites and password reset.

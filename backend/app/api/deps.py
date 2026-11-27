@@ -10,6 +10,7 @@ from app.config import Settings
 from app.db import READ_METHODS, Database, DbSession
 from app.errors import ForbiddenError, UnauthorizedError
 from app.models import ApiToken, AuthSession, User
+from app.services import limits
 from app.services.auth import sessions, tokens
 from app.services.auth.throttle import LoginThrottle
 
@@ -32,11 +33,11 @@ def client_ip(request: Request) -> str:
     return request.client.host if request.client else ""
 
 
-def set_session_cookie(response: Response, settings: Settings, token: str) -> None:
+def set_session_cookie(response: Response, settings: Settings, db: Session, token: str) -> None:
     response.set_cookie(
         SESSION_COOKIE,
         token,
-        max_age=int(timedelta(days=settings.session_days).total_seconds()),
+        max_age=int(timedelta(days=limits.session_days(db)).total_seconds()),
         httponly=True,
         secure=settings.secure_cookies,
         samesite="lax",
@@ -83,8 +84,8 @@ def get_auth(request: Request, response: Response, db: DbSession, settings: AppS
         raise UnauthorizedError()
     session, user = found
     if sessions.touch_due(session):
-        _write(request, db, lambda writer: sessions.touch(writer, settings, session.id))
-        set_session_cookie(response, settings, token)
+        _write(request, db, lambda writer: sessions.touch(writer, session.id))
+        set_session_cookie(response, settings, db, token)
     return Auth(user=user, session=session)
 
 

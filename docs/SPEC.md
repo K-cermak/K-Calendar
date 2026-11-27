@@ -167,7 +167,7 @@ Integer primary keys. Every timestamp column whose name ends in `_utc` holds UTC
 
 **notification_log**: `reminder_id`, `occurrence_start`, `channel`, `status`, `error`, `attempts`, `sent_at_utc`. Unique on the first three columns.
 
-**settings**: key and value. Holds instance settings an admin can change at runtime (open registration) and generated secrets (VAPID keys).
+**settings**: key and value. Holds instance settings an admin can change at runtime (`registration_enabled`, `session_days`) and generated secrets (VAPID keys); a missing key means the default.
 
 **events_fts**: an FTS5 virtual table over title, description, location and tag names. See section 9.
 
@@ -223,7 +223,7 @@ The display zone is the one in the user's profile. If the device's zone differs 
 
 When the database has no users, the app shows a setup screen that creates the admin. When `APP_PASSWORD_LOGIN_ENABLED` is false, the setup screen offers the OIDC button in place of the password form, and the first user to sign in through it becomes the admin, regardless of `APP_OIDC_AUTO_PROVISION`. After that, accounts come from three places: an invite link created by an admin (sent by e-mail when SMTP is configured, otherwise shown for copying), self-registration if an admin has switched it on, or OIDC auto-provisioning if configured.
 
-The admin area lists users and can invite, deactivate or reactivate, delete, grant or revoke admin rights, produce a password reset link, and reset a user's TOTP. Admins do not create accounts by hand or set other users' passwords. It also shows instance status: version, whether SMTP, OIDC and push are configured, and a button to send a test e-mail. An admin cannot see other users' calendars.
+The admin area lists users and can invite, deactivate or reactivate, delete, grant or revoke admin rights, produce a password reset link, and reset a user's TOTP. Admins do not create accounts by hand or set other users' passwords. It also sets whether registration is open and the instance limits from section 14, and shows instance status: version, whether SMTP, OIDC and push are configured, and a button to send a test e-mail. An admin cannot see other users' calendars.
 
 There can be several admins. Two guards, enforced on the server and reflected in the UI by disabled controls:
 
@@ -238,7 +238,7 @@ Password reset goes by e-mail when SMTP is configured. Without SMTP, the login p
 
 Hash with Argon2id (`argon2-cffi`). Minimum length 10, no composition rules.
 
-A session is a random 32-byte token in an `HttpOnly`, `SameSite=Lax` cookie, marked `Secure` whenever `APP_BASE_URL` is https. Store only its SHA-256 hash. Sessions slide on use, up to `APP_SESSION_DAYS` (default 180). Settings lists active sessions and lets the user revoke each one. Changing the password revokes all other sessions.
+A session is a random 32-byte token in an `HttpOnly`, `SameSite=Lax` cookie, marked `Secure` whenever `APP_BASE_URL` is https. Store only its SHA-256 hash. Sessions slide on use, up to the sign-in length an admin sets (section 14, default 180 days). Settings lists active sessions and lets the user revoke each one. Changing the password revokes all other sessions.
 
 For requests authenticated by cookie, reject any state-changing method whose `Origin` (or `Sec-Fetch-Site`) shows it came from another site. Requests authenticated by a Bearer token skip this check.
 
@@ -470,7 +470,6 @@ Everything is configured by environment variables with the neutral prefix `APP_`
 | `APP_BASE_URL` | none | Public URL of the instance. Required. Used for links in e-mails, invite and reset links, the OIDC redirect, cookie security and origin checks. |
 | `APP_DATA_DIR` | `/data` | Database and generated secrets. |
 | `APP_SECRET_KEY` | generated | If unset, generated on first start and saved in `APP_DATA_DIR`. |
-| `APP_SESSION_DAYS` | `180` | Sliding session lifetime. |
 | `APP_TRUSTED_PROXIES` | none | Addresses whose `X-Forwarded-*` headers are believed. |
 | `APP_SMTP_HOST`, `APP_SMTP_PORT`, `APP_SMTP_USER`, `APP_SMTP_PASSWORD`, `APP_SMTP_FROM`, `APP_SMTP_SECURITY` | unset | E-mail. `APP_SMTP_SECURITY` is `starttls`, `ssl` or `none`. |
 | `APP_OIDC_DISCOVERY_URL`, `APP_OIDC_CLIENT_ID`, `APP_OIDC_CLIENT_SECRET` | unset | Setting these enables OIDC. |
@@ -483,6 +482,12 @@ Everything is configured by environment variables with the neutral prefix `APP_`
 | `APP_LOG_LEVEL` | `info` | |
 
 Validate configuration at startup and fail with a message that names the variable and the problem.
+
+One limit is not an environment variable but an instance setting an admin changes in the administration, stored in the `settings` table, with this default until changed (moved there from `APP_SESSION_DAYS` by the owner before 0.1.0, as in K-Notes):
+
+| Setting | Default | Range | Meaning |
+| --- | --- | --- | --- |
+| Sign people out after inactivity | `180` days | 1 to 3650 | Sliding session lifetime. A change applies to new sessions and to existing ones the next time they slide forward |
 
 ## 15. Security
 

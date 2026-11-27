@@ -262,3 +262,14 @@ def test_unknown_user_returns_404(admin: TestClient) -> None:
     assert admin.patch("/api/v1/admin/users/999", json={"is_active": False}).status_code == 404
     assert admin.post("/api/v1/admin/users/999/reset-link").status_code == 404
     assert admin.delete("/api/v1/admin/invites/999").status_code == 404
+
+
+def test_instance_settings_default_update_and_validation(admin: TestClient) -> None:
+    assert admin.get("/api/v1/admin/settings").json() == {"registration_enabled": False, "session_days": 180}
+    assert admin.patch("/api/v1/admin/settings", json={"session_days": 30}).json()["session_days"] == 30
+    # A partial update leaves the others as they are.
+    after = admin.patch("/api/v1/admin/settings", json={"registration_enabled": True}).json()
+    assert after == {"registration_enabled": True, "session_days": 30}
+    for invalid in (0, 3651, "long"):
+        response = admin.patch("/api/v1/admin/settings", json={"session_days": invalid})
+        assert response.status_code == 422, invalid

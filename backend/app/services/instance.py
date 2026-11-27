@@ -6,7 +6,7 @@ from app.config import Settings
 from app.models import Setting
 from app.schemas.admin import InstanceSettings, InstanceSettingsUpdate, InstanceStatus
 from app.schemas.public import PublicConfig
-from app.services import accounts
+from app.services import accounts, limits
 from app.services.notify import push
 from app.version import VERSION
 
@@ -37,12 +37,16 @@ def public_config(settings: Settings, db: Session) -> PublicConfig:
 
 
 def get_settings(db: Session) -> InstanceSettings:
-    return InstanceSettings(registration_enabled=registration_enabled(db))
+    return InstanceSettings(
+        registration_enabled=registration_enabled(db), session_days=limits.session_days(db)
+    )
 
 
 def update_settings(db: Session, update: InstanceSettingsUpdate) -> InstanceSettings:
     if update.registration_enabled is not None:
         db.merge(Setting(key=_REGISTRATION, value="true" if update.registration_enabled else "false"))
+    if update.session_days is not None:
+        limits.set_value(db, limits.SESSION_DAYS, update.session_days)
     db.commit()
     return get_settings(db)
 

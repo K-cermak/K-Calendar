@@ -66,7 +66,6 @@ All settings are environment variables. Only `APP_BASE_URL` is required. The ser
 | `APP_BASE_URL` | (required) | Public address, such as `https://calendar.example.com`, with no path |
 | `APP_DATA_DIR` | `/data` | Where the database and the generated secret key live |
 | `APP_SECRET_KEY` | generated | At least 32 characters. If unset, one is generated on first start and kept in `APP_DATA_DIR/secret.key`. Changing it makes two-step verification secrets unreadable |
-| `APP_SESSION_DAYS` | `180` | How long a sign-in lasts without use |
 | `APP_TRUSTED_PROXIES` | | Comma-separated addresses or networks of reverse proxies whose `X-Forwarded-*` headers are believed |
 | `APP_SMTP_HOST`, `APP_SMTP_PORT` | | Mail server. E-mail is on when the host and `APP_SMTP_FROM` are set |
 | `APP_SMTP_USER`, `APP_SMTP_PASSWORD` | | Sign-in at the mail server, if it needs one |

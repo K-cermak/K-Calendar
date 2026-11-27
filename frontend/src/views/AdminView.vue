@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useQuery, useQueryClient } from '@tanstack/vue-query'
 import {
@@ -99,6 +99,45 @@ async function revokeInvite(invite: PendingInvite): Promise<void> {
     )
     await invites.refetch()
   })
+}
+
+type InstanceSettings = components['schemas']['InstanceSettings']
+const LIMITS = {
+  session_days: { min: 1, max: 3650 },
+} as const
+type LimitKey = keyof typeof LIMITS
+const limitKeys = Object.keys(LIMITS) as LimitKey[]
+const limits = ref<Record<LimitKey, string>>({ session_days: '' })
+const limitErrors = ref<Partial<Record<LimitKey, string>>>({})
+const limitsSave = useSubmit()
+
+function showLimits(s: InstanceSettings): void {
+  limits.value = { session_days: String(s.session_days) }
+}
+watch(
+  () => instanceSettings.data.value,
+  (s) => {
+    if (s) showLimits(s)
+  },
+  { immediate: true },
+)
+
+async function saveLimits(): Promise<void> {
+  const body = {} as Record<LimitKey, number>
+  limitErrors.value = {}
+  for (const key of limitKeys) {
+    const value = Number(limits.value[key].trim())
+    const { min, max } = LIMITS[key]
+    if (!limits.value[key].trim() || !Number.isInteger(value) || value < min || value > max)
+      limitErrors.value[key] = i18n.t('admin.limits.range', { min, max })
+    body[key] = value
+  }
+  if (Object.keys(limitErrors.value).length) return
+  const ok = await limitsSave.run(async () => {
+    const saved = await call(() => api.PATCH('/api/v1/admin/settings', { body }))
+    queryClient.setQueryData(['admin', 'settings'], saved)
+  })
+  if (ok) toast.show(i18n.t('common.saved'))
 }
 
 async function setRegistration(value: boolean): Promise<void> {
@@ -351,6 +390,40 @@ async function deleteUser(user: AdminUser): Promise<void> {
         </span>
       </label>
       <UiNotice v-if="toggle.error.value" tone="error">{{ toggle.error.value }}</UiNotice>
+    </section>
+
+    <section class="flex flex-col gap-3">
+      <h2 class="ui-section-title">{{ $t('admin.limits.title') }}</h2>
+      <form
+        class="flex flex-col gap-4 sm:w-80"
+        novalidate
+        data-testid="instance-limits"
+        @submit.prevent="saveLimits"
+      >
+        <UiField
+          v-for="key in limitKeys"
+          :key="key"
+          :label="$t(`admin.limits.${key}.label`)"
+          :for="`limit-${key}`"
+          :hint="$t(`admin.limits.${key}.hint`)"
+          :error="limitErrors[key]"
+        >
+          <UiInput
+            :id="`limit-${key}`"
+            v-model="limits[key]"
+            inputmode="numeric"
+            :invalid="!!limitErrors[key]"
+          />
+        </UiField>
+        <UiNotice v-if="limitsSave.error.value" tone="error">{{ limitsSave.error.value }}</UiNotice>
+        <UiButton
+          type="submit"
+          class="self-start"
+          :disabled="limitsSave.pending.value || !instanceSettings.data.value"
+        >
+          {{ $t('common.save') }}
+        </UiButton>
+      </form>
     </section>
 
     <section v-if="status.data.value" class="flex flex-col gap-3" data-testid="instance-status">

@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Annotated
 
 from pydantic import BaseModel, Field
 
@@ -43,10 +44,12 @@ class PendingInvite(BaseModel):
 
 class InstanceSettings(BaseModel):
     registration_enabled: bool
+    session_days: int = Field(description="Days without use before a sign-in ends")
 
 
 class InstanceSettingsUpdate(BaseModel):
     registration_enabled: bool | None = None
+    session_days: Annotated[int, Field(ge=1, le=3650)] | None = None
 
 
 class InstanceStatus(BaseModel):

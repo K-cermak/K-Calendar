@@ -3,20 +3,17 @@ from datetime import timedelta
 from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
-from app.config import Settings
 from app.errors import NotFoundError
 from app.models import AuthSession, User
 from app.schemas.account import SessionInfo
-from app.services import clock
+from app.services import clock, limits
 from app.services.auth import credentials
 
 # Sliding the expiry on every request would turn every read into a write.
 TOUCH_INTERVAL = timedelta(hours=1)
 
 
-def create(
-    db: Session, settings: Settings, user: User, *, method: str, user_agent: str | None, ip: str | None
-) -> str:
+def create(db: Session, user: User, *, method: str, user_agent: str | None, ip: str | None) -> str:
     """Start a session and return its token, which is only ever stored as a hash."""
     token = credentials.new_token()
     now = clock.now()
@@ -27,7 +24,7 @@ def create(
             auth_method=method,
             created_at_utc=now,
             last_seen_at_utc=now,
-            expires_at_utc=now + timedelta(days=settings.session_days),
+            expires_at_utc=now + timedelta(days=limits.session_days(db)),
             user_agent=(user_agent or "")[:300] or None,
             ip=ip,
         )
@@ -54,13 +51,14 @@ def touch_due(session: AuthSession) -> bool:
     return clock.now() - session.last_seen_at_utc >= TOUCH_INTERVAL
 
 
-def touch(db: Session, settings: Settings, session_id: int) -> None:
+def touch(db: Session, session_id: int) -> None:
     session = db.get(AuthSession, session_id)
     if session is None:
         return
     now = clock.now()
     session.last_seen_at_utc = now
-    session.expires_at_utc = now + timedelta(days=settings.session_days)
+    # A changed sign-in length reaches an existing session the next time it slides forward.
+    session.expires_at_utc = now + timedelta(days=limits.session_days(db))
     db.commit()
 
 
