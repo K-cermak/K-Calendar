@@ -211,7 +211,7 @@ Imported events may carry rules the editor cannot represent. The server still ex
 
 `GET /api/v1/occurrences?start=…&end=…&tz=…` is what every view loads. For each occurrence it returns the UTC instants and also the wall-clock start and end in the requested display zone, as ISO strings without an offset.
 
-The frontend passes those wall-clock strings to FullCalendar, configured with the same named zone and no time zone plugin. In that mode FullCalendar treats the values as already being in the display zone and does no conversion, and after a drag it hands back wall-clock values in that zone. The client sends them to the server together with the display zone, and the server converts them into the event's own zone. The browser never needs a time zone database. Confirm this behaviour against the FullCalendar version you install at the start of Milestone 3. If it has changed, keep the principle (the server converts, the client passes wall-clock values through) and adapt the wiring.
+The frontend passes those wall-clock strings to FullCalendar, configured with the same named zone and no time zone plugin. In that mode FullCalendar treats the values as already being in the display zone and does no conversion, and after a drag it hands back wall-clock values in that zone. The client sends them to the server together with the display zone, and the server converts them into the event's own zone. The browser never needs a time zone database. If a FullCalendar upgrade changes this behaviour, keep the principle (the server converts, the client passes wall-clock values through) and adapt the wiring.
 
 The display zone is the one in the user's profile. If the device's zone differs from it (the user is travelling), show a dismissible banner offering to switch.
 
@@ -379,7 +379,7 @@ The time grid scrolls to the current time on load and shows a line for now. All-
 
 ### Visual design
 
-The owner wants the look of Vercel's design language, in the specific variant used across their other products. `docs/design/reference.css` is the stylesheet of one of those products (a contact form). Read it before building any UI. It is a reference for tokens, proportions and the feel of the interactions; do not import it or copy its class names. The calendar should look like it belongs to the same family as that form.
+The owner wants the look of Vercel's design language, in the specific variant used across their other products. It was taken from the stylesheet of one of those products (a contact form) and is now built into the design tokens in `frontend/src/styles/tokens.css` and the shared elements in `ui.css`, which K-Notes uses too. New UI builds on those and should look like it belongs to the same family.
 
 What defines the style:
 
@@ -501,7 +501,7 @@ Validate configuration at startup and fail with a message that names the variabl
 
 **CI.** GitHub Actions. On every push and pull request: lint, type checks and unit tests for both sides, a check that the generated API types are current, a Docker build, and the Playwright suite against that image. On a version tag: build for `linux/amd64` and `linux/arm64` and push to `ghcr.io` under the repository's own name, tagged with the version and `latest`.
 
-**Repository files.** `README.md` (what it is, a screenshot, quick start, configuration table, HTTPS note, backup and restore, admin CLI, how to add a translation, development setup), `LICENSE` (MIT), `CONTRIBUTING.md`, `CHANGELOG.md`.
+**Repository files.** `README.md` (what it is, a screenshot, quick start, configuration table, HTTPS note, backup and restore, admin CLI, how to add a translation, development setup), `LICENSE.md` (MIT), `CONTRIBUTING.md`. There is no changelog file: the notes of each GitHub release are written by hand, in the form given in `CONTRIBUTING.md`.
 
 ## 17. Testing
 

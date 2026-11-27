@@ -26,3 +26,9 @@ backend/.data/
 
 # Playwright MCP screenshots
 .playwright-mcp/
+
+# The owner's local notes and files, never committed
+/private/
+
+# Screenshots and logos, published on a CDN rather than kept in the repository
+/Images/
