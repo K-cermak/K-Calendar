@@ -16,6 +16,7 @@ from app.migrations import run_migrations
 from app.security import SecurityMiddleware, install_log_redaction
 from app.services.auth.oidc import OidcClient
 from app.services.auth.throttle import LoginThrottle
+from app.services.captcha import CaptchaVerifier
 from app.services.notify import push
 from app.spa import install_spa
 from app.version import VERSION
@@ -60,6 +61,7 @@ def create_app(settings: Settings | None = None, static_dir: Path | None = None)
     )
     app.state.settings = settings
     app.state.throttle = LoginThrottle()
+    app.state.captcha = CaptchaVerifier(settings)
     app.state.oidc = OidcClient(settings) if settings.oidc_enabled else None
     install_error_handlers(app)
     install_log_redaction()

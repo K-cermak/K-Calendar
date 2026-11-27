@@ -3,6 +3,8 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
+from app.schemas.admin import CAPTCHA_TOKEN_MAX
+
 Theme = Literal["system", "light", "dark"]
 # "auto" is week on a wide screen and agenda on a phone (SPEC 11).
 DefaultView = Literal["auto", "month", "week", "day", "agenda"]
@@ -22,13 +24,17 @@ class SetupRequest(BaseModel):
     timezone: str | None = Field(default=None, max_length=64, description="The browser's zone, if known")
 
 
+CaptchaToken = Field(default=None, max_length=CAPTCHA_TOKEN_MAX)
+
+
 class RegisterRequest(SetupRequest):
-    pass
+    captcha_token: str | None = CaptchaToken
 
 
 class LoginRequest(BaseModel):
     email: str = EMAIL
     password: str = PASSWORD
+    captcha_token: str | None = CaptchaToken
 
 
 class Me(BaseModel):
@@ -95,6 +101,7 @@ class InviteAccept(TokenRequest):
     display_name: str = DISPLAY_NAME
     password: str = PASSWORD
     timezone: str | None = Field(default=None, max_length=64)
+    captcha_token: str | None = CaptchaToken
 
 
 class PasswordReset(TokenRequest):

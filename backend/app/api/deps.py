@@ -13,6 +13,7 @@ from app.models import ApiToken, AuthSession, User
 from app.services import limits
 from app.services.auth import sessions, tokens
 from app.services.auth.throttle import LoginThrottle
+from app.services.captcha import CaptchaVerifier
 
 SESSION_COOKIE = "session"
 
@@ -25,8 +26,13 @@ def get_throttle(request: Request) -> LoginThrottle:
     return request.app.state.throttle
 
 
+def get_captcha(request: Request) -> CaptchaVerifier:
+    return request.app.state.captcha
+
+
 AppSettings = Annotated[Settings, Depends(get_settings)]
 Throttle = Annotated[LoginThrottle, Depends(get_throttle)]
+Captcha = Annotated[CaptchaVerifier, Depends(get_captcha)]
 
 
 def client_ip(request: Request) -> str:

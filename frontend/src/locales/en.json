@@ -122,7 +122,12 @@
     "unsupported_rrule": "This repetition is not supported.",
     "validation_error": "Some of the values are not valid.",
     "wrong_password": "The current password is not correct.",
-    "wrong_email": "The e-mail address does not match this account."
+    "wrong_email": "The e-mail address does not match this account.",
+    "captcha_failed": "Complete the captcha check.",
+    "captcha_unavailable": "The captcha service could not be reached. Try again.",
+    "captcha_secret_invalid": "The captcha provider does not accept this secret key.",
+    "captcha_site_key_required": "Enter the site key.",
+    "captcha_secret_key_required": "Enter the secret key."
   },
   "shell": {
     "openMenu": "Open menu",

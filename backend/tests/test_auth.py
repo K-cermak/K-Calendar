@@ -23,6 +23,7 @@ def test_config_before_and_after_setup(client: TestClient) -> None:
         "oidc_provider_name": "SSO",
         "email_enabled": False,
         "vapid_public_key": config["vapid_public_key"],
+        "captcha": None,
     }
     # Generated on first start: an uncompressed P-256 point, base64url without padding (87 chars).
     assert len(config["vapid_public_key"]) == 87

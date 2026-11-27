@@ -13,6 +13,7 @@ The people who will use it:
 
 - Accounts: first-run setup creates the admin; the admin invites further users; optional open registration
 - Password login, optional TOTP with recovery codes, optional OIDC login, personal API tokens
+- An optional captcha on sign-in and registration
 - Multiple calendars per user, each with a colour, each can be hidden
 - Events with title, start and end, all-day flag, time zone, location, description, optional own colour, coloured tags
 - Recurring events with exceptions, edited as "this event", "this and following" or "all events"
@@ -105,7 +106,7 @@ backend/
       notify/            push.py, email.py
       auth/              passwords, sessions, totp, oidc, tokens
     scheduler.py         the background loop
-    cli.py               admin commands (reset-password, disable-totp, make-admin)
+    cli.py               admin commands (reset-password, disable-totp, make-admin, disable-captcha)
     locales/en.json      texts for e-mails and push notifications
   tests/
 frontend/
@@ -167,7 +168,7 @@ Integer primary keys. Every timestamp column whose name ends in `_utc` holds UTC
 
 **notification_log**: `reminder_id`, `occurrence_start`, `channel`, `status`, `error`, `attempts`, `sent_at_utc`. Unique on the first three columns.
 
-**settings**: key and value. Holds instance settings an admin can change at runtime (`registration_enabled`, `session_days`) and generated secrets (VAPID keys); a missing key means the default.
+**settings**: key and value. Holds instance settings an admin can change at runtime (`registration_enabled`, `session_days`, and `captcha`: JSON with the provider, where it applies, the site key and the secret key) and generated secrets (VAPID keys); a missing key means the default.
 
 **events_fts**: an FTS5 virtual table over title, description, location and tag names. See section 9.
 
@@ -223,7 +224,7 @@ The display zone is the one in the user's profile. If the device's zone differs 
 
 When the database has no users, the app shows a setup screen that creates the admin. When `APP_PASSWORD_LOGIN_ENABLED` is false, the setup screen offers the OIDC button in place of the password form, and the first user to sign in through it becomes the admin, regardless of `APP_OIDC_AUTO_PROVISION`. After that, accounts come from three places: an invite link created by an admin (sent by e-mail when SMTP is configured, otherwise shown for copying), self-registration if an admin has switched it on, or OIDC auto-provisioning if configured.
 
-The admin area lists users and can invite, deactivate or reactivate, delete, grant or revoke admin rights, produce a password reset link, and reset a user's TOTP. Admins do not create accounts by hand or set other users' passwords. It also sets whether registration is open and the instance limits from section 14, and shows instance status: version, whether SMTP, OIDC and push are configured, and a button to send a test e-mail. An admin cannot see other users' calendars.
+The admin area lists users and can invite, deactivate or reactivate, delete, grant or revoke admin rights, produce a password reset link, and reset a user's TOTP. Admins do not create accounts by hand or set other users' passwords. It also sets whether registration is open, the captcha and the instance limits from section 14, and shows instance status: version, whether SMTP, OIDC and push are configured, and a button to send a test e-mail. An admin cannot see other users' calendars.
 
 There can be several admins. Two guards, enforced on the server and reflected in the UI by disabled controls:
 
@@ -234,7 +235,7 @@ Deactivating a user or revoking admin rights takes effect immediately: deactivat
 
 Any user can delete their own account in the security settings (`DELETE /api/v1/me`, not reachable with an API token). It is confirmed with the password, or, for an account that signs in only through OIDC, by typing its e-mail address. It removes all the user's data like an admin's delete, and the app forgets the cached data and goes to the login page. The last active admin cannot delete their account. (Added by the owner before 0.1.0, as in K-Notes.)
 
-Password reset goes by e-mail when SMTP is configured. Without SMTP, the login page says to ask the administrator, who can generate a link. For a locked-out admin: `docker exec <container> python -m app.cli reset-password <email>`. The CLI can also disable TOTP for a user (`disable-totp`) and promote a user to admin (`make-admin`).
+Password reset goes by e-mail when SMTP is configured. Without SMTP, the login page says to ask the administrator, who can generate a link. For a locked-out admin: `docker exec <container> python -m app.cli reset-password <email>`. The CLI can also disable TOTP for a user (`disable-totp`), promote a user to admin (`make-admin`) and turn off the captcha (`disable-captcha`).
 
 ### Passwords and sessions
 
@@ -266,6 +267,16 @@ Resolving who is logging in, in this order:
 4. Otherwise refuse with a message that the account has to be created by an administrator first.
 
 Never link on an unverified e-mail: that would let anyone who can set an arbitrary e-mail at the provider take over an account. A logged-in user can also link and unlink their OIDC identity in settings. Unlinking is refused if it would leave the account with no way to log in. `APP_PASSWORD_LOGIN_ENABLED=false` hides the password form for instances that want OIDC only, and is refused at startup unless OIDC is configured.
+
+### Captcha
+
+Optional, chosen by an admin in the administration, and off by default. (Added by the owner before 0.1.0, as in K-Notes.)
+
+- **Providers.** Google reCAPTCHA v2 (the "I'm not a robot" checkbox), Cloudflare Turnstile, hCaptcha, or ALTCHA. The first three are hosted: the browser loads their widget, and the server checks the token at their verification endpoint. ALTCHA is a proof of work that the server issues (`GET /auth/captcha/challenge`, 404 unless ALTCHA is chosen) and checks itself, with keys derived from the secret key; it needs no keys and contacts no third party. Each solved ALTCHA challenge is accepted once, remembered in memory until it expires, which is enough for one process.
+- **Where.** The admin chooses sign-in, registration or both. Registration covers open registration and invite links. Only the password step of sign-in asks; the TOTP step, first-run setup, password reset (the e-mail request and the links) and OIDC do not.
+- **Failures.** A missing or rejected token is refused with 400 `captcha_failed` before the password is checked, and does not count as a failed login. A provider that cannot be reached refuses the request with 502 `captcha_unavailable` rather than letting it through. Tokens work once, so the form shows a fresh widget after every failed attempt.
+- **Keys.** The site key and the secret key are kept in `settings`; the secret key is never sent back to a browser. New keys, or a new hosted provider, take effect only with a token solved against them, which the admin page collects with a test widget, so a mistyped key cannot lock everyone out. When the provider rejects the secret key itself, the admin sees `captcha_secret_invalid`. If the keys stop working later, `python -m app.cli disable-captcha` turns the captcha off.
+- **The frame.** The widget runs in a same-origin frame, `/captcha.html?provider=…&sitekey=…`, which passes the token to the form with `postMessage` and reports its height, so challenge pop-ups are not cut off. Only this page's Content-Security-Policy admits the provider's origins, from a fixed list per provider chosen by the `provider` parameter, and it allows `frame-ancestors 'self'`. The app's own policy (section 15) never changes: the service worker keeps `index.html` with the headers it was first fetched with, so a policy that followed the admin's setting would not reach installed apps. For the same reason the service worker does not cache `/captcha.html`.
 
 ### API tokens
 
@@ -437,7 +448,7 @@ Use `vite-plugin-pwa` in `injectManifest` mode, because the service worker needs
 
 Offline is read-only:
 
-- The app shell is precached, so the app opens without a network.
+- The app shell is precached, so the app opens without a network. The captcha frame `/captcha.html` is never precached or served from the cache, because its Content-Security-Policy depends on its query (section 6, Captcha).
 - GET requests for the current user, calendars and occurrences are cached at runtime with a network-first strategy that falls back to the cache.
 - While online, the app quietly prefetches occurrences from one month back to three months ahead, so that an offline user has more than the last screen they looked at.
 - When offline, show a banner, and disable everything that would write: no drag, no create, no edit buttons. Do not queue writes.
@@ -454,14 +465,14 @@ The main resources, as a guide to the shape rather than a complete list:
 
 | Area | Endpoints |
 | --- | --- |
-| Public | `GET /config` (app name, version, whether first-run setup is still needed, which login methods are enabled, whether registration is open, VAPID public key), `GET /health` |
-| Auth | `POST /auth/setup`, `/auth/login`, `/auth/login/totp`, `/auth/logout`, `/auth/register`, `/auth/password-reset/*`, `GET /auth/oidc/login`, `GET /auth/oidc/callback` |
+| Public | `GET /config` (app name, version, whether first-run setup is still needed, which login methods are enabled, whether registration is open, VAPID public key, and the captcha: its provider, site key and whether sign-in and registration ask for it, or `null` when it is off), `GET /health` |
+| Auth | `POST /auth/setup`, `/auth/login`, `/auth/login/totp`, `/auth/logout`, `/auth/register`, `/auth/invite/*`, `/auth/password-reset/*`, `GET /auth/oidc/login`, `GET /auth/oidc/callback`, `GET /auth/captcha/challenge` |
 | Account | `GET`, `PATCH` and `DELETE /me`, `/me/password`, `/me/totp/*`, `/me/sessions`, `/me/tokens`, `/me/oidc`, `/me/push-subscriptions` |
 | Calendars | CRUD on `/calendars`, `/calendars/{id}/feed`, `/calendars/{id}/export`, `/calendars/{id}/import`, `/calendars/{id}/refresh` |
 | Events | `GET /occurrences`, `POST /events`, `GET`, `PATCH` and `DELETE /events/{id}` with `scope` and `occurrence` parameters for series |
 | Tags | `GET` and `POST /tags`, `PATCH` and `DELETE /tags/{id}` |
 | Search | `GET /search?q=` |
-| Admin | `/admin/users`, `/admin/invites`, `/admin/settings`, `/admin/status` |
+| Admin | `/admin/users`, `/admin/invites`, `/admin/settings`, `/admin/captcha`, `/admin/status`, `/admin/test-email` |
 
 ## 14. Configuration
 
@@ -494,7 +505,7 @@ One limit is not an environment variable but an instance setting an admin change
 ## 15. Security
 
 - Authorisation is enforced in one place: a dependency resolves the current user, and service functions take that user and scope every query by it. Section "Conventions" in `CLAUDE.md` requires a cross-user test for every endpoint.
-- Send security headers on every response: a Content-Security-Policy that allows scripts and styles only from the app's own origin, images from `self`, `blob:` and `data:`, and connections only to `self`, with `frame-ancestors 'none'`; `X-Content-Type-Options: nosniff`; and `Referrer-Policy: no-referrer`. All fonts and icons are bundled; the app loads nothing from third-party origins. FullCalendar injects its stylesheet at runtime: satisfy the policy with a nonce rather than `unsafe-inline`, and confirm how against the version you install.
+- Send security headers on every response: a Content-Security-Policy that allows scripts and styles only from the app's own origin, images from `self`, `blob:` and `data:`, and connections only to `self`, with `frame-ancestors 'none'`; `X-Content-Type-Options: nosniff`; and `Referrer-Policy: no-referrer`. All fonts and icons are bundled; the app loads nothing from third-party origins. The one exception is the captcha frame, when an admin chooses a hosted captcha (section 6, Captcha). FullCalendar injects its stylesheet at runtime: satisfy the policy with a nonce rather than `unsafe-inline`, and confirm how against the version you install.
 - Never render user-supplied or imported text as HTML. Event text from subscriptions is untrusted input from the internet.
 - Secrets (session tokens, API tokens, invite and reset tokens, recovery codes) are stored only as hashes and compared in constant time.
 - Never log secrets, tokens, passwords or feed URLs.
