@@ -39,7 +39,7 @@ A small, self-hosted personal calendar: month, week, day and agenda views, repea
 - Personal API tokens with read or read and write access.
 - Light and dark theme.
 
-Not included on purpose: sharing calendars or events with other people, CalDAV and two-way sync with Google or Microsoft, attendees and invitations, tasks, creating or changing events while offline, a year view.
+Not included on purpose: sharing calendars or events with other people, CalDAV and two-way sync with Google or Microsoft, attendees and invitations, creating or changing events while offline.
 
 ## Quick start
 
