@@ -406,6 +406,7 @@ Tokens. Define these as CSS custom properties using `light-dark()`, with `color-
 | `danger` | `#d1242f` | `#ff6369` | Errors, destructive actions |
 | `warning` | `#b45309` | `#f5a524` | |
 | `success` | `#1a8c3e` | `#3fb950` | |
+| `scrim` | black at 30 % | black at 60 % | The dimmed backdrop behind dialogs, sheets and the phone drawer; black in both themes, so it darkens a dark page instead of washing it out |
 
 Applying it to a calendar, which the reference does not cover:
 
