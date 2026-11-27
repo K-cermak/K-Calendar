@@ -105,6 +105,9 @@ const options = computed<CalendarOptions>(() => ({
   editable: !props.readOnly,
   selectable: !props.readOnly && !props.compact,
   selectMirror: true,
+  // The selection marks the time quick create is for; typing its title must not clear it. Quick
+  // create clears it itself when it closes.
+  unselectCancel: '[data-testid="quick-create"]',
   dayMaxEvents: true,
   dayHeaderFormat: props.view === 'month' ? { weekday: 'short' } : undefined,
   eventLongPressDelay: 400,

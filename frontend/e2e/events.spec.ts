@@ -144,3 +144,26 @@ test('closing the editor with changes asks to save, cancel or discard', async ({
   await expect(editor).toHaveCount(0)
   await expect(eventBlock(page, 'Dentist at 8')).toBeVisible()
 })
+
+test('the chosen time stays marked while quick create is filled in', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'A phone opens the full editor instead of quick create.')
+  const quick = page.getByTestId('quick-create')
+  const highlight = page.locator('.cal-fc-highlight')
+
+  await page.goto(`/month/${MONDAY}`)
+  await page.locator(`.cal-fc-cell[data-date="${WEDNESDAY}"]`).click()
+  await expect(quick).toBeVisible()
+  await expect(highlight).toHaveCount(1)
+  await quick.getByLabel('Title').click()
+  await quick.getByLabel('Title').fill('Picnic')
+  await expect(highlight).toHaveCount(1)
+
+  // Closing quick create clears the mark.
+  await quick.getByRole('button', { name: 'Cancel' }).click()
+  await expect(highlight).toHaveCount(0)
+
+  await openGrid(page, isMobile, MONDAY)
+  await selectTime(page, MONDAY, '10:00', '11:00')
+  await quick.getByLabel('Title').click()
+  await expect(page.getByTestId('selection-mirror')).toBeVisible()
+})
