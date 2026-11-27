@@ -116,8 +116,11 @@ export function rangeTitle(
       year: 'numeric',
     })
   }
-  if (view === 'agenda') return formatDate(anchor, locale, { month: 'long', year: 'numeric' })
-  const { start, end } = visibleRange(view, anchor, weekStart, compact)
+  // The agenda list runs on past the week, but the arrows move by a week, so the title names it.
+  const { start, end } =
+    view === 'agenda'
+      ? { start: anchor, end: shift('agenda', anchor, 1, compact) }
+      : visibleRange(view, anchor, weekStart, compact)
   return formatDateRange(start, end.subtract({ days: 1 }), locale, {
     day: 'numeric',
     month: 'short',

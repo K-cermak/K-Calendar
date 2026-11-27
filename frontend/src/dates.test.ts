@@ -66,5 +66,8 @@ describe('formatting', () => {
     expect(rangeTitle('week', d('2026-11-25'), 'en', 'monday', false).replace(/\s/g, ' ')).toBe(
       'Nov 23 – 29, 2026',
     )
+    expect(rangeTitle('agenda', d('2026-11-27'), 'en', 'monday', true).replace(/\s/g, ' ')).toBe(
+      'Nov 27 – Dec 3, 2026',
+    )
   })
 })

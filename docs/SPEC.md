@@ -380,7 +380,7 @@ Design for a phone first, then widen.
 - **Month**: on desktop, the usual grid with event chips and "+N more". On a phone, the cells show only coloured dots, and the events of the selected day are listed under the grid.
 - **Week**: seven days on desktop, three days on a phone.
 - **Day**: one day with the time grid.
-- **Agenda**: a chronological list grouped by day that loads further into the future as the user scrolls.
+- **Agenda**: a chronological list grouped by day that loads further into the future as the user scrolls. Previous and next move it by a week, and the title names that week.
 
 The time grid scrolls to the current time on load and shows a line for now. All-day events sit in a strip above the grid.
 
