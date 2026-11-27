@@ -421,7 +421,7 @@ Applying it to a calendar, which the reference does not cover:
 - **Banners** (offline, device zone, errors) follow the reference's notice: a border and a faint tint of one tone colour, with a thin icon.
 - **Phone.** Sheets rise from the bottom with square corners and a hairline top border. Tap targets are at least 44 px even where the visual is smaller.
 
-Themes follow the system by default, with light and dark as explicit choices in settings. Every interactive element is reachable and operable from the keyboard, and dialogs trap and restore focus (Reka UI handles most of that).
+Themes follow the system by default, with light and dark as explicit choices in the profile settings and, for a quick switch, in the account menu. The theme is saved in the profile, so it follows the user across devices. Every interactive element is reachable and operable from the keyboard, and dialogs trap and restore focus (Reka UI handles most of that).
 
 Dates and times are formatted with `Intl` according to the user's locale and their 12 or 24 hour and week start preferences.
 

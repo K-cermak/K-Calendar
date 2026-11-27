@@ -3,14 +3,19 @@ import { useRouter } from 'vue-router'
 import {
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuItemIndicator,
   DropdownMenuLabel,
   DropdownMenuPortal,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuRoot,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from 'reka-ui'
-import { LogOut, Settings, Shield } from '@lucide/vue'
+import { Check, LogOut, Settings, Shield } from '@lucide/vue'
 import { signOut, useMe } from '@/api/session'
+import { useUpdateProfile } from '@/api/profile'
+import { parseTheme, themes } from '@/theme'
 import { useSubmit } from '@/composables/useSubmit'
 import { useToastStore } from '@/stores/toast'
 import { menuItem, menuPanel } from '@/components/ui/menu'
@@ -19,6 +24,12 @@ const router = useRouter()
 const me = useMe()
 const toast = useToastStore()
 const leaving = useSubmit()
+const profile = useUpdateProfile()
+
+function setTheme(value: unknown): void {
+  const theme = parseTheme(value)
+  if (theme) profile.mutate({ theme })
+}
 
 async function logout(): Promise<void> {
   if (await leaving.run(signOut)) await router.replace('/login')
@@ -41,6 +52,23 @@ async function logout(): Promise<void> {
           <span class="font-medium" data-testid="signed-in-as">{{ me?.display_name }}</span>
           <span class="text-label text-muted">{{ me?.email }}</span>
         </DropdownMenuLabel>
+        <DropdownMenuSeparator class="ui-menu-separator" />
+        <!-- A quick way to the theme, which is also in the profile settings (SPEC 11). -->
+        <DropdownMenuLabel class="ui-menu-label">{{ $t('theme.label') }}</DropdownMenuLabel>
+        <DropdownMenuRadioGroup :model-value="me?.theme" @update:model-value="setTheme">
+          <DropdownMenuRadioItem
+            v-for="theme in themes"
+            :key="theme"
+            :value="theme"
+            :class="menuItem"
+            :data-testid="`theme-${theme}`"
+          >
+            <span class="grid size-4 place-items-center">
+              <DropdownMenuItemIndicator><Check :size="16" /></DropdownMenuItemIndicator>
+            </span>
+            {{ $t(`theme.${theme}`) }}
+          </DropdownMenuRadioItem>
+        </DropdownMenuRadioGroup>
         <DropdownMenuSeparator class="ui-menu-separator" />
         <DropdownMenuItem :class="menuItem" @select="router.push('/settings')">
           <Settings :size="16" /> {{ $t('settings.title') }}
