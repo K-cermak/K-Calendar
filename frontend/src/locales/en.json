@@ -245,7 +245,7 @@
     },
     "deleteAccount": {
       "title": "Delete account",
-      "intro": "Deletes your account with all your calendars, events, tags and reminders. Calendars you subscribe to elsewhere through a feed address stop updating. This cannot be undone.",
+      "intro": "Deletes your account with all your calendars, events, tags and reminders. Feed addresses you gave to other apps stop working. This cannot be undone.",
       "email": "Your e-mail address",
       "submit": "Delete account",
       "confirmTitle": "Delete your account?",
