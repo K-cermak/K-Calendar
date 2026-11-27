@@ -141,3 +141,19 @@ test('the theme chosen in the account menu is saved and follows the user', async
   await expect(other.locator('html')).toHaveAttribute('data-theme', 'dark')
   await context.close()
 })
+
+test('a time zone is found by typing any part of its name', async ({ page }) => {
+  await page.goto('/settings/profile')
+  const field = page.getByTestId('timezone-input')
+  await field.click()
+  const list = page.getByRole('listbox')
+  await expect(list.getByRole('option', { name: 'Europe/Prague' })).toBeInViewport()
+  await field.fill('new york')
+  await expect(list.getByRole('option')).toHaveCount(1)
+  await list.getByRole('option', { name: 'America/New_York' }).click()
+  await expect(field).toHaveValue('America/New_York')
+
+  await expect
+    .poll(async () => (await (await page.request.get('/api/v1/me')).json()).timezone)
+    .toBe('America/New_York')
+})

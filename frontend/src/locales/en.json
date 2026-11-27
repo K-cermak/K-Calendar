@@ -8,7 +8,8 @@
     "saved": "Changes saved",
     "add": "Add",
     "done": "Done",
-    "loading": "Loading…"
+    "loading": "Loading…",
+    "noTimezone": "No time zone matches."
   },
   "home": {
     "version": "Version {version}"

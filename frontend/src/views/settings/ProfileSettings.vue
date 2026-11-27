@@ -9,6 +9,7 @@ import { LOCALES } from '@/i18n'
 import { VIEWS } from '@/router'
 import { useToastStore } from '@/stores/toast'
 import ThemeSwitch from '@/components/ThemeSwitch.vue'
+import TimezoneSelect from '@/components/TimezoneSelect.vue'
 import UiCheckbox from '@/components/ui/UiCheckbox.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiField from '@/components/ui/UiField.vue'
@@ -28,13 +29,6 @@ watch(
   () => me.value?.display_name,
   (value) => (name.value = value ?? ''),
 )
-
-// The names only; which instant is what time there is the server's business (SPEC 5).
-const zones = computed(() => {
-  const known = Intl.supportedValuesOf('timeZone')
-  const current = me.value?.timezone
-  return current && !known.includes(current) ? [current, ...known] : known
-})
 
 const weekStarts = computed(() =>
   (['monday', 'sunday'] as const).map((value) => ({
@@ -89,14 +83,11 @@ function selected(event: Event): string {
       for="profile-timezone"
       :hint="$t('settings.profile.timezoneHint')"
     >
-      <select
+      <TimezoneSelect
         id="profile-timezone"
-        class="ui-select"
-        :value="me.timezone"
-        @change="update({ timezone: selected($event) })"
-      >
-        <option v-for="zone in zones" :key="zone" :value="zone">{{ zone }}</option>
-      </select>
+        :model-value="me.timezone"
+        @update:model-value="(zone) => zone !== me?.timezone && update({ timezone: zone })"
+      />
     </UiField>
     <UiField :label="$t('settings.profile.language')" for="profile-language">
       <select

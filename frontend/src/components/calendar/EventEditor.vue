@@ -13,6 +13,7 @@ import ReminderField from './ReminderField.vue'
 import RepeatField from './RepeatField.vue'
 import TagInput from './TagInput.vue'
 import type { EditorTarget } from './types'
+import TimezoneSelect from '@/components/TimezoneSelect.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiCheckbox from '@/components/ui/UiCheckbox.vue'
 import UiField from '@/components/ui/UiField.vue'
@@ -72,11 +73,6 @@ const reminders = computed<number[]>({
   },
 })
 
-const zones = computed(() => {
-  const known = Intl.supportedValuesOf('timeZone')
-  const current = draft.value?.timezone
-  return current && !known.includes(current) ? [current, ...known] : known
-})
 const invalid = computed(() => (draft.value ? problem(draft.value) : null))
 const editing = computed(() => (props.target?.kind === 'edit' ? props.target.event : null))
 
@@ -245,9 +241,7 @@ async function save(): Promise<void> {
           for="event-timezone"
           :hint="$t('event.timezoneHint')"
         >
-          <select id="event-timezone" v-model="draft.timezone" class="ui-select">
-            <option v-for="zone in zones" :key="zone" :value="zone">{{ zone }}</option>
-          </select>
+          <TimezoneSelect id="event-timezone" v-model="draft.timezone" />
         </UiField>
         <div class="flex flex-col gap-2">
           <span class="ui-label">{{ $t('event.color') }}</span>

@@ -180,7 +180,7 @@ This is the hard part of any calendar and where bugs will come from. Build it ca
 
 A timed event stores what the user meant: a wall-clock time and a zone ("9:00 in Europe/Prague"). The UTC columns are derived and exist for querying. This matters for recurrence: a weekly 9:00 meeting must stay at 9:00 local time across a daylight saving change, which means the rule has to be expanded in local time and each occurrence converted to UTC on its own.
 
-New events take the zone from the user's profile. The event editor shows the zone in a collapsed "more options" area where it can be changed. Most users will never touch it.
+New events take the zone from the user's profile. The event editor shows the zone in a collapsed "more options" area where it can be changed. Most users will never touch it. Here and in the profile a zone is picked from a list of limited height that narrows as the user types, matching any part of the name and reading spaces as the underscores in names like `America/New_York`.
 
 All-day events have no zone. A birthday on 3 May is on 3 May wherever the user is. Store the end as exclusive (a one-day event on 3 May ends on 4 May), which is also what iCalendar does. The UI shows and edits an inclusive end date. Convert at the edge of the UI and nowhere else.
 
