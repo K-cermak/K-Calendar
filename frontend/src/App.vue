@@ -46,7 +46,11 @@ watch(() => me.value?.locale, applyLocale, { immediate: true })
 </script>
 
 <template>
-  <div class="flex h-dvh flex-col">
+  <!-- Sticky with an opaque background, although the page never scrolls: iOS 26 Safari fills the
+       area under the status bar with a solid colour only next to a fixed or sticky element at the
+       top edge, and otherwise lays a soft blur over the top of the page that smears its first
+       line of text. -->
+  <div class="sticky top-0 flex h-dvh flex-col bg-bg">
     <OfflineBanner />
     <div class="min-h-0 flex-1 overflow-y-auto">
       <RouterView />
